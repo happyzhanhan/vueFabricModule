@@ -1,18 +1,19 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
     <inputSearchVue :pname="msg" v-model="init"></inputSearchVue>
     <button @click="commit">去掉</button>
     <router-view/>
+    <vuefabricmodule></vuefabricmodule>
   </div>
 </template>
 
 <script>
 import inputSearchVue from './components/inputSearch.vue'
+import vuefabricmodule from './components/vuefabricmodule.vue'
 export default {
   name: 'App',
   components: {
-    inputSearchVue
+    inputSearchVue, vuefabricmodule
   },
   data () {
     return {
