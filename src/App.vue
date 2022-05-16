@@ -1,20 +1,18 @@
 <template>
   <div id="app">
     <div>
-      <inputSearch :pname="msg" v-model="init"></inputSearch>
-      <selectSearch :pname="msg2" v-model="init2" :options="options"></selectSearch>
-      <button class="zzh-button" @click="commit">确定</button>
+      <inputSearchVue :pname="msg" v-model="init"></inputSearchVue>
+      <button @click="commit">去掉</button>
     </div>
   </div>
 </template>
 
 <script>
-import inputSearch from './components/inputSearch'
-import selectSearch from './components/selectSearch'
+import inputSearchVue from "./components/inputSearch.vue"
 export default {
   name: 'app',
   components:{
-    inputSearch, selectSearch,
+    inputSearchVue,
   },
   data () {
     return {

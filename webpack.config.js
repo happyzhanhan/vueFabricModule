@@ -6,8 +6,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, './dist'),
     publicPath: '/dist/',
-    filename: "mycomponentsvue.js", // npm run build生成的文件名
-    library: "mycomponentsvue", // 指定的就是你使用require时的模块名
+    filename: "vue-fabric-module.js", // npm run build生成的文件名
+    library: "vue-fabric-module", // 指定的就是你使用require时的模块名
     libraryTarget: "umd", // 指定输出格式
   },
   module: {
