@@ -28,11 +28,11 @@ npm install vuefabricmoudle --save
 ```
 ## 依赖
 下载到本地 static/js/文件下
-[customiseControls.js](https://github.com/purestart/vue-fabric/blob/master/static/js/customiseControls.min.js).
-[fabric5.js](https://github.com/purestart/vue-fabric/blob/master/static/js/fabric.min.js).
-[datamatrix.js]().
-[polyfill.min.js]().
-[browser.min.js]().
+[customiseControls.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/customiseControls.js).
+[fabric5.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/fabric5.js).
+[datamatrix.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/datamatrix.js).
+[polyfill.min.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/polyfill.min.js).
+[browser.min.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/browser.min.js).
 
 ## 在index.html引入
 ```
@@ -53,7 +53,7 @@ Vue.use(vuefabricmodule)
 ```
 
 ## 组件使用
-> 使用格式
+使用格式
 ```
 <vuefabricmodule ref="canvas" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="1200" :boxHeight="800" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo"></vuefabricmodule>
 ```
@@ -75,7 +75,7 @@ Vue.use(vuefabricmodule)
 |changeZoomTo | zoom   | 缩放大小回调 |
 
 ### 事件
-> 使用格式
+使用格式
 ```
  <vuefabricmodule ref="canvas" @mouse:down="mouseDown" ></vuefabricmodule>
 ```
@@ -107,12 +107,13 @@ Vue.use(vuefabricmodule)
 | object:moving            | event | object moving                                  |
 
 ### 方法调用
-> 调用格式
+调用格式：
 ```
 this.$refs.canvas.方法名(params)
 ```
 
- #### changeWH(options) 改变宽高，并且居中适配显示
+> changeWH(options) 改变宽高，并且居中适配显示
+
  options:{}
 | options        | Type   | Default             | Description   |
 | -------------- | ------ | ------------------- | ------------- |
@@ -120,10 +121,59 @@ this.$refs.canvas.方法名(params)
 |height          | Number | this.height         | 重置高        |
 |backgroundColor | String | this.backgroundColor| 重置画布颜色  |
 
- 使用:
+ 使用：
 ```
  this.$refs.canvas.changeWH({width: 1000, height: 800, backgroundColor: '#ff0'})
 ```
+
+> changemoveing(bol) 改变画布操作状态是 抓手：可以移动、缩放，不可选择， 箭头：不可移动缩放，可选择
+
+参数：
+| options        | Type    | Default             | Description                                  |
+| -------------- | ------  | ------------------- | -------------------------------------------- |
+| bol            | Boolean | false               | true:可以移动缩放抓手，false:不可移动缩放箭头 |
+
+ 使用：
+```
+ this.$refs.canvas.changemoveing(true)
+```
+
+> changeLeftTop() 按当前比例左上对齐窗口
+
+参数：无
+
+ 使用：
+```
+ this.$refs.canvas.changemoveing()
+```
+
+> changeOrigin() 按当前比例居中对齐窗口
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.changeOrigin()
+```
+
+> changeBigZoom() 画布适配当前窗口
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.changeBigZoom()
+```
+
+> changeOneZoom() 画布1:1居中显示
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.changeOneZoom()
+```
+
 
 ## Changelog
 
@@ -139,7 +189,13 @@ this.$refs.canvas.方法名(params)
 
 > v0.0.3 \* 画布初始化，新增API和接口文档
 
-### 2022.05.19
+- 新增api 改变画布宽高和颜色
 
-- 新增创建组件
+### 2022.05.18
+
+- 新增api 改变画布操作状态是 抓手：可以移动、缩放，不可选择， 箭头：不可移动缩放，可选择
+- 新增api 按当前比例左上对齐窗口
+- 新增api 按当前比例居中对齐窗口
+- 新增api 画布适配当前窗口
+- 新增api 画布1:1居中显示
 
