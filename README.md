@@ -70,9 +70,12 @@ Vue.use(vuefabricmodule)
 | showRule        | String | NONE(ALL,NONE,HORIZONTAL,VERTICAL) | 标尺          |
 
 ### 回调函数
-| Function    | Params | Description  |
-| ----------- | ------ | ------------ |
-|changeZoomTo | zoom   | 缩放大小回调 |
+| Function    | Params    | Description     |
+| ----------- | ------    | ------------    |
+|changeZoomTo | zoom      | 缩放大小回调    |
+|deleteidsdata| [id]      | 回调删除的元素id|
+|canvasToData | name, obj | 键盘移动回调|
+
 
 ### 事件
 使用格式
@@ -126,6 +129,18 @@ this.$refs.canvas.方法名(params)
  this.$refs.canvas.changeWH({width: 1000, height: 800, backgroundColor: '#ff0'})
 ```
 
+> changeBackgroundColor(color) 仅改变画布颜色
+
+参数：
+| options        | Type    | Default             | Description                                  |
+| -------------- | ------  | ------------------- | -------------------------------------------- |
+| color          | String  | '#fff'              | 画布颜色                                     |
+
+ 使用：
+```
+ this.$refs.canvas.changeBackgroundColor('#ff0')
+```
+
 > changemoveing(bol) 改变画布操作状态是 抓手：可以移动、缩放，不可选择， 箭头：不可移动缩放，可选择
 
 参数：
@@ -174,6 +189,93 @@ this.$refs.canvas.方法名(params)
   this.$refs.canvas.changeOneZoom()
 ```
 
+> getEditObj() 获取当前活跃的元素
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.getEditObj()
+```
+
+> removeEditObj() 删除当前活跃的元素（右键调用此）
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.removeEditObj()
+```
+
+> setActiveObject(obj) 设置元素为活跃元素
+
+参数：
+obj
+
+ 使用：
+```
+  this.$refs.canvas.setActiveObject(obj)
+```
+
+> copypaste() 复制粘贴活跃元素，坐标往右下偏移10像素（右键调用此）
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.copypaste()
+```
+
+> getObjectsNew() 获取画布所有元素
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.getObjectsNew()
+```
+
+
+> discardActive() 画布所有元素取消活跃状态
+
+参数：无
+
+ 使用：
+```
+  this.$refs.canvas.discardActive()
+```
+
+
+> createElement(name, options) 画布创建元素
+参数：
+| name         | options| default             | Description   |
+| ------------ | ------ | ------------------- | ------------- |
+|Rect          | {}     | {}                  | 矩形          |
+|Rectangle     | {}     | {}                  | 圆角矩形      |
+|Parallelogram | {}     | {}                  | 平行四边形    |
+|Circle        | {}     | {}                  | 椭圆形        |
+|EqualCircle   | {}     | {}                  | 正圆          |
+|Dottedline    | {}     | {}                  | 线段          |
+|EqualTriangle | {}     | {}                  | 等边三角形    |
+|star          | {}     | {}                  | 五角星        |
+|Hexagon       | {}     | {}                  | 正六边形      |
+|Image         | {}     | {}                  | 图片          |
+|Icon          | {}     | {}                  | 静态图片      |
+|equalImage    | {}     | {}                  | 保持居中的图片|
+|Barcode       | {}     | {}                  | 条码          |
+|Qrcode        | {}     | {}                  | 二维码        |
+|Time          | {}     | {}                  | 时间文字      |
+|Itext         | {}     | {}                  | 当行编辑文本  |
+|Textbox       | {}     | {}                  | 文本域        |
+|TextRectBox   | {}     | {}                  | 限制宽高的文本|
+|Html          | {}     | {}                  | html          |
+|tableList     | {}     | {}                  | 表格          |
+
+使用：
+```
+this.$refs.canvas.createElement(name, options)
+```
+
 
 ## Changelog
 
@@ -193,11 +295,28 @@ this.$refs.canvas.方法名(params)
 
 ### 2022.05.18
 
-> v0.0.4 \* 新增API和接口文档,导出画布组件
+> v0.0.4 v0.0.5\* 新增API和接口文档,导出画布组件
 
 - 新增api 改变画布操作状态是 抓手：可以移动、缩放，不可选择， 箭头：不可移动缩放，可选择
 - 新增api 按当前比例左上对齐窗口
 - 新增api 按当前比例居中对齐窗口
 - 新增api 画布适配当前窗口
 - 新增api 画布1:1居中显示
+
+### 2022.05.19
+
+> v0.0.6 \* 新增API和接口文档,新增组件，组件右键操作，部分键盘快捷键
+
+- 新增api 仅改变画布颜色
+- 新增api 获取当前活跃的元素
+- 新增api 删除当前活跃的元素（右键调用此）
+- 新增api 设置元素为活跃元素
+- 新增api 复制粘贴活跃元素，坐标往右下偏移10像素（右键调用此）
+- 新增api 获取画布所有元素
+- 新增api 画布所有元素取消活跃状态
+- 新增api 画布创建元素
+- 新增回调函数 删除回调ids,键盘移动回调
+- 新增功能 全局键盘事件（window.event.keyCode===46：delete删除所有活跃元素；37：左移1像素；38：上移1像素；39：右移1像素；40：下移1像素）
+- 新增功能 元素右键事件（图层：上移一层，下移一层，置顶，置底；复制；删除）
+
 

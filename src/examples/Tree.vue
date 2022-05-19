@@ -84,6 +84,7 @@ li {
 }
 
 .child-ul-wrapper {
+  padding: 0;
   background: #ffffff;
   position: absolute;
   display: none;

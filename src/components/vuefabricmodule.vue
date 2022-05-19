@@ -10,9 +10,11 @@
 
 <script>
 import html2canvas from 'html2canvas'
-// import Utils from '../../utils/utils'
-import initAligningGuidelines from '../utils/guidelines'
 import vueContextMenu from '../examples/contextmenu.vue'
+
+// import { on, off } from '../examples/event' // 事件监听
+// import Utils from '../utils/utils'
+// import initAligningGuidelines from '../utils/guidelines'
 // require('../../static/js/fabric5.js')
 
 export default {
@@ -38,13 +40,13 @@ export default {
     // 画布颜色
     backgroundColor: {
       type: String,
-      default: '#fff',
+      default: '#ff0',
       required: false
     },
     // 遮罩颜色
     BgColor: {
       type: String,
-      default: '#f1f1f1',
+      default: '#E1E6F6',
       required: false
     },
     showRule: {
@@ -55,6 +57,15 @@ export default {
     zoom: {
       type: Number,
       default: 1
+    },
+    showMouseRight: {
+      type: Boolean,
+      default: true
+    },
+    idno: {
+      type: Number,
+      default: 1,
+      required: true
     }
   },
   data () {
@@ -109,7 +120,8 @@ export default {
         ]
       },
       isMoveing: false, // 抓手可移动画布 ，箭头不可移动画布
-      panning: false
+      panning: false,
+      cid: 1 // 底层获取id
     }
   },
   watch: {
@@ -119,13 +131,16 @@ export default {
       } else {
         this.setCursor(99)
       }
+    },
+    idno (val, oldval) {
+      this.cid = val
     }
   },
   mounted () {
     // eslint-disable-next-line no-undef
     this.canvas = new fabric.Canvas('canvas', { preserveObjectStacking: true })
     let canvas = this.canvas
-    initAligningGuidelines(canvas)
+    // initAligningGuidelines(canvas) // 辅助线问题
     canvas.controlsAboveOverlay = false
     canvas.skipOffscreen = true
     canvas.preserveObjectStacking = true
@@ -182,7 +197,7 @@ export default {
     // eslint-disable-next-line no-undef
     fabric.Object.prototype.cornerDashArray = [5, 3]
     // eslint-disable-next-line no-undef
-    fabric.Object.prototype.hasControls = false
+    fabric.Object.prototype.hasControls = true
 
     this.canvas.setWidth(this.boxWidth)
     this.canvas.setHeight(this.boxHeight)
@@ -197,7 +212,78 @@ export default {
     this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
     this.canvas.skipTargetFind = false
-    this.setCursor(6)
+    this.setCursor(99)
+
+    document.onkeydown = function (e) {
+      let keyCode = window.event.keyCode
+      if (keyCode === 46) { // Delete
+        that.removeActiveObject()
+      }
+      if (keyCode === 37) { // ←
+        e.preventDefault()
+        e.stopPropagation()
+        that.getEditObj().left = parseInt(that.getEditObj().left - 1)
+        let objects = that.getObjectsNew()
+        objects.forEach((obj, i) => {
+          if (obj.id === that.getEditObj().id && obj.isType === 'TextRect-text') {
+            obj.left = parseInt(obj.left - 1)
+          }
+        })
+        that.$emit('canvasToData', that.getEditObj(), '左移-1 更新')
+
+        that.getEditObj().setCoords()
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      }
+      if (keyCode === 38) { // ↑
+        e.preventDefault()
+        e.stopPropagation()
+        that.getEditObj().top = parseInt(that.getEditObj().top - 1)
+        let objects = that.getObjectsNew()
+        objects.forEach((obj, i) => {
+          if (obj.id === that.getEditObj().id && obj.isType === 'TextRect-text') {
+            obj.top = parseInt(obj.top - 1)
+          }
+        })
+        that.$emit('canvasToData', that.getEditObj(), '上移-1 更新')
+
+        that.getEditObj().setCoords()
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      }
+      if (keyCode === 39) { // →
+        e.preventDefault()
+        e.stopPropagation()
+        that.getEditObj().left = parseInt(that.getEditObj().left + 1)
+        let objects = that.getObjectsNew()
+        objects.forEach((obj, i) => {
+          if (obj.id === that.getEditObj().id && obj.isType === 'TextRect-text') {
+            obj.left = parseInt(obj.left + 1)
+          }
+        })
+        that.$emit('canvasToData', that.getEditObj(), '右移+1 更新')
+
+        that.getEditObj().setCoords()
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      }
+      if (keyCode === 40) { // ↓
+        e.preventDefault()
+        e.stopPropagation()
+        that.getEditObj().top = parseInt(that.getEditObj().top + 1)
+        let objects = that.getObjectsNew()
+        objects.forEach((obj, i) => {
+          if (obj.id === that.getEditObj().id && obj.isType === 'TextRect-text') {
+            obj.top = parseInt(obj.top + 1)
+          }
+        })
+        that.$emit('canvasToData', that.getEditObj(), '下移+1 更新')
+
+        that.getEditObj().setCoords()
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      }
+    }
 
     let that = this
     this.canvas.on('mouse:wheel', function (e) {
@@ -209,8 +295,6 @@ export default {
         e.e.preventDefault()
         e.e.stopPropagation()
       }
-      // if (e.e.shiftKey) {
-      // }
     })
     this.canvas.on('mouse:down', function (options) {
       if (that.isMoveing) { // 是否拖拽移动
@@ -253,13 +337,18 @@ export default {
       console.log(top, left)
       this.xLeft = -left
       this.yTop = -top
+      options = {
+        width: options.width ? options.width : this.width,
+        height: options.height ? options.height : this.height,
+        backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : '#fff'
+      }
       // eslint-disable-next-line no-undef
       let rect = new fabric.Rect({
         left: left,
         top: top,
         width: options.width,
         height: options.height,
-        fill: options.backgroundColor,
+        fill: JSON.parse(JSON.stringify(options.backgroundColor)),
 
         component: 'canvasbg',
         type: 'sBg',
@@ -278,7 +367,7 @@ export default {
         angle: 0,
         scaleX: 1,
         scaleY: 1,
-        stopContextMenu: false, // 禁掉鼠标右键默认事件
+        stopContextMenu: true, // 禁掉鼠标右键默认事件
         hoverCursor: 'default',
         strokeWidth: 0,
         stroke: null,
@@ -289,6 +378,33 @@ export default {
       rect.sendToBack()
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
+    },
+    // 遮罩置顶
+    setTop () {
+      let objects = this.canvas.getObjects()
+      objects.forEach((obj) => {
+        if (obj.type === 'sMask') {
+          // console.log('遮罩置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.type === 'sRuler') {
+          // console.log('遮罩置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.type === 'sBg') {
+          // console.log('背景置底')
+          obj.zIndex = -5
+          obj.sendToBack()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+      })
     },
     // 画遮罩区域
     getBlack (options, color) {
@@ -402,13 +518,24 @@ export default {
       options = {
         width: options.width ? options.width : this.width,
         height: options.height ? options.height : this.height,
-        backgroundColor: options.backgroundColor ? options.backgroundColor : this.backgroundColor
+        backgroundColor: options.backgroundColor !== '' ? options.backgroundColor : this.backgroundColor
       }
       let bg = this.returnbg()
       this.canvas.remove(bg)
       this.changeBigZoom()
       this.initbg(options)
       this.getBlack({width: options.width, height: options.height}, this.BgColor)
+      this.$emit('canvasToData', bg, '画布宽高颜色改变')
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+    // 改变画布背景颜色
+    changeBackgroundColor (color) {
+      let bg = this.returnbg()
+      bg.set({
+        fill: color
+      })
+      this.$emit('canvasToData', bg, '画布颜色改变')
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
@@ -734,6 +861,7 @@ export default {
           }
 
           if (canvas.containsPoint(event, object)) {
+            console.log('鼠标右键事件')
             if (object.isType === 'TextRect-text') {
               // 如果是组合文本上的文本 则选中下面的矩形
               let objects = this.getObjectsNew()
@@ -837,12 +965,1434 @@ export default {
       this.$emit('deleteidsdata', [obj.id])
       this.canvas.remove(obj)
     },
-    // 复制粘贴 操作（不用剪切板）
+    // 复制粘贴
     copypaste () {
-      //  console.log('当前页复制不用')
       let copydata = this.copyData()
       this.clipboard = copydata // 仅本画布复制保存
       this.paste(copydata)
+    },
+    // copyData
+    copyData () {
+      let clipboard = this.canvas.getActiveObject()
+      if (clipboard === undefined || clipboard == null) {
+        return false
+      }
+      if (clipboard.get('type') === 'group') { // 组复制
+        return '#ZKONG#' + escape(JSON.stringify(clipboard))
+      } else if (clipboard.get('type') === 'activeSelection') { // 多元素复制
+        let _objects = JSON.parse(JSON.stringify(clipboard._objects))
+        let newobjects = []
+        _objects.map((_obj) => {
+          _obj.top = clipboard.top + _obj.top
+          _obj.left = clipboard.left + _obj.left
+          newobjects.push(_obj)
+        })
+        newobjects[0].parentscale = [clipboard.scaleX, clipboard.scaleY] // 第一个元素植入混合组件缩放比例
+        return '#ZKONG#' + escape(JSON.stringify(newobjects))
+      } else { // 单个元素复制
+        return '#ZKONG#' + escape(JSON.stringify(clipboard))
+      }
+    },
+    // paste
+    async paste (text) {
+      if (this.clipboard == null) { // 剪切板清除不掉，所以画布只可粘贴一次限制
+        return false
+      }
+      this.canvas.discardActiveObject()
+      if (text.substring(0, 7) !== '#ZKONG#') {
+        return
+      }
+      let _clipboard = JSON.parse(unescape(text.substring(7, text.length)))
+      if (_clipboard instanceof Array) {
+        let canvaobjs = []
+        this.activecanvaobjs = []
+        for (var i in _clipboard) {
+          this.$emit('idAdd')
+          this.cid = this.cid + 1
+          let object = _clipboard[i]
+          object.copyId = JSON.parse(JSON.stringify(object.id))
+          object.id = this.cid
+          object.zIndex = this.cid
+          object.visible = true
+          object.top = object.top + 10 + this.yTop
+          object.left = object.left + 10 + this.xLeft
+          if (object.isType === 'Barcode') {
+            object.width = object.width * object.scaleX
+            object.height = object.height * object.scaleY
+            object.scaleX = object.scaleY = 1
+          }
+          if (object.isType === 'Text') {
+            object.width = parseInt(object.width * object.scaleX)
+            object.height = parseInt(object.height * object.scaleY)
+            object.scaleX = 1
+            object.scaleY = 1
+            this.$emit('idAdd') // this.cid = this.cid + 1;
+            this.cid = this.cid + 1
+          }
+          if (object.isType === 'TextRect') {
+            object.width = parseInt(object.width * object.scaleX)
+            object.height = parseInt(object.height * object.scaleY)
+            object.scaleX = 1
+            object.scaleY = 1
+            object.textAlign = object.textRectData.textAlign // 文本对齐
+            object.fontWeight = object.textRectData.fontWeight ? object.textRectData.fontWeight : 'normal'
+            object.linethrough = object.textRectData.linethrough ? object.textRectData.linethrough : false
+            object.underline = object.textRectData.underline ? object.textRectData.underline : false
+            object.fontStyle = object.textRectData.fontStyle ? object.textRectData.fontStyle : 'normal'
+          }
+          if (object.isType === 'Icon') {
+            object.width = parseInt(object.width * object.scaleX)
+            object.height = parseInt(object.height * object.scaleY)
+            object.scaleX = 1
+            object.scaleY = 1
+          }
+          if (object.isType === 'Image') {
+            object.width = parseInt(object.width * object.scaleX)
+            object.height = parseInt(object.height * object.scaleY)
+            object.scaleX = 1
+            object.scaleY = 1
+          }
+          if (object.isType === 'Image2') {
+            object.width = parseInt(object.width * object.scaleX)
+            object.height = parseInt(object.height * object.scaleY)
+            object.scaleX = 1
+            object.scaleY = 1
+          }
+          let canvaobj = await this.createElement(object.isType, object)
+
+          if (canvaobj) {
+            this.$emit('copydata', object, [canvaobj.id], _clipboard)
+            this.$emit('copyidsdata', [canvaobj.id]) // 一个一个复制
+            canvaobjs.push(canvaobj)
+          }
+        }
+        // eslint-disable-next-line no-undef
+        var sel = new fabric.ActiveSelection(canvaobjs, { // 多元素混合选中
+          canvas: this.canvas
+        })
+        sel.set({ // 还原第一个元素保存的混合元素的缩放
+          scaleX: _clipboard[0].parentscale[0],
+          scaleY: _clipboard[0].parentscale[1]
+        })
+        this.canvas.setActiveObject(sel)
+      } else {
+        console.log('单元素')
+        // console.log('单个元素',_clipboard)
+        if (_clipboard.isType === 'TextRect-text') {
+          return
+        }
+        this.$emit('idAdd') // this.cid = this.cid + 1;
+        this.cid = this.cid + 1
+        let canvaobj
+        _clipboard.copyId = JSON.parse(JSON.stringify(_clipboard.id))
+        _clipboard.id = this.cid
+        _clipboard.zIndex = this.cid
+        _clipboard.top = _clipboard.top + 10 + this.yTop
+        _clipboard.left = _clipboard.left + 10 + this.xLeft
+        _clipboard.visible = true
+        if (_clipboard.isType === 'Rect' || _clipboard.isType === 'Circle' || _clipboard.isType === 'Rectangle' || _clipboard.isType === 'Parallelogram' ||
+              _clipboard.isType === 'EqualCircle' || _clipboard.isType === 'Dottedline' || _clipboard.isType === 'star' || _clipboard.isType === 'Hexagon' ||
+              _clipboard.isType === 'EqualTriangle') {
+          _clipboard.fill = _clipboard.color
+        }
+        if (_clipboard.isType === 'Barcode') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'Text') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'Icon') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'Image') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'Image2') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'TextRect') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+          canvaobj = await this.createElement(_clipboard.isType, {
+            ..._clipboard,
+            'fontFamily': _clipboard.textRectData.fontFamily ? _clipboard.textRectData.fontFamily : 'MicrosoftYaHei',
+            'textAlign': _clipboard.textRectData.textAlign ? _clipboard.textRectData.textAlign : 'left',
+            'fontSize': _clipboard.textRectData.fontSize ? _clipboard.textRectData.fontSize : 14,
+            'angle': _clipboard.textRectData.angle ? _clipboard.textRectData.angle : 0,
+            'fontColor': _clipboard.textRectData.fontColor ? _clipboard.textRectData.fontColor : '#000000',
+            'fontWeight': _clipboard.textRectData.fontWeight ? _clipboard.textRectData.fontWeight : 'normal',
+            'linethrough': _clipboard.textRectData.linethrough ? _clipboard.textRectData.linethrough : false,
+            'underline': _clipboard.textRectData.underline ? _clipboard.textRectData.underline : false,
+            'fontStyle': _clipboard.textRectData.fontStyle ? _clipboard.textRectData.fontStyle : 'normal'
+          })
+          this.$emit('idAdd') // this.cid = this.cid + 1;
+          this.cid = this.cid + 1
+        } else {
+          console.log('单个元素复制出来', _clipboard)
+          canvaobj = await this.createElement(_clipboard.isType, _clipboard)
+        }
+        if (canvaobj) {
+          this.$emit('copydata', _clipboard, [canvaobj.id], _clipboard)
+          this.$emit('copyidsdata', [canvaobj.id]) // 单个元素 复制
+          this.canvas.setActiveObject(canvaobj)
+        }
+      }
+      this.clipboard = null
+      this.canvas.requestRenderAll()
+    },
+    // 获取所有元素
+    getObjects () {
+      let obj = this.canvas.getObjects()
+      return obj
+    },
+    // 获取当前
+    getEditObj () {
+      let obj = this.canvas.getActiveObject()
+      return obj
+    },
+    // 获取自己组装的元素
+    getObjectsNew () {
+      let objects = this.getObjects()
+      let newobj = []
+      for (let i in objects) {
+        if (objects[i].component === 'component') {
+          newobj.push(objects[i])
+        }
+      }
+      return newobj
+    },
+    // 获取当前活跃元素
+    getActiveObject () {
+      var obj = this.canvas.getActiveObject()
+      return obj
+    },
+    // 设置当前组件为活跃元素
+    setActiveObject (obj) {
+      this.canvas.setActiveObject(obj)
+      this.canvas.renderAll()
+    },
+    // 删除当前活跃元素
+    removeActiveObject () {
+      let obj = this.canvas.getActiveObject()
+      let deleteIds = []
+      if (obj._objects) { // 多选
+        this.canvas.discardActiveObject()
+        for (var i in obj._objects) {
+          deleteIds.push(obj._objects[i].id)
+          this.canvas.remove(obj._objects[i])
+        }
+        deleteIds.push(obj.id)
+        this.canvas.remove(obj) // 删除条码起作用
+      } else { // 单选
+        if (obj.isType === 'TextRect-text') { // 如果是组合文本上的文本不可删除
+          return
+        }
+        deleteIds.push(obj.id)
+        this.canvas.remove(obj)
+      }
+
+      this.canvas.renderAll()
+      this.$emit('deleteidsdata', deleteIds)
+      return deleteIds
+    },
+    // 取消所有活跃元素
+    discardActive () {
+      this.canvas.discardActiveObject()
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
+    /**
+     * 创建元素
+     * @param name   : Rect, Rectangle, Parallelogram, Circle, Dottedline, EqualTriangle, Image, Barcode, Qrcode, Text
+     * @param options: id, name, left, top, width, height, angle, padding, scaleX,  scaleY, selectable, visible, fill,
+     *  fillColor，backgroundColor, stroke, strokeWidth, strokeDashArray,
+     *  rx, ry,
+     *  skewX,
+     *  DottedlineType ,
+     *  radius ,
+     *  url,
+     *  imgData,
+     * @return obj
+     * */
+    async createElement (name, options) {
+      if (!name) {
+        return
+      }
+      let canvasObject, newOptions
+      // console.log(options);
+      return new Promise(async (resolve, reject) => {
+        let canvas = this.canvas
+        let that = this
+
+        options = {
+          ...options,
+          id: options.id ? options.id : 1,
+          zIndex: options.zIndex ? options.zIndex : 1,
+
+          component: 'component',
+          isDiff: 'static',
+          padding: 0,
+          scaleX: options.scaleX ? options.scaleX : 1,
+          scaleY: options.scaleY ? options.scaleY : 1,
+          flipX: false,
+          flipY: false,
+          originX: 'left',
+          originY: 'top',
+          stopContextMenu: true, //  禁掉鼠标右键默认事件
+          minScaleLimit: 0.0001, //  最小限制
+          lockSkewingX: true, //  禁掉按住shift时的变形
+          lockSkewingY: true,
+
+          left: options.left ? -this.xLeft + options.left : -this.xLeft,
+          top: options.top ? -this.yTop + options.top : -this.yTop,
+          width: options.width ? options.width : 60,
+          height: options.height ? options.height : 30,
+          angle: options.angle ? options.angle : 0,
+
+          fill: options.fill ? options.fill : '#000000', // 填充的颜色（矩形）
+          fillColor: options.fillColor ? options.fillColor : 'rgba(0,0,0,0)', // 填充的颜色
+
+          backgroundColor: options.backgroundColor ? options.backgroundColor : '', // 边框填充的颜色
+          stroke: options.stroke ? options.stroke : '', // 边框颜色
+          strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+          strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+          selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中
+          visible: options.visible, // 元素是否可见 options.visible!==false ? true :
+
+          eyeshow: options.eyeshow ? options.eyeshow : true, // 眼睛
+
+          hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint,
+
+          screenIndex: options.screenIndex ? options.screenIndex : 0
+        }
+        // console.warn(options.visible);
+
+        //  console.log('rect',options)
+        switch (name) {
+          case 'Rect': // ----------------------------------------------------------------------------------------矩形
+            newOptions = {
+              ...options,
+              fill: options.color ? options.color : '#000000',
+              isType: 'Rect',
+              name: options.name ? options.name : 'Rect',
+              rx: 0,
+              ry: 0
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Rect({...newOptions}) // 创建
+            canvasObject.on('scaled', (e) => {
+              // console.log('scaling',e);
+              e.target.set('width', parseInt(e.target.width * e.target.scaleX))
+              e.target.set('height', parseInt(e.target.height * e.target.scaleY))
+              e.target.set('scaleX', 1)
+              e.target.set('scaleY', 1)
+            })
+
+            break
+          case 'Rectangle': // ----------------------------------------------------------------------------------------圆角矩形
+            newOptions = {
+              ...options,
+              isType: 'Rectangle',
+              name: options.name ? options.name : 'Rectangle',
+              rx: options.rx ? options.rx : 15,
+              ry: options.ry ? options.ry : 15
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Rect({...newOptions}) // 创建
+            canvasObject.on('scaled', (e) => {
+              // console.log('scaling',e);
+              e.target.set('width', parseInt(e.target.width * e.target.scaleX))
+              e.target.set('height', parseInt(e.target.height * e.target.scaleY))
+              e.target.set('scaleX', 1)
+              e.target.set('scaleY', 1)
+            })
+            break
+          case 'Parallelogram': // ----------------------------------------------------------------------------------------平行四边形
+            newOptions = {
+              ...options,
+              isType: 'Parallelogram',
+              name: options.name ? options.name : 'Parallelogram',
+              rx: 0,
+              ry: 0,
+              skewX: options.skewX ? options.skewX : -45,
+              skewY: 0 // 暂不允许y轴变形吧 options.skewY?options.skewY:0,
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Rect({...newOptions}) // 创建
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'Circle': // ----------------------------------------------------------------------------------------椭圆形
+            newOptions = {
+              ...options,
+              isType: 'Circle',
+              name: options.name ? options.name : 'Circle',
+              rx: options.width / 2, // options.rx?options.rx:15,
+              ry: options.height / 2 // options.ry?options.ry:15,
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Ellipse({...newOptions}) // 创建
+            canvasObject.on('scaled', (e) => {
+              // console.log('scaling',e);
+              e.target.set('rx', parseInt(e.target.width * e.target.scaleX / 2))
+              e.target.set('ry', parseInt(e.target.height * e.target.scaleY / 2))
+              e.target.set('scaleX', 1)
+              e.target.set('scaleY', 1)
+            })
+            break
+          case 'EqualCircle': // ----------------------------------------------------------------------------------------正圆
+            newOptions = {
+              ...options,
+              isType: 'EqualCircle',
+              name: options.name ? options.name : 'EqualCircle',
+              radius: options.width / 2
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Circle({...newOptions}) // 创建
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'Dottedline': // ----------------------------------------------------------------------------------------线段
+            newOptions = {
+              ...options,
+              isType: 'Dottedline',
+              name: options.name ? options.name : 'Dottedline',
+              DottedlineType: options.DottedlineType ? options.DottedlineType : 1,
+              strokeDashArray: options.DottedlineType === 3 ? [10, 4, 3, 4] : (options.DottedlineType === 2 ? [8, 2] : [0, 0]),
+              stroke: options.stroke ? options.stroke : '#000000',
+              strokeWidth: options.strokeWidth
+            }
+            let x1 = -this.xLeft + options.left
+            let x2 = -this.xLeft + options.left + options.width
+            let y1 = -this.yTop + options.top
+            let y2 = -this.yTop + options.top
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Line([x1, y1, x2, y2], {...newOptions}) // 创建
+            canvasObject.setControlsVisibility({ // 左上、左下、右上、右下 取消
+              bl: false,
+              br: false,
+              mb: true,
+              ml: true,
+              mr: true,
+              mt: true,
+              mtr: true,
+              tl: false,
+              tr: false
+            })
+            canvasObject.on('scaled', (e) => {
+              // console.log('scaling',e);
+              e.target.set('width', parseInt(e.target.width * e.target.scaleX))
+              e.target.set('height', parseInt(e.target.height * e.target.scaleY))
+              e.target.set('scaleX', 1)
+              e.target.set('scaleY', 1)
+            })
+            break
+          case 'EqualTriangle': // ----------------------------------------------------------------------------------------等边三角
+            newOptions = {
+              ...options,
+              width: 60,
+              height: 52,
+              isType: 'EqualTriangle',
+              name: options.name ? options.name : 'EqualTriangle'
+            }
+            console.log(newOptions)
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Triangle({...newOptions}) // 创建
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'star':// -----------------------------------------------------------------五角星
+
+            options = {
+              width: 180,
+              height: 188,
+              left: options.left,
+              top: options.top
+            }
+            let startpoints = [
+              {
+                x: options.width / 2,
+                y: 0
+              },
+              {
+                x: options.width / 2 - options.width * Math.sin(18 * Math.PI / 180),
+                y: options.width * Math.cos(18 * Math.PI / 180)
+              },
+              {
+                x: options.width,
+                y: options.width * Math.sin(18 * Math.PI / 180) / Math.cos(36 * Math.PI / 180) * Math.cos(18 * Math.PI / 180)
+              },
+              {
+                x: 0,
+                y: options.width * Math.sin(18 * Math.PI / 180) / Math.cos(36 * Math.PI / 180) * Math.cos(18 * Math.PI / 180)
+              },
+              {
+                x: options.width / 2 + options.width * Math.sin(18 * Math.PI / 180),
+                y: options.width * Math.cos(18 * Math.PI / 180)
+              }
+
+            ]
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Polygon(startpoints, {
+              isType: 'star',
+              originX: 'left',
+              originY: 'top',
+              left: options.left,
+              top: options.top,
+              fill: 'rgba(0,0,0,1)'
+              /* stroke:'green',
+                      strokeDashArray:[10] */
+            })
+
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'Hexagon': // -----------------------------------------------------------正六边形
+            newOptions = {
+              width: 100,
+              height: 100,
+              left: options.left,
+              top: options.top
+            }
+            // 计算半径，边长
+            const R = Math.sqrt((newOptions.width) * (newOptions.width) + (newOptions.height) * (newOptions.height)) / 2
+            // 6条边的坐标点（60是六边形的内角度数）
+            const points = Array.from({length: 6}).map((item, index) => {
+              return {
+                x: Math.cos(60 * index / 180 * Math.PI) * R,
+                y: Math.sin(60 * index / 180 * Math.PI) * R
+              }
+            })
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Polygon(points, {
+              originX: 'left',
+              originY: 'top',
+              left: options.left,
+              top: options.top,
+              isType: 'Hexagon',
+              fill: '#ff0000',
+              /* stroke:'green',
+                      strokeWidth: 3,
+                        strokeDashArray:[10] */
+              width: Math.sqrt(Math.pow(newOptions.height, 2) + Math.pow(newOptions.height / 2.0, 2)),
+              height: newOptions.height
+            })
+
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+
+          case 'Image': // ----------------------------------------------------------------------------------------图片
+            canvasObject = await that.createURLImage(options)
+            // console.log(canvasObject);
+            //  return canvasObject;
+            break
+          case 'Image2': // ----------------------------------------------------------------------------------------图片
+            canvasObject = await that.createURLImage(options)
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            return canvasObject
+          case 'Image3': // ----------------------------------------------------------------------------------------图片
+            canvasObject = await that.createURLImage(options)
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: true,
+              ml: true,
+              mr: true,
+              mt: true,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            return canvasObject
+
+          case 'Icon': // ----------------------------------------------------------------------------------------图片
+            canvasObject = await that.createIcon(options)
+
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: true,
+              ml: true,
+              mr: true,
+              mt: true,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            resolve(canvasObject)
+            return canvasObject
+          case 'duanImage':
+            canvasObject = await that.createDuan(options)
+            console.warn(canvasObject)
+            return canvasObject
+          case 'equalImage':
+            // console.warn('equalImage',options);
+            canvasObject = that.createEqualImageImage(options)
+            return canvasObject
+          case 'Barcode': // ----------------------------------------------------------------------------------------条码
+            canvasObject = await that.createBarcode(options)
+            resolve(canvasObject)
+            return canvasObject
+          case 'Barcodematrix': // ----------------------------------------------------------------------------------------条码
+            canvasObject = await that.createBarcodedatamatrix(options)
+            resolve(canvasObject)
+            return canvasObject
+          case 'Qrcode': // ----------------------------------------------------------------------------------------二维码
+            options.imgText = options.imgText ? options.imgText : '123456789'
+            if (options.barcodeType === 0) {
+
+            }
+            canvasObject = await that.createQrcode(options)
+            resolve(canvasObject)
+            return canvasObject
+          case 'Text': // -----------------------------------------------------------------------------------------可编辑文本
+            canvasObject = await this.createText(options.textdemo, options)
+            break
+          case 'Time': // ----------------------------------------------------------------------------------------- 不可编辑时间
+            newOptions = {
+              ...options,
+              isType: 'Time',
+              name: options.name ? options.name : 'Time'
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Text(options.textdemo, newOptions)
+            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
+              bl: true,
+              br: true,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'Itext':
+            newOptions = {
+              ...options,
+              isType: 'Itext',
+              name: options.name ? options.name : 'Itext'
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.IText(options.textdemo, {...newOptions})
+
+            break
+          case 'Textbox':
+            newOptions = {
+              ...options,
+              isType: 'Textbox',
+              name: options.name ? options.name : 'Textbox',
+              breakWords: true
+
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Textbox(options.textdemo, {...newOptions})
+
+            break
+
+          case 'TextRectBox':
+
+            let newOptions1 = {
+
+              width: options.width,
+              height: options.height,
+              content: options.content ? options.content : 'Text',
+              fontSize: options.fontSize ? options.fontSize : 14,
+              fontType: options.fontType ? options.fontType : '微软雅黑',
+              fill: options.color ? options.color : '',
+              textAlign: !options.horizontalAlign || options.horizontalAlign === 0 ? 'left' : (options.horizontalAlign === 1 ? 'center' : 'right'),
+              fontWeight: options.ifBold === 1 ? 'bold' : 'normal',
+              linethrough: options.ifStrikeThrough === 1,
+              underline: options.ifUnderline === 1,
+              fontStyle: options.ifItalic === 1 ? 'italic' : 'normal',
+              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize,
+
+              prefix: options.prefix,
+              postfix: options.postfix,
+
+              maxLines: options.maxLines ? options.maxLines : 3,
+              omitStyle: options.omitStyle ? options.omitStyle : 0,
+              lineBreak: options.lineBreak ? options.lineBreak : '',
+              omitStyleText: options.omitStyle === 0 ? '无' : '…',
+              newline: options.lineBreak ? options.lineBreak : '',
+
+              originX: 'left',
+              originY: 'top',
+              backgroundColor: '',
+              isType: 'TextRectBox-text',
+              name: options.name ? options.name : 'TextRectBox-text',
+              splitByGrapheme: true,
+              breakWords: true
+
+            }
+            // eslint-disable-next-line no-undef
+            let text = new fabric.Textbox(options.prefix + options.content + options.postfix, {...newOptions1})
+
+            let newtext = this.newtextStyleFormat(text, options.prefix + options.content + options.postfix)
+            text.set({
+              text: newtext
+            })
+
+            /* let styles = this.newstyles(options,newtext);
+                  text.set({
+                      'styles':styles,
+                  }); */
+
+            let newOptions2 = {
+              width: options.width,
+              height: options.height,
+
+              fill: options.fillColor ? options.fillColor : 'rgba(0,0,0,0)',
+              stroke: options.borderColor ? options.borderColor : '',
+              strokeWidth: options.lineWeight ? options.lineWeight : 0,
+              strokeDashArray: options.borderType === 1 ? [0, 0] : (options.borderType === 2 ? [5, 1] : options.borderType === 3 ? [5, 2, 1, 2] : [0, 0]),
+
+              originX: 'center',
+              originY: 'center',
+              isType: 'TextRectBox-rect',
+              name: options.name ? options.name : 'TextRectBox-rect',
+              rx: 0,
+              ry: 0,
+              left: 0,
+              top: 0
+
+            }
+            // eslint-disable-next-line no-undef
+            let rect = new fabric.Rect({...newOptions2}) // 创建
+
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Group([rect, text], {
+              padding: 0,
+              /* ...options, */
+
+              originX: 'left',
+              originY: 'top',
+              name: options.name ? options.name : 'TextRectBox',
+              isType: 'TextRectBox',
+              component: 'component',
+              isDiff: 'static',
+
+              left: options.left,
+              top: options.top,
+              id: options.id,
+              copyId: options.copyId,
+              zIndex: options.zIndex,
+
+              angle: options.angle,
+              width: options.width,
+              height: options.height,
+
+              visible: options.visible,
+              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中
+
+              type: options.type ? options.type : 'TextRectBox',
+              barcodeType: options.barcodeType ? options.barcodeType : 10,
+
+              /* borderColor: options.borderColor?options.borderColor:"",
+                      borderType: options.borderType?options.borderType:0, */
+              stroke: options.borderColor ? options.borderColor : '', // 记录边框等信息，编辑时回显在矩形上
+              strokeWidth: options.lineWeight ? options.lineWeight : 0,
+              strokeDashArray: options.borderType === 1 ? [0, 0] : (options.borderType === 2 ? [5, 1] : options.borderType === 3 ? [5, 2, 1, 2] : [0, 0]),
+
+              conRealResult: options.conRealResult ? options.conRealResult : 1,
+              content: options.content ? options.content : 'TEXT1',
+              dateFormat: '',
+              decimalSeparator: options.decimalSeparator ? options.decimalSeparator : '.',
+              thousandSeparator: options.thousandSeparator ? options.thousandSeparator : ',',
+
+              fieldCode: '',
+              fillColor: '',
+              fontSize: options.fontSize ? options.fontSize : 14,
+              fontType: options.fontType ? options.fontType : '微软雅黑',
+
+              ifBold: options.ifBold ? options.ifBold : 0,
+              ifCondition: options.ifCondition ? options.ifCondition : 0,
+              ifItalic: options.ifItalic ? options.ifItalic : 0,
+              ifStrikeThrough: options.ifStrikeThrough ? options.ifStrikeThrough : 0,
+              ifUnderline: options.ifUnderline ? options.ifUnderline : 0,
+
+              icon: null,
+              itemOrder: options.itemOrder ? options.itemOrder : 1,
+              itemPictureNameId: options.itemPictureNameId ? options.itemPictureNameId : null,
+              layer: options.layer ? options.layer : 0,
+
+              lineBreak: options.lineBreak ? options.lineBreak : '',
+              lineWeight: options.lineWeight ? options.lineWeight : 0,
+              marginLeft: options.marginLeft ? options.marginLeft : 0,
+              marginTop: options.marginTop ? options.marginTop : 0,
+
+              maxLines: options.maxLines ? options.maxLines : 3,
+              minFontSize: options.minFontSize ? options.minFontSize : 12,
+              omitStyle: options.omitStyle ? options.omitStyle : 0,
+              postfix: options.postfix ? options.postfix : '',
+              prefix: options.prefix ? options.prefix : '',
+
+              scaleX: options.scaleX ? options.scaleX : 1,
+              scaleY: options.scaleY ? options.scaleY : 1,
+              templateBaseId: options.templateBaseId ? options.templateBaseId : null,
+
+              textAdvanceProperty: options.textAdvanceProperty ? options.textAdvanceProperty : 0, // 是自适应还是不使用还是弹性
+
+              verticalAlign: options.verticalAlign ? options.verticalAlign : 0,
+              horizontalAlign: options.horizontalAlign ? options.horizontalAlign : 0,
+              verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+
+              lockRotation: false,
+              flipX: false,
+              flipY: false,
+              lockSkewingX: true, // 禁掉按住shift时的变形
+              lockSkewingY: true,
+
+              hasRotatingPoint: true, // 元素是否旋转
+
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+            })
+            canvasObject.item(0).set({
+              left: 0,
+              top: 0
+
+            })
+            canvasObject.item(1).set({
+              top: -options.height / 2,
+              left: -options.width / 2,
+              width: options.width,
+              height: options.height
+
+            })
+
+            canvasObject.set({
+              clipTo: function (ctx) {
+                ctx.rect(-canvasObject.width / 2,
+                  -canvasObject.height / 2,
+                  canvasObject.width,
+                  canvasObject.height)
+              }
+            })
+
+            // Utils.registeObjectEvent(this, canvasObject);
+            canvasObject.on('mousedblclick', (e) => {
+              console.log('mousedblclick', e)
+              this.canvas.preserveObjectStacking = true
+              e.target._objects[1].selectable = true
+              e.target._objects[1].evented = true
+              this.canvas.setActiveObject(e.target._objects[1])
+              e.target._objects[1].enterEditing()
+
+              e.target.selectable = false
+              e.target._objects[0].evented = false
+              this.canvas.renderAll.bind(this.canvas)
+
+              e.target._objects[1].set({
+                top: -e.target.height / 2,
+                left: -e.target.width / 2
+              })
+            })
+            canvasObject.on('scaling', function (e) {
+              e.target._objects[1].set({
+                width: e.target.width * e.target.scaleX,
+                height: e.target.height * e.target.scaleY,
+
+                scaleX: 1 / e.target.scaleX,
+                scaleY: 1 / e.target.scaleY
+              })
+
+              canvasObject.set({
+                clipTo: function (ctx) {
+                  ctx.rect(-canvasObject.width / 2,
+                    -canvasObject.height / 2,
+                    canvasObject.width,
+                    canvasObject.height)
+                }
+              })
+
+              this.canvas.requestRenderAll()
+              this.canvas.renderAll()
+            })
+            // let that = this;
+            canvasObject.on('scaled', function (e) {
+              // console.log('scaling',e.target.width,e.target.scaleX);
+
+              // console.log(e.target.prefix + e.target.content +e.target.postfix);
+              let newtext = that.newtextStyleFormat(e.target._objects[1], e.target.prefix + e.target.content + e.target.postfix)
+
+              e.target._objects[1].set({
+                text: newtext
+              })
+              e.target._objects[1].set({
+                top: -e.target.height / 2,
+                left: -e.target.width / 2
+              })
+              that.canvas.requestRenderAll()
+              that.canvas.renderAll()
+            })
+
+            canvasObject.setControlsVisibility({
+              bl: true,
+              br: true,
+              mb: true,
+              ml: true,
+              mr: true,
+              mt: true,
+              mtr: true,
+              tl: true,
+              tr: true
+            })
+            break
+          case 'Html':
+            let styleU = {
+              underline: true
+            }
+            let styleI = {
+              fontStyle: 'italic'
+            }
+            let styleB = {
+              fontWeight: 'bold'
+            }
+            let styleS = {
+              linethrough: true
+            }
+            let styleH = {
+              fill: '#f00'
+            }
+            newOptions = {
+              ...options,
+              isType: 'Html',
+              name: options.name ? options.name : 'Html',
+              breakWords: true,
+              fontFamily: '宋体',
+              lineHeight: 1.5,
+              editable: false,
+              /* textBackgroundColor:'#fff', */
+              backgroundColor: '#FFFFFF',
+              styles: {
+                0: {
+                  23: styleB,
+                  24: styleB,
+                  25: styleB,
+                  26: styleB,
+
+                  28: styleI,
+                  29: styleI,
+                  30: styleI,
+                  31: styleI,
+                  32: styleI,
+                  33: styleI,
+
+                  35: styleU,
+                  36: styleU,
+                  37: styleU,
+                  38: styleU,
+                  39: styleU,
+                  40: styleU,
+                  41: styleU,
+                  42: styleU,
+                  43: styleU,
+
+                  45: styleS,
+                  46: styleS,
+                  47: styleS,
+                  48: styleS,
+                  49: styleS,
+                  50: styleS,
+                  51: styleS,
+                  52: styleS,
+                  53: styleS,
+                  54: styleS,
+
+                  60: styleH,
+                  61: styleH,
+                  62: styleH,
+                  63: styleH,
+                  64: styleH
+
+                },
+                1: {
+                  0: styleB,
+                  1: styleB,
+                  2: styleB,
+                  3: styleB,
+
+                  5: styleI,
+                  6: styleI,
+                  7: styleI,
+                  8: styleI,
+                  9: styleI,
+                  10: styleI,
+
+                  12: styleU,
+                  13: styleU,
+                  14: styleU,
+                  15: styleU,
+                  16: styleU,
+                  17: styleU,
+                  18: styleU,
+                  19: styleU,
+                  20: styleU,
+                  21: styleU
+
+                },
+                2: {
+                  0: styleS,
+                  1: styleS,
+                  2: styleS,
+                  3: styleS,
+                  4: styleS,
+                  5: styleS,
+                  6: styleS,
+                  7: styleS,
+                  8: styleS,
+                  9: styleS,
+
+                  15: styleH,
+                  16: styleH,
+                  17: styleH,
+                  18: styleH,
+                  19: styleH
+
+                }
+              }
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Textbox('Test HTML text display ' +
+                        'bold italic underline ' +
+                        'underscore and color.', {...newOptions})
+
+            canvasObject.set({height: newOptions.height,
+              clipTo: function (ctx) {
+                ctx.rect(-canvasObject.width / 2,
+                  -canvasObject.height / 2,
+                  canvasObject.width,
+                  canvasObject.height)
+              }
+            })
+
+            canvasObject.setControlsVisibility({
+              bl: false,
+              br: false,
+              mb: true,
+              ml: true,
+              mr: true,
+              mt: true,
+              mtr: true,
+              tl: false,
+              tr: false
+            })
+
+            break
+          case 'TextRect':
+            // -----------------------------------------------------------------------------------------可编辑文本加： 边距 背景 边框
+            // console.warn('文本矩形参数：',options.zIndex);
+
+            const rectOptions = {
+              id: options.id,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+
+              copyId: options.copyId,
+              type: options.type,
+              left: options.left,
+              top: options.top,
+              angle: options.angle,
+
+              xLeft: options.xLeft ? options.xLeft : 0,
+              xRight: options.xRight ? options.xRight : 0,
+              yTop: options.yTop ? options.yTop : 0,
+              yBot: options.yBot ? options.yBot : 0,
+
+              width: options.width,
+              height: options.height,
+              fill: '', // options.rectColor?(options.rectColor===''?'rgba(0,0,0,0)':options.rectColor):
+              rectColor: options.rectColor ? options.rectColor : '#ffffff',
+
+              stroke: options.stroke ? options.stroke : '',
+              strokeWidth: options.strokeWidth ? options.strokeWidth : null,
+              strokeDashArray: [3, 1],
+
+              fontColor: options.fontColor ? options.fontColor : '#000000',
+              fontSize: options.fontSize ? options.fontSize : 14,
+              fontFamily: options.fontFamily ? options.fontFamily : '微软雅黑',
+              textdemo: options.textdemo ? options.textdemo : 'TextRect',
+              isElasticSize: options.isElasticSize ? options.isElasticSize : 0,
+
+              minScaleLimit: 0.2,
+              flipX: false,
+              flipY: false,
+              lockSkewingX: true, // 禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockScalingFlip: true,
+
+              originX: 'left',
+              originY: 'top',
+              component: 'component',
+              isType: 'TextRect',
+              isDiff: 'static',
+              name: options.name ? options.name : 'TextRect',
+              hasRotatingPoint: options.hasRotatingPoint,
+
+              textAlign: options.textAlign ? options.textAlign : 'left',
+
+              maxLines: options.maxLines ? options.maxLines : 10,
+              minFontSize: options.minFontSize ? options.minFontSize : 12,
+              omitStyle: options.omitStyle ? options.omitStyle : 0,
+              omitStyleText: options.omitStyleText ? options.omitStyleText : '无',
+              newline: options.newline ? options.newline : '',
+
+              verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+
+              visible: options.visible,
+              eyeshow: options.eyeshow,
+
+              screenIndex: options.screenIndex
+            }
+            const textOptions = {
+              id: options.id,
+              zIndex: options.zIndex + 0.5 ? options.zIndex + 0.5 : options.id + 0.5,
+              copyId: options.copyId,
+              type: options.type,
+              angle: options.angle,
+
+              left: options.left,
+              top: options.top,
+              xLeft: options.xLeft ? options.xLeft : 0,
+              xRight: options.xRight ? options.xRight : 0,
+              yTop: options.yTop ? options.yTop : 0,
+              yBot: options.yBot ? options.yBot : 0,
+
+              width: options.width,
+              height: options.height,
+
+              fill: options.fontColor ? options.fontColor : '#000000',
+              fontSize: options.fontSize ? options.fontSize : 14,
+
+              fontColor: options.fontColor ? options.fontColor : '#000000',
+              fontFamily: options.fontFamily ? options.fontFamily : '微软雅黑',
+              textdemo: options.textdemo ? options.textdemo : 'TextRect',
+
+              textAlign: options.textAlign ? options.textAlign : 'left',
+
+              originX: 'left',
+              originY: 'top',
+              component: 'component',
+              isType: 'TextRect-text',
+              isDiff: 'static',
+              name: options.name ? options.name : 'TextRect',
+
+              fontWeight: options.fontWeight ? options.fontWeight : 'normal',
+              linethrough: options.linethrough ? options.linethrough : false,
+              underline: options.underline ? options.underline : false,
+              fontStyle: options.fontStyle ? options.fontStyle : 'normal',
+
+              splitByGrapheme: true,
+              lockScalingFlip: true,
+              minScaleLimit: 0.2,
+              hasRotatingPoint: options.hasRotatingPoint,
+
+              isElasticSize: options.isElasticSize ? options.isElasticSize : 0,
+
+              maxLines: options.maxLines ? options.maxLines : 10,
+              minFontSize: options.minFontSize ? options.minFontSize : 12,
+              omitStyle: options.omitStyle ? options.omitStyle : 0,
+              omitStyleText: options.omitStyleText ? options.omitStyleText : '无',
+              newline: options.newline ? options.newline : '',
+
+              verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+
+              visible: options.visible,
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+
+            }
+
+            /*  */
+            // console.warn(textOptions.visible,rectOptions.visible);
+            rectOptions.textRectData = textOptions
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.RectWithText(rectOptions, textOptions, options.textdemo)
+
+            /* this.$emit('idAdd');   //this.cid = this.cid + 1;
+                    this.cid = this.cid + 1; */
+
+            canvasObject.setCoords()
+
+            console.log('999999999999999999999999', canvasObject)
+            break
+          case 'tableView':
+            let tableStyle = {
+              left: 500,
+              top: 500,
+              width: 300,
+              height: 130,
+              row: 3,
+              col: 3,
+
+              background: '#ffff00',
+
+              borderWidth: 0,
+              borderColor: '#000000',
+              borderDashArray: [0, 0],
+
+              lineRowWidth: 1,
+              lineRowColor: '#666666',
+              lineRowDashArray: [0, 0],
+
+              lineColWidth: 1,
+              lineColColor: '#666666',
+              lineColDashArray: [0, 0]
+            }
+            let tableHead = {
+              style: {
+                height: 40,
+                fontType: '宋体',
+                fontSize: 18,
+                fontColor: '#000000',
+                bgColor: '#ffffff',
+                lineHeight: 40
+              },
+              data: [{
+                width: 200,
+                name: '表头名称1',
+                fileType: 0,
+                fileCode: 'itemTitle'
+              }, {
+                width: 50,
+                name: '表头名称2',
+                fileType: 0,
+                fileCode: 'itemTitle'
+              }, {
+                width: 50,
+                name: '表头名称3',
+                fileType: 0,
+                fileCode: 'itemTitle'
+              }]
+            }
+            let tableBody = {
+              style: {
+                fontType: '宋体',
+                fontSize: 16,
+                fontColor: '#ffffff',
+                bgColor: '#000000',
+                lineHeight: 20
+              },
+              data: []
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.tableView(canvas, tableStyle, tableHead, tableBody)
+            break
+          case 'tableList':
+            // console.log('tableList',options.tableinfo.width);
+            let table = {
+              tableinfo: {
+                left: 500,
+                top: 300,
+                row: 3,
+                col: 3,
+                width: 184,
+                height: 134,
+                titleLineHeight: 52,
+                bodyLineHeight: 40,
+                times: 5,
+                animate: 0,
+                borderWidth: 1,
+                borderColor: '#ffff00',
+                borderType: 0,
+                bgColors: ['#A4CFFC', '#AACF98']
+
+              },
+              tableList: [{
+                type: 0,
+                col: 1,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 16,
+                fontColor: '#000000',
+                value: '中国',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 0,
+                col: 2,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 16,
+                fontColor: '#000000',
+                value: '标题',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 0,
+                col: 3,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 16,
+                fontColor: '#000000',
+                value: '加油啊',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 1,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'A列值',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: '',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 2,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'B列值',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: '',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 3,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 12,
+                fontColor: '#ff0000',
+                value: 'C列值',
+                bgcolor: '#EEEEEE',
+                position: 9,
+                field: '',
+                fieldType: 0
+              }]
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.tableList(canvas, table)
+
+            setTimeout(() => {
+              // console.warn(canvasObject.table);
+              that.setActiveObject(canvasObject.table.group)
+              canvasObject.table.group.setCoords()
+              that.canvas.add(canvasObject)
+              // that.setTop() // 遮罩置顶
+            }, 100)
+
+            break
+
+          default:
+
+            // ----------------------------------------------------------------------------------------其他
+            console.log('default')
+        }
+
+        // console.warn('name:'+ name,canvasObject);
+
+        if (name === 'tableList') {
+          this.setTop() // 遮罩置顶
+          this.canvas.renderAll()
+          resolve(canvasObject)
+          // return canvasObject;
+        } else {
+          canvasObject.setCoords()
+          this.setActiveObject(canvasObject)
+          this.canvas.add(canvasObject)
+
+          this.setTop() // 遮罩置顶
+          this.canvas.renderAll()
+
+          resolve(canvasObject)
+
+          // return canvasObject;
+        }
+      })
     }
   }
 }
@@ -851,7 +2401,7 @@ export default {
 <style scoped>
 .bigbox{
   position:relative;
-  /* max-height: 100vh; */
+  max-height: 100vh;
   overflow: hidden;
   height: 100%;
 }

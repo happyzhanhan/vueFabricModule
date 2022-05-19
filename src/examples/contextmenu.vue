@@ -22,7 +22,7 @@
 <script>
 import Tree from './Tree.vue'
 export default {
-  name: 'contextmenu',
+  name: 'vueContextMenu',
   components: {
     Tree
   },
@@ -108,6 +108,7 @@ export default {
   background: #ffffff;
   top: 0;
   left: 0;
+  padding: 0;
   border-radius: 2px;
   box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.05), 0px 6px 16px 0px rgba(0, 0, 0, 0.08), 0px 3px 6px -4px rgba(0, 0, 0, 0.12);
   font-family: PingFangSC-Regular, PingFang SC, 'Courier New', Courier, monospace;
