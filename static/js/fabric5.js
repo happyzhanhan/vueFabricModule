@@ -13733,6 +13733,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     content:this.content,
 
                     barcodeType: this.barcodeType, //条码类型
+                    selectable: this.selectable,
+                    hasControls: this.hasControls,
 
                 };
 

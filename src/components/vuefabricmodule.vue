@@ -13,7 +13,7 @@ import html2canvas from 'html2canvas'
 import vueContextMenu from '../examples/contextmenu.vue'
 
 // import { on, off } from '../examples/event' // 事件监听
-// import Utils from '../utils/utils'
+import Utils from '../utils/utils'
 // import initAligningGuidelines from '../utils/guidelines'
 // require('../../static/js/fabric5.js')
 
@@ -134,6 +134,38 @@ export default {
     },
     idno (val, oldval) {
       this.cid = val
+    },
+    boxWidth (val, oldval) {
+      if (val !== oldval) {
+        this.canvas.setWidth(val)
+        this.canvas.setHeight(this.boxHeight)
+        this.changeBigZoom()
+        setTimeout(() => {
+          if (this.zoom !== 1) {
+            this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
+          }
+        }, 100)
+
+        this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
+        this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
+        this.setCursor(99)
+      }
+    },
+    boxHeight (val, oldval) {
+      if (val !== oldval) {
+        this.canvas.setWidth(this.boxWidth)
+        this.canvas.setHeight(val)
+        this.changeBigZoom()
+        setTimeout(() => {
+          if (this.zoom !== 1) {
+            this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
+          }
+        }, 100)
+
+        this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
+        this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
+        this.setCursor(99)
+      }
     }
   },
   mounted () {
@@ -198,6 +230,7 @@ export default {
     fabric.Object.prototype.cornerDashArray = [5, 3]
     // eslint-disable-next-line no-undef
     fabric.Object.prototype.hasControls = true
+    this.canvas.skipTargetFind = false
 
     this.canvas.setWidth(this.boxWidth)
     this.canvas.setHeight(this.boxHeight)
@@ -211,7 +244,6 @@ export default {
 
     this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
-    this.canvas.skipTargetFind = false
     this.setCursor(99)
 
     document.onkeydown = function (e) {
@@ -351,15 +383,15 @@ export default {
         fill: JSON.parse(JSON.stringify(options.backgroundColor)),
 
         component: 'canvasbg',
-        type: 'sBg',
+        type: 'Rect',
         originX: 'left',
         originY: 'top',
         name: 'background',
         selectable: false,
         hasControls: false,
-        evented: false,
+        evented: true,
         visible: true,
-        isType: 'Rect',
+        isType: 'sBg',
         isDiff: 'none',
         flipX: false,
         flipY: false,
@@ -383,21 +415,21 @@ export default {
     setTop () {
       let objects = this.canvas.getObjects()
       objects.forEach((obj) => {
-        if (obj.type === 'sMask') {
+        if (obj.isType === 'sMask') {
           // console.log('遮罩置顶')
           obj.zIndex = -1
           obj.bringToFront()
           this.canvas.renderTop()
           this.canvas.renderAll()
         }
-        if (obj.type === 'sRuler') {
+        if (obj.isType === 'sRuler') {
           // console.log('遮罩置顶')
           obj.zIndex = -1
           obj.bringToFront()
           this.canvas.renderTop()
           this.canvas.renderAll()
         }
-        if (obj.type === 'sBg') {
+        if (obj.isType === 'sBg') {
           // console.log('背景置底')
           obj.zIndex = -5
           obj.sendToBack()
@@ -430,6 +462,7 @@ export default {
       // console.log(bg)
       that.canvas.remove(...that.canvas.getObjects('sMask'))
       const pathOption = {
+        type: 'Rect',
         selectable: false,
         fill: color,
         hoverCursor: 'default',
@@ -449,7 +482,7 @@ export default {
         lockScalingY: true,
         lockUniScaling: true,
         name: 'sMask',
-        type: 'sMask'
+        isType: 'sMask'
       }
       // eslint-disable-next-line no-undef
       const rect1 = new fabric.Rect({
@@ -654,7 +687,7 @@ export default {
       let objects = this.canvas.getObjects()
       let returndata
       objects.forEach((one) => {
-        if (one.type === 'sBg') {
+        if (one.isType === 'sBg') {
           returndata = one
         }
       })
@@ -733,6 +766,7 @@ export default {
 
       // eslint-disable-next-line no-undef
       let rulerPath = new fabric.Group([...objectline, ...objecttext, ...objectline2, ...objectline3], {
+        type: 'line',
         originX: 'left',
         originY: 'top',
         selectable: false,
@@ -747,7 +781,7 @@ export default {
         name: 'sRuler',
         left: params.left,
         top: params.top - params.gridHeight,
-        type: 'sRuler',
+        isType: 'sRuler',
         evented: false
       })
       that.canvas.add(rulerPath)
@@ -818,6 +852,7 @@ export default {
 
       // eslint-disable-next-line no-undef
       let rulerPath = new fabric.Group([...objectline, ...objecttext, ...objectline2, ...objectline3], {
+        type: 'line',
         originX: 'left',
         originY: 'top',
         selectable: false,
@@ -832,7 +867,7 @@ export default {
         name: 'sRuler',
         left: params.left - params.gridWidth,
         top: params.top,
-        type: 'sRuler',
+        isType: 'sRuler',
         evented: false
       })
       that.canvas.add(rulerPath)
@@ -1312,6 +1347,7 @@ export default {
             newOptions = {
               ...options,
               isType: 'Rectangle',
+              fill: options.color ? options.color : '#000000',
               name: options.name ? options.name : 'Rectangle',
               rx: options.rx ? options.rx : 15,
               ry: options.ry ? options.ry : 15
@@ -1326,34 +1362,11 @@ export default {
               e.target.set('scaleY', 1)
             })
             break
-          case 'Parallelogram': // ----------------------------------------------------------------------------------------平行四边形
-            newOptions = {
-              ...options,
-              isType: 'Parallelogram',
-              name: options.name ? options.name : 'Parallelogram',
-              rx: 0,
-              ry: 0,
-              skewX: options.skewX ? options.skewX : -45,
-              skewY: 0 // 暂不允许y轴变形吧 options.skewY?options.skewY:0,
-            }
-            // eslint-disable-next-line no-undef
-            canvasObject = new fabric.Rect({...newOptions}) // 创建
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: false,
-              ml: false,
-              mr: false,
-              mt: false,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
-            break
           case 'Circle': // ----------------------------------------------------------------------------------------椭圆形
             newOptions = {
               ...options,
               isType: 'Circle',
+              fill: options.color ? options.color : '#000000',
               name: options.name ? options.name : 'Circle',
               rx: options.width / 2, // options.rx?options.rx:15,
               ry: options.height / 2 // options.ry?options.ry:15,
@@ -1368,27 +1381,6 @@ export default {
               e.target.set('scaleY', 1)
             })
             break
-          case 'EqualCircle': // ----------------------------------------------------------------------------------------正圆
-            newOptions = {
-              ...options,
-              isType: 'EqualCircle',
-              name: options.name ? options.name : 'EqualCircle',
-              radius: options.width / 2
-            }
-            // eslint-disable-next-line no-undef
-            canvasObject = new fabric.Circle({...newOptions}) // 创建
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: false,
-              ml: false,
-              mr: false,
-              mt: false,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
-            break
           case 'Dottedline': // ----------------------------------------------------------------------------------------线段
             newOptions = {
               ...options,
@@ -1396,7 +1388,7 @@ export default {
               name: options.name ? options.name : 'Dottedline',
               DottedlineType: options.DottedlineType ? options.DottedlineType : 1,
               strokeDashArray: options.DottedlineType === 3 ? [10, 4, 3, 4] : (options.DottedlineType === 2 ? [8, 2] : [0, 0]),
-              stroke: options.stroke ? options.stroke : '#000000',
+              stroke: options.color ? options.color : '#000000',
               strokeWidth: options.strokeWidth
             }
             let x1 = -this.xLeft + options.left
@@ -1424,6 +1416,31 @@ export default {
               e.target.set('scaleY', 1)
             })
             break
+
+          case 'Parallelogram': // ----------------------------------------------------------------------------------------平行四边形
+            newOptions = {
+              ...options,
+              isType: 'Parallelogram',
+              name: options.name ? options.name : 'Parallelogram',
+              rx: 0,
+              ry: 0,
+              skewX: options.skewX ? options.skewX : -45,
+              skewY: 0 // 暂不允许y轴变形吧 options.skewY?options.skewY:0,
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Rect({...newOptions}) // 创建
+            break
+          case 'EqualCircle': // ----------------------------------------------------------------------------------------正圆
+            newOptions = {
+              ...options,
+              isType: 'EqualCircle',
+              name: options.name ? options.name : 'EqualCircle',
+              radius: options.width / 2
+            }
+            console.log(newOptions)
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Circle({...newOptions}) // 创建
+            break
           case 'EqualTriangle': // ----------------------------------------------------------------------------------------等边三角
             newOptions = {
               ...options,
@@ -1432,20 +1449,8 @@ export default {
               isType: 'EqualTriangle',
               name: options.name ? options.name : 'EqualTriangle'
             }
-            console.log(newOptions)
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.Triangle({...newOptions}) // 创建
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: false,
-              ml: false,
-              mr: false,
-              mt: false,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
             break
           case 'star':// -----------------------------------------------------------------五角星
 
@@ -1548,62 +1553,18 @@ export default {
 
           case 'Image': // ----------------------------------------------------------------------------------------图片
             canvasObject = await that.createURLImage(options)
-            // console.log(canvasObject);
-            //  return canvasObject;
             break
-          case 'Image2': // ----------------------------------------------------------------------------------------图片
-            canvasObject = await that.createURLImage(options)
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: false,
-              ml: false,
-              mr: false,
-              mt: false,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
-            return canvasObject
-          case 'Image3': // ----------------------------------------------------------------------------------------图片
-            canvasObject = await that.createURLImage(options)
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: true,
-              ml: true,
-              mr: true,
-              mt: true,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
-            return canvasObject
-
           case 'Icon': // ----------------------------------------------------------------------------------------图片
             canvasObject = await that.createIcon(options)
-
-            canvasObject.setControlsVisibility({ // 上中、下中、左中、右中 取消
-              bl: true,
-              br: true,
-              mb: true,
-              ml: true,
-              mr: true,
-              mt: true,
-              mtr: true,
-              tl: true,
-              tr: true
-            })
-            resolve(canvasObject)
-            return canvasObject
+            break
           case 'duanImage':
             canvasObject = await that.createDuan(options)
-            console.warn(canvasObject)
-            return canvasObject
+            break
           case 'equalImage':
             // console.warn('equalImage',options);
-            canvasObject = that.createEqualImageImage(options)
-            return canvasObject
+            canvasObject = await that.createEqualImageImage(options)
+            // return canvasObject
+            break
           case 'Barcode': // ----------------------------------------------------------------------------------------条码
             canvasObject = await that.createBarcode(options)
             resolve(canvasObject)
@@ -2389,10 +2350,542 @@ export default {
           this.canvas.renderAll()
 
           resolve(canvasObject)
-
           // return canvasObject;
         }
       })
+    },
+    // 创建非跨域图片最大缩放图片
+    createEqualImageImage (options) {
+      // console.log('00000000000000000000');
+
+      // let that = this
+      let canvas = this.canvas
+
+      return new Promise(function (resolve, reject) {
+        options.url = options.url ? options.url : './static/images/img.svg'
+        var img = document.createElement('img')
+
+        img.crossOrigin = 'Anonymous'
+        img.src = options.url
+
+        img.onload = function () {
+          let imgwidth = 0
+          let imgheight = 0
+
+          if (img.width / img.height > options.width / options.height) {
+            imgwidth = options.width
+            imgheight = options.width / (img.width / img.height)
+          } else {
+            imgheight = options.height
+            imgwidth = options.height * (img.width / img.height)
+          }
+
+          // eslint-disable-next-line no-undef
+          var canvasImage = new fabric.Image(img, {
+            id: options.id ? options.id : 'image',
+            isType: 'equalImage-img',
+            padding: 0,
+            flipX: false,
+            flipY: false,
+            stopContextMenu: true, //  禁掉鼠标右键默认事件
+            minScaleLimit: 0.0001, //  最小限制
+            lockSkewingX: true, //  禁掉按住shift时的变形
+            lockSkewingY: true,
+
+            originX: 'center',
+            originY: 'center',
+
+            scaleX: imgwidth / img.width,
+            scaleY: imgheight / img.height,
+
+            angle: options.angle ? options.angle : 0,
+            name: options.name ? options.name : 'Image',
+
+            stroke: options.stroke ? options.stroke : '', // 边框颜色
+            strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+            strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+            selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+            visible: options.visible !== false ? true : options.visible, // 元素是否可见
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+          // eslint-disable-next-line no-undef
+          var rect = new fabric.Rect({
+            isType: 'equalImage-bg',
+            padding: 0,
+            originX: 'center',
+            originY: 'center',
+            width: options.width ? options.width : 100,
+            height: options.height ? options.height : 100,
+            fill: options.background ? options.background : '#eeeeee'
+
+          })
+
+          // eslint-disable-next-line no-undef
+          var group = new fabric.Group([rect, canvasImage], {
+            isType: 'equalImage',
+            left: options.left,
+            top: options.top,
+            width: options.width,
+            height: options.height,
+            originX: 'left',
+            originY: 'top',
+            padding: 0,
+            id: options.id,
+
+            hasRotatingPoint: true,
+            lockScalingFlip: true,
+            minScaleLimit: 0.2,
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+
+          group.on('scaling', function (e) {
+            let newimgwidth = 0
+            let newimgheight = 0
+
+            if (img.width / img.height > (group.width * group.scaleX) / (group.height * group.scaleY)) {
+              newimgwidth = (group.width * group.scaleX)
+              newimgheight = (group.width * group.scaleX) / (img.width / img.height)
+              group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+              group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+            } else {
+              newimgheight = (group.height * group.scaleY)
+              newimgwidth = (group.height * group.scaleY) * (img.width / img.height)
+              group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+              group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+            }
+            canvas.requestRenderAll()
+            canvas.renderAll()
+          })
+
+          group.setControlsVisibility({
+            bl: true,
+            br: true,
+            mb: true,
+            ml: true,
+            mr: true,
+            mt: true,
+            mtr: true,
+            tl: true,
+            tr: true
+          })
+          // canvas.add(group) // 把图片添加到画布上
+
+          // if (options && options.registeObjectEvent) {
+          //   Utils.registeObjectEvent(that, img)
+          // }
+          // group.setCoords()
+          // that.setActiveObject(group)
+          // canvas.renderAll.bind(canvas)
+
+          resolve(group)
+        }
+      })
+    },
+    // 获取创建的图片结果
+    createURLImage (options) {
+      return new Promise(function (resolve, reject) {
+        options.src = options.src ? options.src : './static/images/img.svg'
+
+        // console.log(options.src);
+        var downImg = new Image()
+        downImg.crossOrigin = 'anonymous'
+        downImg.src = options.src
+
+        downImg.onload = function () {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId,
+              type: options.type ? options.type : 0,
+              isType: 'Image',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'Image',
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+              width: img.width,
+              height: img.height,
+              stroke: options.stroke ? options.stroke : '', // 边框颜色
+              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible, // 元素是否可见
+              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+            })
+            resolve(img)
+          })
+        }
+        downImg.onerror = function (err) {
+          console.warn(err)
+          options.src = './static/images/img.svg'
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              type: options.type ? options.type : 0,
+              isType: 'Image',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'Image',
+              scaleX: options.scaleX,
+              scaleY: options.scaleY,
+              width: options.width,
+              height: options.height,
+              stroke: options.stroke ? options.stroke : '', // 边框颜色
+              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible, // 元素是否可见
+
+              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+            })
+            resolve(img)
+          })
+        }
+      })
+    },
+    // 获取创建的图片结果
+    createIcon (options) {
+      return new Promise(function (resolve, reject) {
+        options.src = options.src ? options.src : './static/images/img.svg'
+
+        var downImg = new Image()
+        downImg.crossOrigin = 'anonymous'
+        downImg.src = options.src
+
+        downImg.onload = function () {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              type: options.type ? options.type : 0,
+              isType: 'Icon',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'Image',
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+              width: img.width,
+              height: img.height,
+              stroke: options.stroke ? options.stroke : '', // 边框颜色
+              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible !== false ? true : options.visible, // 元素是否可见
+              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+            })
+            // canvas.add(img)
+            // img.setCoords()
+            // that.setActiveObject(img)
+            // canvas.renderAll.bind(canvas)
+            // that.setTop()
+
+            resolve(img)
+          })
+        }
+        downImg.onerror = function () {
+          options.src = './static/images/img.svg'
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              type: options.type ? options.type : 0,
+              isType: 'Icon',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'Image',
+              scaleX: options.scaleX,
+              scaleY: options.scaleY,
+              width: options.width,
+              height: options.height,
+              stroke: options.stroke ? options.stroke : '', // 边框颜色
+              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible !== false ? true : options.visible, // 元素是否可见
+
+              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+            })
+            resolve(img)
+          })
+        }
+      })
+    },
+    // 创建段码屏图片
+    createDuan (options) {
+      let that = this
+      let canvas = this.canvas
+      return new Promise(function (resolve, reject) {
+        options.src = options.src ? options.src : './static/images/img.svg'
+        var downImg = new Image()
+        downImg.crossOrigin = 'anonymous'
+        downImg.src = options.src
+
+        downImg.onload = function () {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              isType: 'duan',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: true,
+              lockMovementY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'duanImage',
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+              width: img.width,
+              height: img.height,
+
+              selectable: false, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible, // 元素是否可见
+              hasRotatingPoint: false, // 元素是否旋转
+              hasControls: false
+
+            })
+
+            canvas.add(img) // 把图片添加到画布上
+            img.setCoords()
+            that.setActiveObject(img)
+            canvas.renderAll.bind(canvas)
+            that.setTop() // 遮罩置顶
+
+            resolve(img)
+          })
+        }
+        downImg.onerror = function () {
+          options.src = './static/images/img.svg'
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              type: options.type ? options.type : 0,
+              isType: 'duan',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: true,
+              lockMovementY: true,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle ? options.angle : 0,
+              name: options.name ? options.name : 'duanImage',
+
+              scaleX: options.scaleX,
+              scaleY: options.scaleY,
+              width: options.width,
+              height: options.height,
+              stroke: options.stroke ? options.stroke : '', // 边框颜色
+              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+              selectable: false, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible !== false ? true : options.visible, // 元素是否可见
+              hasControls: false,
+              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint // 元素是否旋转
+            })
+            canvas.add(img) // 把图片添加到画布上
+            that.activecanvaobjs.push(img) // 设置活跃元素
+            that.activeobj = img
+            if (options && options.registeObjectEvent) {
+              Utils.registeObjectEvent(that, img)
+            }
+            img.setCoords()
+            that.setActiveObject(img)
+            canvas.renderAll.bind(canvas)
+            that.setTop() // 遮罩置顶
+
+            resolve(img)
+          })
+        }
+      })
+    },
+
+    // 改变段码屏图片
+    changeURL (id, iconUrl) {
+      let objects = this.getObjectsNew()
+      let that = this
+      objects.forEach((one) => {
+        if (one.id === id && one.isType === 'duan') {
+          let img = new Image()
+          img.src = iconUrl
+          img.onload = () => {
+            one._element.src = iconUrl
+            that.setTop()
+          }
+        }
+      })
+    },
+    // 元素对象转成json
+    toJson () {
+      let json = this.canvas.toJSON()
+      return json
+    },
+    // 为元素设置句柄显示
+    setControlsVisibility (obj, options) {
+      obj.setControlsVisibility({ // 上中、下中、左中、右中 取消
+        bl: true,
+        br: true,
+        mb: true,
+        ml: true,
+        mr: true,
+        mt: true,
+        mtr: true,
+        tl: true,
+        tr: true,
+        ...options
+      })
+    },
+    // 返回point 坐标
+    getLocalPointer () {
+      let cur = this.getEditObj()
+      cur.getLocalPointer()
+    },
+    // 提前加载图片
+    loadImage (url) {
+      return new Promise((resolve, reject) => {
+        let img = new Image()
+        img.setAttribute('crossOrigin', 'Anonymous')
+        img.src = url
+        img.onload = async () => {
+          resolve(img)
+        }
+        img.onerror = async (err) => {
+          reject(err)
+        }
+      })
+    },
+    // 传入元素(类型Image, equalImage)改变图片
+    async setSrc (cur, src) {
+      if (cur.isType !== 'Image' && cur.isType !== 'equalImage') { return }
+      let oldwidth = JSON.parse(JSON.stringify(cur.width * cur.scaleX))
+      let oldheight = JSON.parse(JSON.stringify(cur.height * cur.scaleY))
+      if (cur.isType === 'equalImage') { cur = cur.item(1) }
+      let img = await this.loadImage(src)
+      let newcur = cur.setElement(img)
+      newcur.set({
+        scaleX: oldwidth / img.width,
+        scaleY: oldheight / img.height
+      })
+      newcur.setCoords()
+      this.canvas.renderAll()
+      this.canvas.requestRenderAll()
     }
   }
 }
@@ -2401,8 +2894,6 @@ export default {
 <style scoped>
 .bigbox{
   position:relative;
-  max-height: 100vh;
   overflow: hidden;
-  height: 100%;
 }
 </style>
