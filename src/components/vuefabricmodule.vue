@@ -3126,7 +3126,6 @@ export default {
             color: options.color ? options.color : '#000000',
             height: options.height,
             name: options.name ? options.name : 'barcodeimg',
-            angle: options.angle,
             component: 'component',
             isType: 'barcodeimg',
             isDiff: 'static',
@@ -3165,7 +3164,6 @@ export default {
             copyId: options.copyId,
 
             name: options.name ? options.name : 'barcodebg',
-            angle: options.angle,
             component: 'component',
             isType: 'barcodebg',
             isDiff: 'static',
@@ -3192,7 +3190,6 @@ export default {
 
             name: options.name ? options.name : 'Barcode',
 
-            angle: options.angle,
             component: 'component',
             isType: 'Barcode',
             isDiff: 'static',
@@ -3264,6 +3261,9 @@ export default {
                     that.activeobj = canvasObject; */
 
           that.changeBarcodeImage(canvasObject) // 改变一下试试
+          canvasObject.set({
+            angle: options.angle
+          })
           resolve(canvasObject)
         }
         document.getElementById(barid).onerror = function () {

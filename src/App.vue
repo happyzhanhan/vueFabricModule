@@ -298,7 +298,8 @@ export default {
             hasRotatingPoint: false,
             imgText: '69012345679',
             color: '#f00',
-            visible: true
+            visible: true,
+            angle: 270
 
           }
           break
