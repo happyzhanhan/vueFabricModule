@@ -13736,6 +13736,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     selectable: this.selectable,
                     hasControls: this.hasControls,
 
+                    url: this.url,
+
                 };
 
 
@@ -32327,7 +32329,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
         type: 'tableList',
+        isType: 'tableList',
 
+        id: null,
         table:null,
         canvashead:null,
         canvasbody:null,
@@ -32823,7 +32827,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 }
             }
             table = JSON.parse(JSON.stringify(table));
-                this.tables = table;
+            this.tables = table;
             this.tableinfo = table.tableinfo;
 
             this.row = table.tableinfo.row;
@@ -32882,6 +32886,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 originX:"left",
                 originY:"top",
                 isType:"tableList",
+                component: 'component',
 
                 hasRotatingPoint:false,
                 lockScalingFlip:true,
@@ -32894,9 +32899,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             });
 
             this.grouplist = group;
+            this.id = table.tableinfo.id;
 
 
-            // console.log(canvas);
+            // console.log(group);
 
             canvas.add(group);
             group.setCoords();

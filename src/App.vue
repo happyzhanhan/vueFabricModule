@@ -35,13 +35,13 @@
       <button @click="draw('Dottedline')">线段</button>
     </div>
 
-    <!-- <div style="position: fixed; top:0; left:80px; display: flex; flex-direction: column;">
+    <div style="position: fixed; top:0; left:80px; display: flex; flex-direction: column;">
       <button @click="draw('Parallelogram')">平行四边形</button>
       <button @click="draw('EqualCircle')">正圆</button>
       <button @click="draw('EqualTriangle')">正三角形</button>
       <button @click="draw('star')">五角星</button>
       <button @click="draw('Hexagon')">六边形</button>
-    </div> -->
+    </div>
 
     <div style="position: fixed; top:0; left:180px; display: flex; flex-direction: column;">
       <button @click="draw('Image')">Image</button>
@@ -49,6 +49,28 @@
       <button @click="draw('duanImage')">duanImage</button>
       <button @click="draw('equalImage')">equalImage</button>
     </div>
+
+    <div style="position: fixed; top:0; left:280px; display: flex; flex-direction: column;">
+      <button @click="draw('Barcode')">Barcode</button>
+      <button @click="draw('Qrcode')">Qrcode</button>
+      <button @click="draw('table')">table</button>
+    </div>
+
+    <div style="position: fixed; top:0; left:380px; display: flex; flex-direction: column;">
+      <button @click="draw('Text')">Text</button>
+      <button @click="draw('Time')">Time</button>
+      <button @click="draw('Itext')">Itext</button>
+      <button @click="draw('Textbox')">Textbox</button>
+      <button @click="draw('TextRect')">TextRect</button>
+      <!-- <button @click="draw('TextRectBox')">TextRectBox</button> -->
+      <button @click="draw('Html')">Html</button>
+    </div>
+
+     <!-- <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
+      <button @click="draw('table')">table==tableList</button>
+      <button @click="draw('tableView')">tableView</button>
+      <button @click="draw('tableList')">tableList</button>
+    </div> -->
 
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
@@ -190,7 +212,7 @@ export default {
     },
     // 点击画组件
     async draw (name) {
-      this.id = this.id + 1
+      // this.id = this.id + 1
       let canvaobj, options
       let colors = ['#0ff', '#00f', '#000', '#f00', '#ff0', '#fff', '#eee', '#ccc', '#efe', '#ef5']
       let i = (Math.random() + '').charAt(3)
@@ -242,7 +264,7 @@ export default {
           let imgurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
             left: 10,
-            top: 10,
+            top: 200,
             width: 200,
             height: 100,
             src: imgurl,
@@ -255,8 +277,8 @@ export default {
         case 'equalImage':
           let url = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png'
           options = {
-            left: 10,
-            top: 10,
+            left: 220,
+            top: 200,
             width: 200,
             height: 100,
             src: url,
@@ -267,6 +289,103 @@ export default {
           console.log(imgnew)
           break
 
+        case 'Barcode':
+          options = {
+            left: 60,
+            top: 420,
+            width: 200,
+            height: 50,
+            hasRotatingPoint: false,
+            imgText: '69012345679',
+            color: '#f00',
+            visible: true
+
+          }
+          break
+
+        case 'Qrcode':
+          options = {
+            left: 300,
+            top: 420,
+            width: 50,
+            height: 50,
+            barcodeType: 0, // 0:原二维码 1:datamaxtri
+            hasRotatingPoint: false,
+            imgText: '69012345679',
+            color: '#f00',
+            lineColor: '#ff0000',
+            visible: true
+          }
+          break
+
+        case 'Text':
+          options = {
+            left: 22,
+            top: 500,
+            fontFamily: '微软雅黑',
+            width: 500,
+            height: 300,
+            fontSize: 20,
+            textdemo: '我是Text',
+
+            hasRotatingPoint: true,
+            visible: true
+
+            // fontWeight:'bold',
+            //  linethrough:true,
+            //  underline:true,
+            //  fontStyle:"italic"
+
+          }
+          break
+        case 'Time':
+          options = {
+            left: 150,
+            top: 500,
+            fontFamily: '微软雅黑',
+            width: 500,
+            fontSize: 20,
+            textdemo: '2022.05.23 15:23:12',
+
+            hasRotatingPoint: true,
+            visible: true
+
+            // fontWeight:'bold',
+            //  linethrough:true,
+            //  underline:true,
+            //  fontStyle:"italic"
+
+          }
+          break
+        case 'Itext':
+          options = {
+            left: 402,
+            top: 500,
+            fontFamily: '微软雅黑',
+            width: 200,
+            height: 200,
+            fontSize: 20,
+            textdemo: 'Itext',
+
+            hasRotatingPoint: true,
+            visible: true
+          }
+          break
+        case 'Textbox':
+          options = {
+            left: 502,
+            top: 500,
+            fontFamily: '微软雅黑',
+            width: 200,
+            height: 200,
+            fontSize: 20,
+            textdemo: 'Textbox',
+
+            hasRotatingPoint: true,
+            visible: true
+          }
+          break
+
         case 'TextRect':
           options = {
             left: 22,
@@ -274,7 +393,7 @@ export default {
             hasRotatingPoint: true,
             width: 400,
             height: 100,
-            fontColor: '#f00',
+            fontColor: '#00f',
             rectColor: '',
             /* stroke:'#f00', */
             strokeWidth: 0,
@@ -283,13 +402,13 @@ export default {
             xRight: 0,
             yBot: 0,
             fontFamily: '微软雅黑',
-            textAlign: 'right',
-            maxLines: 3,
+            textAlign: 'left',
+            maxLines: 10,
             omitStyleText: '...',
             omitStyle: 1,
             newline: '',
             minFontSize: 12,
-            isElasticSize: 2,
+            isElasticSize: 1,
             visible: true,
             fontSize: 20,
             textdemo: '123',
@@ -302,17 +421,12 @@ export default {
 
           }
           break
-
         case 'TextRectBox':
           options = {
             left: 60,
             top: 29,
             angle: 0, // 外部
             barcodeType: 10,
-
-            /* borderColor: "#f00",
-                    borderType: 3,
-                    lineWeight: 5, */
 
             color: '#000000',
             conRealResult: 1,
@@ -361,36 +475,39 @@ export default {
             visible: true
           }
           break
-        case 'Barcode':
-          options = {
-            left: 60,
-            top: 40,
-            width: 200,
-            height: 30,
-            hasRotatingPoint: false,
-            imgText: '69012345679',
-            color: '#f00',
-            visible: true
-
-          }
-          break
-        case 'Qrcode':
-          options = {
-            left: 100,
-            top: 40,
-            width: 50,
-            height: 50,
-            barcodeType: 1,
-            hasRotatingPoint: false,
-            imgText: '69012345679',
-            color: '#f00',
-            lineColor: '#ff0000',
-            visible: true
-          }
-          break
         case 'Html':
           options = {
             left: 200,
+            top: 40,
+            width: 186,
+            height: 50,
+            fontSize: 16,
+            content: '',
+            visible: true
+          }
+          break
+
+        case 'table':
+          options = {
+            left: 800,
+            top: 40,
+            visible: true
+          }
+          break
+        case 'tableView':
+          options = {
+            left: 600,
+            top: 40,
+            width: 186,
+            height: 50,
+            fontSize: 16,
+            content: '',
+            visible: true
+          }
+          break
+        case 'tableList':
+          options = {
+            left: 800,
             top: 40,
             width: 186,
             height: 50,
@@ -406,9 +523,9 @@ export default {
             visible: true
           }
       }
-      options.id = JSON.parse(JSON.stringify(this.id))
+      // options.id = JSON.parse(JSON.stringify(this.id))
       canvaobj = await this.$refs.canvas.createElement(name, options)
-      console.log('canvaobj:', canvaobj)
+      console.log('canvaobj:', canvaobj.id)
       // canvaobj.setControlsVisibility({
       //   mtr: false
       // })
@@ -434,8 +551,8 @@ export default {
     canvasToData (obj, name) {
       console.log('键盘移动回调：', name, obj)
     },
-    idAdd () {
-      console.log('复制新增')
+    idAdd (id) {
+      console.log('新增id:', id)
     },
     copy () {
       let copydata = this.$refs.canvas.copyData()
@@ -446,17 +563,7 @@ export default {
       this.$refs.canvas.getLocalPointer()
     },
     createImgae () {
-      let url = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png'
-      let options = {
-        left: 10,
-        top: 10,
-        width: 200,
-        height: 100,
-        src: url,
-        url: url,
-        visible: true
-      }
-      this.$refs.canvas.createImage(url, options)
+      console.log(1)
     }
   }
 }

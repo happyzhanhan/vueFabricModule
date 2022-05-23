@@ -1,5 +1,12 @@
 <template>
  <div class="bigbox" id="bigbox"  @contextmenu="showMenu">
+    <div style="position: fixed; top: -9999999999999999999px; left:800px; z-index:999999;">
+      <img id="barcode" />
+      <div id="barbox"></div>
+      <div  style="position: fixed; top: -9999999999999999999px; left:800px; z-index:999999;" id="datamatix"></div>
+      <img id="qrcode" :src="qrcodeImg" alt="" class="qrcodeImg">
+  </div>
+  <input type="text" id="code" style="position:fixed; top:-1000000px; z-index:9999;">
   <canvas id="canvas" ></canvas>
   <vue-context-menu :contextMenuData="contextMenuData"
                     @toTopLayer="toTopLayer" @toLastLayer="toLastLayer" @toNextLayer="toNextLayer" @toBottomLayer="toBottomLayer"
@@ -121,7 +128,10 @@ export default {
       },
       isMoveing: false, // 抓手可移动画布 ，箭头不可移动画布
       panning: false,
-      cid: 1 // 底层获取id
+      cid: 1, // 底层获取id
+      qrcodeImg: '',
+      xLeft: -200,
+      yTop: -100
     }
   },
   watch: {
@@ -350,6 +360,60 @@ export default {
       }
       that.$emit('mouse:move', e)
     })
+    this.canvas.on('mouse:over', function (options) {
+      let bound = options.target
+      if (bound) {
+        bound.set('opacity', 0.8)
+      }
+
+      if (options.target && options.target.id) {
+        canvas.contextContainer.strokeStyle = 'rgba(0,98,178,1)'
+        canvas.contextContainer.lineWidth = 2
+        canvas.contextContainer.setLineDash([5, 3])
+        canvas.forEachObject(function (obj) {
+          if (obj && obj.id !== undefined) {
+            if (obj.component === 'component' && obj.isType !== 'TextRect-text' && options.target.id === obj.id) {
+              var bound = obj.getBoundingRect()
+
+              canvas.contextContainer.strokeRect(
+                bound.left - 1,
+                bound.top - 1,
+                bound.width + 1,
+                bound.height + 1
+              )
+            }
+          }
+        })
+      }
+
+      that.$emit('mouse:over', options)
+    })
+    this.canvas.on('mouse:out', function (options) {
+      let bound = options.target
+      if (bound) {
+        bound.set('opacity', 1)
+      }
+      that.canvas.renderAll()
+      that.$emit('mouse:out', options)
+    })
+    this.canvas.on('object:scaled', function (options) {
+      that.$emit('object:scaled', options)
+      if (options.target.isType === 'Barcode') { // 条形码的位置显示
+        options.target.set('height', parseInt(options.target.height * options.target.scaleY))
+        options.target.set('scaleY', 1)
+        options.target.item(0).set('height', parseInt(options.target.height * options.target.scaleY))
+        options.target.item(1).set('height', parseInt(options.target.height * options.target.scaleY))
+        that.changeBarcodeImage(options.target)
+      }
+      if (options.target.isType === 'Qrcode') { // 二维码放大缩小时重新获取图片，二维码图片不失真
+        options.target.set('width', parseInt(options.target.width * options.target.scaleX))
+        options.target.set('height', parseInt(options.target.height * options.target.scaleY))
+        options.target.set('scaleX', 1)
+        options.target.set('scaleY', 1)
+        that.changeQrcodeImage(options.target)
+        // that.setActiveObject(options.target)
+      }
+    })
   },
   methods: {
     // 初始化背景
@@ -374,6 +438,8 @@ export default {
         height: options.height ? options.height : this.height,
         backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : '#fff'
       }
+      this.xLeft = -left
+      this.yTop = -top
       // eslint-disable-next-line no-undef
       let rect = new fabric.Rect({
         left: left,
@@ -1000,8 +1066,22 @@ export default {
       this.$emit('deleteidsdata', [obj.id])
       this.canvas.remove(obj)
     },
+    // 删除指定元素
+    removeObj (obj) {
+      this.canvas.remove(obj)
+      this.canvas.renderAll()
+    },
+    // 新增指定元素
+    addObj (obj) {
+      this.canvas.add(obj)
+      this.canvas.renderAll()
+    },
     // 复制粘贴
     copypaste () {
+      let clipboard = this.canvas.getActiveObject()
+      if (clipboard === undefined || clipboard == null) {
+        return false
+      }
       let copydata = this.copyData()
       this.clipboard = copydata // 仅本画布复制保存
       this.paste(copydata)
@@ -1037,13 +1117,16 @@ export default {
       if (text.substring(0, 7) !== '#ZKONG#') {
         return
       }
+      let that = this
       let _clipboard = JSON.parse(unescape(text.substring(7, text.length)))
       if (_clipboard instanceof Array) {
         let canvaobjs = []
         this.activecanvaobjs = []
         for (var i in _clipboard) {
-          this.$emit('idAdd')
           this.cid = this.cid + 1
+          this.$emit('idAdd', this.cid)
+          console.log('多元素复制')
+
           let object = _clipboard[i]
           object.copyId = JSON.parse(JSON.stringify(object.id))
           object.id = this.cid
@@ -1055,14 +1138,6 @@ export default {
             object.width = object.width * object.scaleX
             object.height = object.height * object.scaleY
             object.scaleX = object.scaleY = 1
-          }
-          if (object.isType === 'Text') {
-            object.width = parseInt(object.width * object.scaleX)
-            object.height = parseInt(object.height * object.scaleY)
-            object.scaleX = 1
-            object.scaleY = 1
-            this.$emit('idAdd') // this.cid = this.cid + 1;
-            this.cid = this.cid + 1
           }
           if (object.isType === 'TextRect') {
             object.width = parseInt(object.width * object.scaleX)
@@ -1111,17 +1186,17 @@ export default {
         })
         this.canvas.setActiveObject(sel)
       } else {
-        console.log('单元素')
+        this.cid = this.cid + 1
+        this.$emit('idAdd', this.cid)
+        console.log('单元素', _clipboard.isType)
         // console.log('单个元素',_clipboard)
         if (_clipboard.isType === 'TextRect-text') {
           return
         }
-        this.$emit('idAdd') // this.cid = this.cid + 1;
-        this.cid = this.cid + 1
         let canvaobj
         _clipboard.copyId = JSON.parse(JSON.stringify(_clipboard.id))
-        _clipboard.id = this.cid
-        _clipboard.zIndex = this.cid
+        _clipboard.id = that.cid
+        _clipboard.zIndex = that.cid
         _clipboard.top = _clipboard.top + 10 + this.yTop
         _clipboard.left = _clipboard.left + 10 + this.xLeft
         _clipboard.visible = true
@@ -1136,12 +1211,15 @@ export default {
           _clipboard.scaleX = 1
           _clipboard.scaleY = 1
         }
-        if (_clipboard.isType === 'Text') {
-          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
-          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
-          _clipboard.scaleX = 1
-          _clipboard.scaleY = 1
-        }
+        // if (_clipboard.isType === 'tablelist') {
+
+        // }
+        // if (_clipboard.isType === 'Text') {
+        //   _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+        //   _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+        //   _clipboard.scaleX = 1
+        //   _clipboard.scaleY = 1
+        // }
         if (_clipboard.isType === 'Icon') {
           _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
           _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
@@ -1177,11 +1255,9 @@ export default {
             'underline': _clipboard.textRectData.underline ? _clipboard.textRectData.underline : false,
             'fontStyle': _clipboard.textRectData.fontStyle ? _clipboard.textRectData.fontStyle : 'normal'
           })
-          this.$emit('idAdd') // this.cid = this.cid + 1;
-          this.cid = this.cid + 1
         } else {
-          console.log('单个元素复制出来', _clipboard)
-          canvaobj = await this.createElement(_clipboard.isType, _clipboard)
+          console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height)
+          canvaobj = await this.createElement(_clipboard.isType, JSON.parse(JSON.stringify(_clipboard)))
         }
         if (canvaobj) {
           this.$emit('copydata', _clipboard, [canvaobj.id], _clipboard)
@@ -1223,28 +1299,36 @@ export default {
       this.canvas.setActiveObject(obj)
       this.canvas.renderAll()
     },
-    // 删除当前活跃元素
+    // 删除当前活跃元素 (键盘Delete)
     removeActiveObject () {
       let obj = this.canvas.getActiveObject()
+      if (!obj) { return false }
       let deleteIds = []
       if (obj._objects) { // 多选
         this.canvas.discardActiveObject()
         for (var i in obj._objects) {
-          deleteIds.push(obj._objects[i].id)
+          if (obj._objects[i].id !== undefined) {
+            deleteIds.push(obj._objects[i].id)
+          }
           this.canvas.remove(obj._objects[i])
         }
-        deleteIds.push(obj.id)
+        if (obj.id !== undefined) {
+          deleteIds.push(obj.id)
+        }
         this.canvas.remove(obj) // 删除条码起作用
       } else { // 单选
         if (obj.isType === 'TextRect-text') { // 如果是组合文本上的文本不可删除
           return
         }
-        deleteIds.push(obj.id)
+        if (obj.id !== undefined) {
+          deleteIds.push(obj.id)
+        }
         this.canvas.remove(obj)
       }
 
       this.canvas.renderAll()
-      this.$emit('deleteidsdata', deleteIds)
+      let newset = new Set(deleteIds)
+      this.$emit('deleteidsdata', Array.from(newset))
       return deleteIds
     },
     // 取消所有活跃元素
@@ -1272,15 +1356,21 @@ export default {
         return
       }
       let canvasObject, newOptions
+      let that = this
+      if (options.id === undefined) {
+        that.cid = that.cid + 1
+        this.$emit('idAdd', that.cid)
+      }
+      console.log('新增时ID', options.id)
+
       // console.log(options);
       return new Promise(async (resolve, reject) => {
         let canvas = this.canvas
-        let that = this
 
         options = {
           ...options,
-          id: options.id ? options.id : 1,
-          zIndex: options.zIndex ? options.zIndex : 1,
+          id: options.id ? options.id : that.cid,
+          zIndex: options.zIndex ? options.zIndex : that.cid,
 
           component: 'component',
           isDiff: 'static',
@@ -1317,7 +1407,8 @@ export default {
 
           hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint,
 
-          screenIndex: options.screenIndex ? options.screenIndex : 0
+          screenIndex: options.screenIndex ? options.screenIndex : 0,
+          textdemo: options.textdemo ? options.textdemo : 'TEXT'
         }
         // console.warn(options.visible);
 
@@ -1455,6 +1546,7 @@ export default {
           case 'star':// -----------------------------------------------------------------五角星
 
             options = {
+              ...options,
               width: 180,
               height: 188,
               left: options.left,
@@ -1485,6 +1577,8 @@ export default {
             ]
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.Polygon(startpoints, {
+              ...options,
+              component: 'component',
               isType: 'star',
               originX: 'left',
               originY: 'top',
@@ -1525,10 +1619,12 @@ export default {
             })
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.Polygon(points, {
+              ...options,
               originX: 'left',
               originY: 'top',
               left: options.left,
               top: options.top,
+              component: 'component',
               isType: 'Hexagon',
               fill: '#ff0000',
               /* stroke:'green',
@@ -1567,21 +1663,19 @@ export default {
             break
           case 'Barcode': // ----------------------------------------------------------------------------------------条码
             canvasObject = await that.createBarcode(options)
-            resolve(canvasObject)
-            return canvasObject
-          case 'Barcodematrix': // ----------------------------------------------------------------------------------------条码
-            canvasObject = await that.createBarcodedatamatrix(options)
-            resolve(canvasObject)
-            return canvasObject
+            break
+            // resolve(canvasObject)
+            // return canvasObject
           case 'Qrcode': // ----------------------------------------------------------------------------------------二维码
             options.imgText = options.imgText ? options.imgText : '123456789'
             if (options.barcodeType === 0) {
 
             }
             canvasObject = await that.createQrcode(options)
-            resolve(canvasObject)
-            return canvasObject
-          case 'Text': // -----------------------------------------------------------------------------------------可编辑文本
+            break
+            // resolve(canvasObject)
+            // return canvasObject
+          case 'Text': // -----------------------------------------------------------------------------------------不可编辑文本
             canvasObject = await this.createText(options.textdemo, options)
             break
           case 'Time': // ----------------------------------------------------------------------------------------- 不可编辑时间
@@ -1604,7 +1698,7 @@ export default {
               tr: true
             })
             break
-          case 'Itext':
+          case 'Itext': // -----------------------------------------------------------------------------------------可单行编辑文本
             newOptions = {
               ...options,
               isType: 'Itext',
@@ -1614,12 +1708,13 @@ export default {
             canvasObject = new fabric.IText(options.textdemo, {...newOptions})
 
             break
-          case 'Textbox':
+          case 'Textbox':// -----------------------------------------------------------------------------------------可多行编辑文本
             newOptions = {
               ...options,
               isType: 'Textbox',
               name: options.name ? options.name : 'Textbox',
-              breakWords: true
+              breakWords: true,
+              splitByGrapheme: true
 
             }
             // eslint-disable-next-line no-undef
@@ -1627,7 +1722,7 @@ export default {
 
             break
 
-          case 'TextRectBox':
+          case 'TextRectBox': // ---------------------------文本组合研究
 
             let newOptions1 = {
 
@@ -2017,8 +2112,7 @@ export default {
             })
 
             break
-          case 'TextRect':
-            // -----------------------------------------------------------------------------------------可编辑文本加： 边距 背景 边框
+          case 'TextRect': // -------------------------------------------------可编辑文本加： 边距 背景 边框
             // console.warn('文本矩形参数：',options.zIndex);
 
             const rectOptions = {
@@ -2153,6 +2247,116 @@ export default {
 
             console.log('999999999999999999999999', canvasObject)
             break
+
+          case 'table':
+            options = {
+              tableinfo: {
+                id: options.id,
+                left: options.left,
+                top: options.top,
+                row: 3,
+                col: 3,
+                width: 184,
+                height: 134,
+                titleLineHeight: 52,
+                bodyLineHeight: 40,
+                times: 5,
+                animate: 0,
+                borderWidth: 1,
+                borderColor: '#ffff00',
+                borderType: 0,
+                bgColors: ['#A4CFFC', '#AACF98']
+
+              },
+              tableList: [{
+                type: 0,
+                col: 1,
+                width: 60,
+                height: 50,
+                fontType: '',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'A列',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 0,
+                col: 2,
+                width: 60,
+                height: 50,
+                fontType: '',
+                fontSize: 16,
+                fontColor: '#000000',
+                value: 'B列',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 0,
+                col: 3,
+                width: 60,
+                height: 50,
+                fontType: '',
+                fontSize: 16,
+                fontColor: '#000000',
+                value: 'C列',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: 'itemTitle',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 1,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'A列值',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: '',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 2,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'B列值',
+                bgcolor: '#EEEEEE',
+                position: 5,
+                field: '',
+                fieldType: 0
+              }, {
+                type: 1,
+                col: 3,
+                width: 60,
+                height: 40,
+                fontType: '',
+                fontSize: 12,
+                fontColor: '#ff0000',
+                value: 'C列值',
+                bgcolor: '#EEEEEE',
+                position: 9,
+                field: '',
+                fieldType: 0
+              }]
+            }
+            canvasObject = await that.createTable(options)
+            setTimeout(() => {
+              that.setActiveObject(canvasObject.table.group)
+              canvasObject.table.group.setCoords()
+              this.setTop() // 遮罩置顶
+              this.canvas.renderAll()
+            }, 100)
+            resolve(canvasObject)
+            return
           case 'tableView':
             let tableStyle = {
               left: 500,
@@ -2219,8 +2423,9 @@ export default {
             // console.log('tableList',options.tableinfo.width);
             let table = {
               tableinfo: {
-                left: 500,
-                top: 300,
+                id: options.id,
+                left: options.left,
+                top: options.top,
                 row: 3,
                 col: 3,
                 width: 184,
@@ -2243,7 +2448,7 @@ export default {
                 fontType: '微软雅黑',
                 fontSize: 16,
                 fontColor: '#000000',
-                value: '中国',
+                value: 'A列',
                 bgcolor: '#EEEEEE',
                 position: 5,
                 field: 'itemTitle',
@@ -2256,7 +2461,7 @@ export default {
                 fontType: '微软雅黑',
                 fontSize: 16,
                 fontColor: '#000000',
-                value: '标题',
+                value: 'B列',
                 bgcolor: '#EEEEEE',
                 position: 5,
                 field: 'itemTitle',
@@ -2269,7 +2474,7 @@ export default {
                 fontType: '微软雅黑',
                 fontSize: 16,
                 fontColor: '#000000',
-                value: '加油啊',
+                value: 'C列',
                 bgcolor: '#EEEEEE',
                 position: 5,
                 field: 'itemTitle',
@@ -2317,16 +2522,16 @@ export default {
             }
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.tableList(canvas, table)
+            console.log(canvasObject)
 
             setTimeout(() => {
-              // console.warn(canvasObject.table);
               that.setActiveObject(canvasObject.table.group)
               canvasObject.table.group.setCoords()
-              that.canvas.add(canvasObject)
-              // that.setTop() // 遮罩置顶
+              this.setTop() // 遮罩置顶
+              this.canvas.renderAll()
             }, 100)
-
-            break
+            resolve(canvasObject)
+            return
 
           default:
 
@@ -2414,6 +2619,7 @@ export default {
           // eslint-disable-next-line no-undef
           var rect = new fabric.Rect({
             isType: 'equalImage-bg',
+            id: options.id ? options.id : 'image-bg',
             padding: 0,
             originX: 'center',
             originY: 'center',
@@ -2426,6 +2632,7 @@ export default {
           // eslint-disable-next-line no-undef
           var group = new fabric.Group([rect, canvasImage], {
             isType: 'equalImage',
+            component: 'component',
             left: options.left,
             top: options.top,
             width: options.width,
@@ -2434,6 +2641,8 @@ export default {
             originY: 'top',
             padding: 0,
             id: options.id,
+            url: options.url,
+            src: options.url,
 
             hasRotatingPoint: true,
             lockScalingFlip: true,
@@ -2816,7 +3025,6 @@ export default {
         }
       })
     },
-
     // 改变段码屏图片
     changeURL (id, iconUrl) {
       let objects = this.getObjectsNew()
@@ -2832,6 +3040,816 @@ export default {
         }
       })
     },
+    // 传入元素(类型Image, equalImage)改变图片
+    async setSrc (cur, src) {
+      if (cur.isType !== 'Image' && cur.isType !== 'equalImage') { return }
+      let oldwidth = JSON.parse(JSON.stringify(cur.width * cur.scaleX))
+      let oldheight = JSON.parse(JSON.stringify(cur.height * cur.scaleY))
+      if (cur.isType === 'equalImage') { cur = cur.item(1) }
+      let img = await this.loadImage(src)
+      let newcur = cur.setElement(img)
+      newcur.set({
+        scaleX: oldwidth / img.width,
+        scaleY: oldheight / img.height
+      })
+      newcur.setCoords()
+      this.canvas.renderAll()
+      this.canvas.requestRenderAll()
+    },
+    // 获取创建条码的结果
+    async createBarcode (options) {
+      let that = this
+      let canvas = this.canvas
+      return new Promise(function (resolve, reject) {
+        let canvasObject
+        options.imgText = options.imgText ? options.imgText : 'barcode123456789'
+        options.barlineWidth = options.barlineWidth ? options.barlineWidth : 1
+
+        let barbox = document.getElementById('barbox')
+        let bardom = document.createElement('img')
+        let barid = 'barcode' + options.id
+        bardom.id = 'barcode' + options.id
+
+        let allnode = barbox.childNodes
+        allnode.forEach((node) => {
+          if (node.getAttribute('id') === barid) {
+            document.getElementById('barcode' + options.id).remove()
+          }
+        })
+        barbox.appendChild(bardom) // 为了解决多个条码，他们用图需要不一样
+        /*
+                条码支持的有:
+
+                CODE128
+                CODE128 (自动模式切换)
+                CODE128 A/B/C (强制模式)
+                EAN
+                EAN-13
+                EAN-8
+                EAN-5
+                EAN-2
+                UPC (A)
+                CODE39
+                ITF-14
+                MSI
+                MSI10
+                MSI11
+                MSI1010
+                MSI1110
+                Pharmacode
+                Codabar
+
+                https://www.cnblogs.com/huangenai/p/6347607.html
+
+                */
+
+        // eslint-disable-next-line no-undef
+        JsBarcode('#barcode' + options.id, options.imgText, {
+          id: options.id,
+          format: options.format ? options.format : 'CODE128', // 条形码的格式
+          lineColor: options.color ? options.color : '#000000', // 线条颜色
+          margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
+          width: options.barlineWidth, // 线宽
+          height: options.height ? options.height : 20, // 条码高度
+          displayValue: false // 是否显示文字信息
+        })
+
+        options.originXY = options.originXY ? options.originXY : ['left', 'top']
+        document.getElementById(barid).onload = () => {
+          // eslint-disable-next-line no-undef
+          const barcodeIMG = new fabric.Image(document.getElementById(barid), {
+
+            id: options.id,
+            copyId: options.copyId,
+            zIndex: options.zIndex,
+            width: document.getElementById(barid).width, // document.getElementById('barcode').width, >options.width?document.getElementById('barcode').width:options.width
+            color: options.color ? options.color : '#000000',
+            height: options.height,
+            name: options.name ? options.name : 'barcodeimg',
+            angle: options.angle,
+            component: 'component',
+            isType: 'barcodeimg',
+            isDiff: 'static',
+            flipX: false,
+            flipY: false,
+            lockSkewingX: true, // 禁掉按住shift时的变形
+            lockSkewingY: true,
+            scaleX: 1,
+            scaleY: 1,
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true,
+            imgText: options.imgText,
+            lineColor: options.lineColor,
+            selectable: false,
+            hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+            visible: options.visible,
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+
+          })
+
+          // eslint-disable-next-line no-undef
+          const rect = new fabric.Rect({
+            width: options.width, // document.getElementById('barcode').width>options.width?document.getElementById('barcode').width:
+            height: options.height,
+            fill: '#f1edea',
+            originX: 'left',
+            originY: 'top',
+            left: 0,
+            top: 0,
+
+            id: options.id,
+            zIndex: options.zIndex,
+            copyId: options.copyId,
+
+            name: options.name ? options.name : 'barcodebg',
+            angle: options.angle,
+            component: 'component',
+            isType: 'barcodebg',
+            isDiff: 'static',
+            selectable: false,
+            hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+            visible: options.visible,
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+
+          // eslint-disable-next-line no-undef
+          canvasObject = new fabric.Group([rect, barcodeIMG], {
+            originX: 'left',
+            originY: 'top',
+            left: options.left,
+            top: options.top,
+            originXY: [options.originXY[0], 'top'],
+            id: options.id,
+            copyId: options.copyId,
+            zIndex: options.zIndex,
+
+            type: options.type ? options.type : 'group',
+
+            name: options.name ? options.name : 'Barcode',
+
+            angle: options.angle,
+            component: 'component',
+            isType: 'Barcode',
+            isDiff: 'static',
+            width: options.width,
+            height: options.height,
+            barlineWidth: options.barlineWidth,
+
+            imgText: options.imgText,
+            lineColor: options.lineColor,
+
+            fill: options.lineColor,
+            color: options.color ? options.color : '#000000',
+
+            format: options.format ? options.format : 'CODE128', // 条形码的格式
+
+            lockRotation: true,
+            flipX: false,
+            flipY: false,
+            lockSkewingX: true, // 禁掉按住shift时的变形
+            lockSkewingY: true,
+
+            hasRotatingPoint: false, // 元素是否旋转
+
+            visible: options.visible,
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+
+            /* clipTo:(e)=>{
+                            if(e){
+                                e.canvas.getContext('2d').rect(-options.width/2,-options.height/2,options.width,options.height);
+                            }
+                        } */
+          })
+
+          canvasObject.on('scaling', (e) => {
+            e.target.item(1).set({
+              left: -8000, // e.target.width* e.transform.newScaleX
+              top: 0
+            })
+            // that.changeBarcodeImage(canvasObject); //改变一下试试
+            canvas.requestRenderAll()
+            canvas.renderAll()
+          })
+
+          // canvas.add(canvasObject)
+          // console.log(options.originXY[0],options.width,document.getElementById('barcode').width);
+          let left = 0
+          let w = options.width
+          let barw = document.getElementById(barid).width
+          if (options.originXY[0] === 'left') {
+            left = w < barw ? Math.abs(barw - w) / 2 : -Math.abs(barw - w) / 2
+          } else if (options.originXY[0] === 'center') {
+            left = 0
+          } else if (options.originXY[0] === 'right') {
+            left = w < barw ? -Math.abs(barw - w) / 2 : Math.abs(barw - w) / 2
+          }
+          canvasObject.item(0).set({
+            left: '-50%'
+          })
+          canvasObject.item(1).set({
+            top: 0,
+            left: left
+          })
+          // that.setActiveObject(canvasObject)
+
+          // that.setTop() // 遮罩置顶
+          // canvas.renderAll()
+          /* that.activecanvaobjs.push(canvasObject);   //设置活跃元素
+                    that.activeobj = canvasObject; */
+
+          that.changeBarcodeImage(canvasObject) // 改变一下试试
+          resolve(canvasObject)
+        }
+        document.getElementById(barid).onerror = function () {
+          reject(new Error('barcode error load!'))
+        }
+      })
+    },
+    // 改变条码的图片和大小
+    async changeBarcodeImage (options) {
+      // console.log(options.item(1).width,options.item(1).scaleX,options.width,options.scaleX);
+      let lineWidth = options.barlineWidth
+      lineWidth = parseInt(options.barlineWidth * ((options.width * options.scaleX) / (options.item(1).width * options.item(1).scaleX)))
+
+      if (lineWidth === 0) {
+        lineWidth = 1
+      }
+      // console.log('条码线宽：',lineWidth);
+
+      options.set({
+        width: options.width * options.scaleX,
+        scaleX: 1,
+        barlineWidth: lineWidth
+      })
+      options.item(0).set({
+        width: options.width * options.scaleX,
+        scaleX: 1
+      })
+
+      let newoptions = {
+        id: options.id ? options.id : 0,
+        format: options.item(1).format ? options.item(1).format : 'CODE128', // 条形码的格式
+        lineColor: options.color ? options.color : '#000000', // 线条颜色
+        margin: 0, // 条码四边空白（默认为10px）
+        lineWidth: lineWidth, // 线宽
+        height: options.item(1).height ? options.item(1).height : 20, // 条码高度
+
+        visible: options.visible,
+        eyeshow: options.eyeshow,
+        screenIndex: options.screenIndex
+      }
+      let img = await this.drawbarcode(options.imgText, newoptions)
+
+      let left = 0
+      let w = options.width
+      let barw = document.getElementById('barcode' + newoptions.id).width
+      if (options.originXY[0] === 'left') {
+        left = w < barw ? Math.abs(barw - w) / 2 : -Math.abs(barw - w) / 2
+      } else if (options.originXY[0] === 'center') {
+        left = 0
+      } else if (options.originXY[0] === 'right') {
+        left = w < barw ? -Math.abs(barw - w) / 2 : Math.abs(barw - w) / 2
+      }
+
+      options.item(1)._element.src = img
+      options.item(1).set({
+        left: left,
+        width: options.item(1)._element.width,
+        scaleX: 1
+      })
+
+      if (options.barlineWidth * ((options.width * options.scaleX) / (options.item(1).width * options.item(1).scaleX)) < 1) {
+        console.log('小于条码1倍')
+        options.item(0).set({
+          width: options.item(1)._element.width,
+          scaleX: 1
+        })
+        options.set({
+          width: options.item(1)._element.width,
+          scaleX: 1
+        })
+        options.item(1).set({
+          left: 0
+        })
+      }
+
+      options.setCoords()
+      /* this.setZoom(this.canvasZoom+0.01);
+            this.setZoom(this.canvasZoom-0.01); */
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+    // 画条码
+    drawbarcode (number, option) {
+      // console.log(option);
+      return new Promise(function (resolve, reject) {
+        let barbox = document.getElementById('barbox')
+        let bardom = document.createElement('img')
+        let barid = 'barcode' + option.id
+        bardom.id = 'barcode' + option.id
+        let allnode = barbox.childNodes
+        let ids = [] // 所有子节点的id集合
+        allnode.forEach((node) => {
+          ids.push(node.getAttribute('id'))
+        })
+        if (ids.indexOf(barid) === -1) {
+          barbox.appendChild(bardom)// 为了解决多个条码，他们用图需要不一样
+        }
+
+        // console.log(barbox,bardom);
+
+        // eslint-disable-next-line no-undef
+        JsBarcode('#barcode' + option.id, number, {
+          format: option.format ? option.format : 'CODE128', // 条形码的格式
+          lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
+          margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
+          width: option.lineWidth ? option.lineWidth : 2, // 线宽
+          height: option.height ? option.height : 20, // 条码高度
+          displayValue: false // 是否显示文字信息
+        })
+
+        document.getElementById('barcode' + option.id).onload = () => {
+          // console.log(document.getElementById("barcode").src);
+          let img = document.getElementById('barcode' + option.id).src
+          resolve(img)
+        }
+        document.getElementById('barcode' + option.id).onerror = function () {
+          reject(new Error('barcode is error!'))
+        }
+      })
+    },
+    // 创建datamatrix二维码
+    async createBarcodedatamatrix (options) {
+      console.log('创建datamatrix条形码：', options)
+      let that = this
+      let curcanvas = this.canvas
+      return new Promise(function (resolve, reject) {
+        let canvasObject
+        options.imgText = options.imgText ? options.imgText : '12345670'
+
+        // eslint-disable-next-line no-undef
+        var svgNode = DATAMatrix({
+          msg: options.imgText,
+          dim: options.barlineWidth,
+          rct: 0,
+          pad: 1,
+          pal: [options.color ? options.color : '#000000', '#f2f4f8'],
+          vrb: 0
+        })
+        // img.src=svgNode
+        // document.getElementById('datamatix').append(svgNode)
+
+        console.warn(svgNode)
+        // img.src = 'data:image/svg+xml,' + btoa(unescape(encodeURIComponent(svgNode.innerHTML)));
+        // console.warn(img)
+
+        document.getElementById('datamatix').append(svgNode)
+
+        html2canvas(document.getElementById('datamatix')).then(function (canvas) {
+          let url = canvas.toDataURL()
+          console.log(url)
+
+          let img = new Image()
+          img.crossOrigin = 'Anonymous'
+          img.src = url
+
+          img.onload = () => {
+            console.log(img)
+
+            document.getElementById('datamatix').append(img)
+
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Image(img, {
+              left: options.left,
+              top: options.top,
+              id: options.id,
+
+              // width: options.width,
+              // height: options.height,
+              // scaleX:1,
+              // scaleY:1,
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              type: options.type ? options.type : '0',
+              color: options.lineColor,
+
+              name: options.name ? options.name : 'Barcodedatamatrix',
+              angle: options.angle,
+              component: 'component',
+              isType: 'Barcodedatamatrix',
+              isDiff: 'static',
+              fill: options.fill ? options.fill : '#000000',
+              flipX: false,
+              flipY: false,
+              lockSkewingX: true, // 禁掉按住shift时的变形
+              lockSkewingY: true,
+              originX: 'left',
+              originY: 'top',
+              lockUniScaling: true,
+              imgText: options.imgText,
+              content: options.imgText,
+
+              lineColor: options.lineColor,
+              hasRotatingPoint: false, // 元素是否旋转
+
+              visible: options.visible !== false ? true : options.visible, // 元素是否可见
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+
+            })
+
+            console.log(canvasObject)
+            curcanvas.add(canvasObject)
+            that.setActiveObject(canvasObject)
+            // that.setTop();                                         //遮罩置顶
+            curcanvas.renderAll()
+
+            resolve(canvasObject)
+          }
+          img.onerror = function () {
+            reject(new Error('barcode error load!'))
+          }
+        })
+      })
+    },
+    // 获取创建二维码的结果
+    createQrcode (options) {
+      return new Promise(function (resolve, reject) {
+        if (options.barcodeType === 1) {
+          let canvasObject
+          options.imgText = options.imgText ? options.imgText : '12345670'
+
+          // eslint-disable-next-line no-undef
+          var svgNode = DATAMatrix({
+            msg: options.imgText,
+            dim: options.width,
+            rct: 0,
+            pad: 0,
+            pal: [options.lineColor ? options.lineColor : '#000000', '#f2f4f8'],
+            vrb: 0
+          })
+          // img.src=svgNode
+          // document.getElementById('datamatix').append(svgNode)
+
+          console.warn(svgNode)
+          // img.src = 'data:image/svg+xml,' + btoa(unescape(encodeURIComponent(svgNode.innerHTML)));
+          // console.warn(img)
+
+          // 循环删除历史图片
+          var el = document.getElementById('datamatix')
+          var childs = el.childNodes
+          for (var i = childs.length - 1; i >= 0; i--) {
+            el.removeChild(childs[i])
+          }
+          document.getElementById('datamatix').append(svgNode)
+
+          html2canvas(document.getElementById('datamatix')).then(function (canvas) {
+            let url = canvas.toDataURL()
+
+            let img = new Image()
+            img.crossOrigin = 'Anonymous'
+            img.src = url
+
+            img.onload = () => {
+              // console.log(img.width,img.height)
+
+              document.getElementById('datamatix').append(img)
+
+              // eslint-disable-next-line no-undef
+              canvasObject = new fabric.Image(img, {
+                left: options.left,
+                top: options.top,
+                id: options.id,
+
+                // width: options.width,
+                // height: options.height,
+                // scaleX:1,
+                // scaleY:1,
+
+                // scaleX: options.width / img.width,
+                // scaleY: options.height / img.width,
+
+                copyId: options.copyId,
+                zIndex: options.zIndex ? options.zIndex : options.id,
+                type: options.type ? options.type : 'Qrcode',
+                color: options.lineColor,
+
+                name: options.name ? options.name : 'Qrcode',
+                angle: options.angle,
+                component: 'component',
+                isType: 'Qrcode',
+                isDiff: 'static',
+                fill: options.fill ? options.fill : '#000000',
+                flipX: false,
+                flipY: false,
+                lockSkewingX: true, // 禁掉按住shift时的变形
+                lockSkewingY: true,
+                originX: 'left',
+                originY: 'top',
+                lockUniScaling: true,
+                imgText: options.imgText,
+                content: options.imgText,
+
+                lineColor: options.lineColor,
+                hasRotatingPoint: false, // 元素是否旋转
+
+                barcodeType: 1,
+                visible: options.visible !== false ? true : options.visible, // 元素是否可见
+                eyeshow: options.eyeshow,
+                screenIndex: options.screenIndex
+
+              })
+              canvasObject.height = canvasObject.width
+              // console.log(canvasObject.width,canvasObject.height)
+              // curcanvas.add(canvasObject)
+              // that.setActiveObject(canvasObject)
+              // that.setTop();                                         //遮罩置顶
+              // curcanvas.renderAll()
+
+              resolve(canvasObject)
+            }
+            img.onerror = function () {
+              reject(new Error('barcode error load!'))
+            }
+          })
+        } else {
+          let canvasObject
+          // eslint-disable-next-line no-undef
+          let qrcodeImg = jrQrcode.getQrBase64(options.imgText, {
+            padding: options.margin ? options.margin : 2, // 二维码四边空白（默认为10px）
+            width: options.width ? options.width : 80, // 二维码图片宽度（默认为256px）
+            height: options.height ? options.height : 80, // 二维码图片高度（默认为256px）
+            // eslint-disable-next-line no-undef
+            correctLevel: QRErrorCorrectLevel.H, // 二维码容错level（默认为高）
+            reverse: false, // 反色二维码，二维码颜色为上层容器的背景颜色
+            background: options.background ? options.background : '#ffffff', // 二维码背景颜色（默认白色）
+            foreground: options.lineColor ? options.lineColor : '#000000' // 二维码颜色（默认黑色）
+          })
+          let newimg = document.createElement('img')
+          newimg.src = qrcodeImg
+          newimg.id = (new Date()).getTime()
+
+          newimg.onload = () => {
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Image(newimg, {
+              left: options.left,
+              top: options.top,
+              id: options.id,
+              copyId: options.copyId,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              type: options.type ? options.type : 'Qrcode',
+              color: options.lineColor,
+
+              name: options.name ? options.name : 'Qrcode',
+              angle: options.angle,
+              component: 'component',
+              isType: 'Qrcode',
+              isDiff: 'static',
+              fill: options.fill ? options.fill : '#000000',
+              flipX: false,
+              flipY: false,
+              lockSkewingX: true, // 禁掉按住shift时的变形
+              lockSkewingY: true,
+              originX: 'left',
+              originY: 'top',
+              lockUniScaling: true,
+              imgText: options.imgText,
+              content: options.imgText,
+
+              lineColor: options.lineColor,
+              hasRotatingPoint: false, // 元素是否旋转
+
+              barcodeType: 0,
+              visible: options.visible,
+              eyeshow: options.eyeshow,
+              screenIndex: options.screenIndex
+
+            })
+            // canvas.add(canvasObject)
+            // that.setActiveObject(canvasObject)
+            // that.setTop() // 遮罩置顶
+            // canvas.renderAll()
+            /* that.activecanvaobjs.push(canvasObject);   //设置活跃元素
+                         that.activeobj = canvasObject; */
+            resolve(canvasObject)
+          }
+          newimg.onerror = function () {
+            reject(new Error('qrcode error load!'))
+          }
+        }
+      })
+    },
+    // 改变二维码的图片大小和值
+    async changeQrcodeImage (options) {
+      if (options.isType !== 'Qrcode') {
+        return
+      }
+      let optionsdata = JSON.parse(JSON.stringify(options))
+      this.removeObj(options)
+
+      let left = optionsdata.left + this.xLeft
+      let top = optionsdata.top + this.yTop
+      // console.log('change image:',options.height);
+      await this.createElement(options.isType, {
+        ...options,
+        imgText: options.imgText,
+        lineColor: options.lineColor,
+        left: left,
+        top: top,
+        width: parseInt(options.width * options.scaleX),
+        height: parseInt(options.height * options.scaleY),
+        scaleX: 1,
+        scaleY: 1,
+
+        visible: options.visible,
+        eyeshow: options.eyeshow,
+        screenIndex: options.screenIndex
+
+      })
+    },
+    // 创建文本
+    async createText (text, options) {
+      options = Object.assign({
+        width: 50,
+        height: 30,
+        left: -this.xLeft,
+        top: -this.yTop,
+        padding: 0,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1
+      }, options)
+      // eslint-disable-next-line no-undef
+      var canvasObj = new fabric.Text(text, {
+        ...options,
+        splitByGrapheme: true,
+        width: options.width,
+        height: options.height,
+        left: options.left,
+        top: options.top,
+        id: options.id,
+        name: options.name ? options.name : 'Text',
+        component: 'component',
+        isType: 'Text',
+        isDiff: 'static',
+
+        selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中
+        visible: options.visible !== false ? true : options.visible, // 元素是否可见
+
+        fill: options.fill ? options.fill : '#000', // 填充的颜色（矩形）
+        fillColor: options.fillColor ? options.fillColor : '#000', // 填充的颜色
+
+        backgroundColor: options.backgroundColor ? options.backgroundColor : 'rgba(0,0,0,0)', // 边框填充的颜色
+        stroke: options.stroke ? options.stroke : 'rgba(0,0,0,0)', // 边框颜色
+        strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+        strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]
+
+        minScaleLimit: 0.0001, //  最小限制
+
+        flipX: false,
+        flipY: false,
+        originX: 'left',
+        originY: 'top',
+        lockSkewingX: true, // 禁掉按住shift时的变形
+        lockSkewingY: true,
+        stopContextMenu: true // 禁掉鼠标右键默认事件
+      })
+      return canvasObj
+    },
+    // 文本不使用 的文本
+    newtextStyleFormat: function (target, text) {
+      //   console.log('触发文本裁剪',target.width);
+      //  console.log(target.maxLines,target.omitStyleText,target.newline);
+      if (!target.maxLines) {
+        return target.text
+      }
+      if (!target.omitStyleText) {
+        return target.text
+      }
+
+      let linewords = text
+      let wordJoiners = /[\n\t\r]/
+      // console.log(target.text,text)
+      //  console.warn('linewords*******************0',linewords);
+      let lines = linewords.split(wordJoiners) // 先按照回车符等分隔多行
+      let newtext = linewords
+
+      if (target.newline !== '') {
+        if (target.newline && target.newline !== '') { // 换行符 newline
+          let newwordJoiners = target.newline
+          lines.forEach((line, i) => {
+            if (line.indexOf(newwordJoiners) !== -1) { // 如果遇到填写的分隔符
+              let moreline = line.split(newwordJoiners)
+              lines.splice(i, 1)
+              lines.splice(i, 0, ...moreline)
+            }
+          })
+          newtext = ''
+          for (var i = 0; i < lines.length; i++) {
+            if (i === lines.length - 1) {
+              newtext = newtext + lines[i]
+            } else {
+              newtext = newtext + lines[i] + '\n'
+            }
+          }
+        }
+      }
+
+      // console.log(newtext);
+      let widthlines = target._splitTextIntoLines(newtext).lines // 根据宽度切割行
+      for (var j = 0; j < widthlines.length; j++) {
+        if (widthlines[j] === '') {
+          widthlines.splice(j, 1)
+        }
+      }
+      // console.log(widthlines);
+
+      if (target.maxLines && widthlines.length > target.maxLines) { // 最大行数 maxLines
+        // console.log('符合最大行数限制',target.maxLines);
+        newtext = ''
+        for (var s = 0; s < target.maxLines; s++) {
+          if (s === target.maxLines - 1) {
+            newtext = newtext + widthlines[s] // 重新组装显示行
+          } else {
+            newtext = newtext + widthlines[s] + '\n' // 重新组装显示行
+          }
+        }
+        if (target.omitStyleText !== '无') { // 超出替换 omitStyle
+          newtext = newtext.substring(0, newtext.length - 1) + target.omitStyleText // .substring(0, newtext.length - 3)
+          target.selectionEnd = target.selectionStart = newtext.length
+        } else {
+          target.selectionEnd = target.selectionStart = newtext.length
+        }
+      }
+
+      // console.log(newtext);
+      return newtext
+    },
+    // 创建表格
+    async createTable (table) {
+      let canvas = this.canvas
+      // eslint-disable-next-line no-undef
+      let canvasObject = new fabric.tableList(canvas, table)
+      let that = this
+      setTimeout(() => {
+        that.setActiveObject(canvasObject.table.group)
+        canvasObject.table.group.setCoords()
+      }, 1)
+
+      return canvasObject
+    },
+    // 判断是表格的表头还是表体 group.dirty = true
+    judeisTableHeadorBody (options) {
+      let objects = options.target._objects
+      let col = 0
+      let row = 0
+
+      objects.forEach((object) => {
+        if (object.isType === 'table-tbodybg' || object.isType === 'table-theadbg') {
+          if (object.left + options.target.width / 2 < options.pointer.x - options.target.left &&
+                  options.pointer.x - options.target.left < object.left + options.target.width / 2 + object.width) {
+            col = object.ncol
+          }
+          if (object.top + options.target.height / 2 < options.pointer.y - options.target.top &&
+                  options.pointer.y - options.target.top < object.top + options.target.height / 2 + object.height) {
+            row = object.nrow
+          }
+        }
+      })
+      return {row: row, col: col}
+    },
+
+    // 按原来的id表格
+    setNewTable (groups, table) {
+      if (!table) {
+        table = groups.item(0).tableStyle
+      }
+      let canvas = this.canvas
+      canvas.remove(groups)
+      // console.log(table);
+      // eslint-disable-next-line no-undef
+      let canvasObject = new fabric.tableList(this.canvas, table)
+      let that = this
+      setTimeout(() => {
+        // console.warn(canvasObject.table);
+        that.setActiveObject(canvasObject.table.group)
+        canvasObject.table.group.setCoords()
+        canvas.add(canvasObject)
+      }, 1)
+      canvas.requestRenderAll()
+      canvas.renderAll()
+    },
+
     // 元素对象转成json
     toJson () {
       let json = this.canvas.toJSON()
@@ -2870,22 +3888,6 @@ export default {
           reject(err)
         }
       })
-    },
-    // 传入元素(类型Image, equalImage)改变图片
-    async setSrc (cur, src) {
-      if (cur.isType !== 'Image' && cur.isType !== 'equalImage') { return }
-      let oldwidth = JSON.parse(JSON.stringify(cur.width * cur.scaleX))
-      let oldheight = JSON.parse(JSON.stringify(cur.height * cur.scaleY))
-      if (cur.isType === 'equalImage') { cur = cur.item(1) }
-      let img = await this.loadImage(src)
-      let newcur = cur.setElement(img)
-      newcur.set({
-        scaleX: oldwidth / img.width,
-        scaleY: oldheight / img.height
-      })
-      newcur.setCoords()
-      this.canvas.renderAll()
-      this.canvas.requestRenderAll()
     }
   }
 }
