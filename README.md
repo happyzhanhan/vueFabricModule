@@ -261,7 +261,9 @@ obj
 
 
 > createElement(name, options) 画布创建元素
+
 参数：
+
 | name         | options| default             | Description   |
 | ------------ | ------ | ------------------- | ------------- |
 |Rect          | width,height, | {width:xx,height:xx,}                  | 矩形          |
