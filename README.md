@@ -46,10 +46,24 @@ npm install vuefabricmoudle --save
 
 ## 在main.js中引入
 ```
-import 'vuefabricmodule/dist/vue-fabric-module.css';
+import 'vuefabricmodule/dist/vue-fabric-module.css'; //这个如果没有引入，则元素上鼠标右键不显示
 import vuefabricmodule from 'vuefabricmodule'
 ...
 Vue.use(vuefabricmodule)
+```
+
+如果需要动态生成条码和二维码
+```
+import JsBarcode from 'jsbarcode'
+import jrQrcode from 'jr-qrcode'
+...
+new Vue({
+  el: '#app',
+  ...
+  JsBarcode,  
+  jrQrcode,
+  ...
+  })
 ```
 
 ## 组件使用
@@ -250,26 +264,26 @@ obj
 参数：
 | name         | options| default             | Description   |
 | ------------ | ------ | ------------------- | ------------- |
-|Rect          | {}     | {}                  | 矩形          |
-|Rectangle     | {}     | {}                  | 圆角矩形      |
-|Parallelogram | {}     | {}                  | 平行四边形    |
-|Circle        | {}     | {}                  | 椭圆形        |
-|EqualCircle   | {}     | {}                  | 正圆          |
-|Dottedline    | {}     | {}                  | 线段          |
-|EqualTriangle | {}     | {}                  | 等边三角形    |
-|star          | {}     | {}                  | 五角星        |
-|Hexagon       | {}     | {}                  | 正六边形      |
-|Image         | {}     | {}                  | 图片          |
-|Icon          | {}     | {}                  | 静态图片      |
-|equalImage    | {}     | {}                  | 保持居中的图片|
-|Barcode       | {}     | {}                  | 条码          |
-|Qrcode        | {}     | {}                  | 二维码        |
-|Time          | {}     | {}                  | 时间文字      |
-|Itext         | {}     | {}                  | 当行编辑文本  |
-|Textbox       | {}     | {}                  | 文本域        |
-|TextRect      | {}     | {}                  | 限制宽高的文本|
-|Html          | {}     | {}                  | html          |
-|tableList     | {}     | {}                  | 表格          |
+|Rect          | width,height, | {width:xx,height:xx,}                  | 矩形          |
+|Rectangle     | width,height, | {width:xx,height:xx,}                  | 圆角矩形      |
+|Parallelogram | width,height, | {width:xx,height:xx,}                  | 平行四边形    |
+|Circle        | width,height, | {width:xx,height:xx,}                  | 椭圆形        |
+|EqualCircle   | width,height, | {width:xx,height:xx,}                  | 正圆          |
+|Dottedline    | width,height, | {width:xx,height:xx,}                  | 线段          |
+|EqualTriangle | width,height, | {width:xx,height:xx,}                  | 等边三角形    |
+|star          | width,height, | {width:xx,height:xx,}                  | 五角星        |
+|Hexagon       | width,height, | {width:xx,height:xx,}                  | 正六边形      |
+|Image         | width,height, | {width:xx,height:xx,}                  | 图片          |
+|Icon          | width,height, | {width:xx,height:xx,}                  | 静态图片      |
+|equalImage    | width,height, | {width:xx,height:xx,}                  | 保持居中的图片|
+|Barcode       | width,height, | {width:xx,height:xx,}                  | 条码          |
+|Qrcode        | width,height, | {width:xx,height:xx,}                  | 二维码        |
+|Time          | width,height, | {width:xx,height:xx,}                  | 时间文字      |
+|Itext         | width,height, | {width:xx,height:xx,}                  | 当行编辑文本  |
+|Textbox       | width,height, | {width:xx,height:xx,}                  | 文本域        |
+|TextRect      | width,height, | {width:xx,height:xx,}                  | 限制宽高的文本|
+|Html          | width,height, | {width:xx,height:xx,}                  | html          |
+|table         | width,height, | {width:xx,height:xx,}                  | 表格          |
 
 使用：
 ```
@@ -331,4 +345,7 @@ this.$refs.canvas.createElement(name, options)
 - 新增表格创建的方法
 - 示例中，监听窗口大小改变画布大小
 
+### 2022.05.25
+
+> v0.0.8 \* 修复画布的点击感应透明的问题
 

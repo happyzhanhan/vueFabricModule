@@ -66,6 +66,11 @@
       <button @click="draw('Html')">Html</button>
     </div>
 
+     <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
+      <button @click="draw('TextRect')">TextRect</button>
+      <button @click="draw('textboxnew')">textboxnew</button>
+     </div>
+
      <!-- <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
       <button @click="draw('table')">table==tableList</button>
       <button @click="draw('tableView')">tableView</button>
@@ -394,8 +399,9 @@ export default {
             hasRotatingPoint: true,
             width: 400,
             height: 100,
-            fontColor: '#00f',
+            fontColor: '#f00',
             rectColor: '',
+            fill: '#fff',
             /* stroke:'#f00', */
             strokeWidth: 0,
             xLeft: 0,
@@ -420,6 +426,16 @@ export default {
             //  underline:true,
             //  fontStyle:"italic"
 
+          }
+          break
+        case 'textboxnew':
+          options = {
+            left: 22,
+            top: 10,
+            hasRotatingPoint: true,
+            width: 50,
+            height: 30,
+            visible: true
           }
           break
         case 'TextRectBox':

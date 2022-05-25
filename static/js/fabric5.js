@@ -29819,12 +29819,12 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
      * user can only change width. Height is adjusted automatically based on the
      * wrapping of lines.
      * @class fabric.TextboxNew
-     * @extends fabric.IText
+     * @extends fabric.Textbox
      * @mixes fabric.Observable
      * @return {fabric.TextboxNew} thisArg
      * @see {@link fabric.TextboxNew#initialize} for constructor definition
      */
-    fabric.TextboxNew = fabric.util.createClass(fabric.IText, fabric.Observable, {
+    fabric.TextboxNew = fabric.util.createClass(fabric.Textbox, fabric.Observable, {
 
         /**
          * Type of an object
@@ -29900,6 +29900,12 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
          * @override
          */
         initDimensions: function() {
+            this.clipTo = function(e) {
+                if(e){
+                    e.canvas.getContext('2d').rect(-this.width/2,-this.height/2,this.width,this.height);
+                }
+
+            }
             if (this.__skipDimension) {
                 return;
             }
@@ -29923,6 +29929,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             /* happy change 高度增加后判断修改*/
             this.height = this.calcTextHeight()>this.dynamicMinHeight?this.calcTextHeight() :this.dynamicMinHeight;
             this.saveState({ propertySet: '_dimensionAffectingProps' });
+
+           
         },
 
         /**
@@ -31328,6 +31336,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 this.canvas.add(this.text);
 
+                console.log(this.canvas.getActiveObject(),this.canvas.getActiveObject().type)
+
 
 
             });
@@ -31600,7 +31610,6 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
             })
-
 
 
 

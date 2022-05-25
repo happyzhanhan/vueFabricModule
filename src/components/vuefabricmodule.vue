@@ -455,7 +455,7 @@ export default {
         name: 'background',
         selectable: false,
         hasControls: false,
-        evented: true,
+        evented: false,
         visible: true,
         isType: 'sBg',
         isDiff: 'none',
@@ -1722,6 +1722,20 @@ export default {
 
             break
 
+          case 'textboxnew':
+            newOptions = {
+              ...options,
+              isType: 'Textbox',
+              name: options.name ? options.name : 'Textbox',
+              breakWords: true,
+              splitByGrapheme: true
+
+            }
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.TextboxNew(options.textdemo, {...newOptions})
+
+            break
+
           case 'TextRectBox': // ---------------------------文本组合研究
 
             let newOptions1 = {
@@ -2132,14 +2146,14 @@ export default {
 
               width: options.width,
               height: options.height,
-              fill: '', // options.rectColor?(options.rectColor===''?'rgba(0,0,0,0)':options.rectColor):
+              fill: '#ff0', // options.rectColor?(options.rectColor===''?'rgba(0,0,0,0)':options.rectColor):
               rectColor: options.rectColor ? options.rectColor : '#ffffff',
 
               stroke: options.stroke ? options.stroke : '',
               strokeWidth: options.strokeWidth ? options.strokeWidth : null,
               strokeDashArray: [3, 1],
 
-              fontColor: options.fontColor ? options.fontColor : '#000000',
+              fontColor: options.fontColor ? options.fontColor : '#f00',
               fontSize: options.fontSize ? options.fontSize : 14,
               fontFamily: options.fontFamily ? options.fontFamily : '微软雅黑',
               textdemo: options.textdemo ? options.textdemo : 'TextRect',
@@ -2192,10 +2206,10 @@ export default {
               width: options.width,
               height: options.height,
 
-              fill: options.fontColor ? options.fontColor : '#000000',
+              fill: options.fontColor ? options.fontColor : '#f00',
               fontSize: options.fontSize ? options.fontSize : 14,
 
-              fontColor: options.fontColor ? options.fontColor : '#000000',
+              fontColor: options.fontColor ? options.fontColor : '#f00',
               fontFamily: options.fontFamily ? options.fontFamily : '微软雅黑',
               textdemo: options.textdemo ? options.textdemo : 'TextRect',
 
