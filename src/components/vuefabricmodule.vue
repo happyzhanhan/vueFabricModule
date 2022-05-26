@@ -396,6 +396,50 @@ export default {
       that.canvas.renderAll()
       that.$emit('mouse:out', options)
     })
+    this.canvas.on('selection:created', function (options) {
+      if (options.selected.length > 1) {
+        options.target.hasRotatingPoint = false
+        options.target.hasControls = false
+      }
+      that.$emit('selection:created', options)
+    })
+    this.canvas.on('selection:updated', function (options) {
+      that.$emit('selection:updated', options)
+    })
+    this.canvas.on('selection:cleared', function (options) {
+      that.$emit('selection:cleared', options)
+    })
+    this.canvas.on('before:selection:cleared', function (options) {
+      that.$emit('before:selection:cleared', options)
+    })
+    this.canvas.on('object:added', function (options) {
+      that.$emit('object:added', options)
+    })
+    this.canvas.on('object:removed', function (options) {
+      that.$emit('object:removed', options)
+    })
+    this.canvas.on('object:modified', function (options) {
+      that.$emit('object:modified', options)
+    })
+    this.canvas.on('object:rotating', function (options) {
+      that.$emit('object:rotating', options)
+    })
+    this.canvas.on('object:scaling', function (options) {
+      that.$emit('object:scaling', options)
+    })
+    this.canvas.on('object:moving', function (options) {
+      if (options.target._objects) {
+        options.target._objects.forEach(obj => {
+          if (obj.isType === 'TextRect') {
+            obj.text.set({
+              left: obj.left + options.target.translateX,
+              top: obj.top + options.target.translateY
+            })
+          }
+        })
+      }
+      that.$emit('object:moving', options)
+    })
     this.canvas.on('object:scaled', function (options) {
       that.$emit('object:scaled', options)
       if (options.target.isType === 'Barcode') { // 条形码的位置显示
@@ -1057,6 +1101,13 @@ export default {
 
       this.$emit('changeLayer', obj) // 层级变动回调
     },
+    // 层级移动
+    moveToshow (obj, index) {
+      // let obj = this.canvas.getActiveObject();
+      this.canvas.moveTo(obj, index)
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
     // 删除当前活跃元素 - 右键菜单调用该方法
     removeEditObj () {
       let obj = this.canvas.getActiveObject()
@@ -1336,6 +1387,250 @@ export default {
       this.canvas.discardActiveObject()
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
+    },
+    // 水平居中分布
+    toHorizontalCenterDistribution () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      // console.log(obj);
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        obj._objects.sort(function (a, b) {
+          return a.left - b.left
+        })
+        for (var o in obj._objects) {
+          obj._objects[o].left = o * ((obj.getBoundingRect().width / (zoom * obj.scaleX)) / (obj._objects.length - 1)) - (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - o * ((obj._objects[o].width * obj._objects[o].scaleX) / (obj._objects.length - 1))
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+
+        obj._objects.forEach((one, o) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('left', obj.left + o * ((obj.getBoundingRect().width / (zoom * obj.scaleX)) / (obj._objects.length - 1)) - (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - o * ((obj._objects[o].width * obj._objects[o].scaleX) / (obj._objects.length - 1)) - one.text.offsetLeft)
+            } else {
+              one.text.set('left', obj.left + o * ((obj.getBoundingRect().width / (zoom * obj.scaleX)) / (obj._objects.length - 1)) - (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - o * ((obj._objects[o].width * obj._objects[o].scaleX) / (obj._objects.length - 1)))
+            }
+          }
+        })
+
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 垂直居中分布
+    toVerticalCenterDistribution () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        obj._objects.sort(function (a, b) {
+          return a.top - b.top
+        })
+        for (var o in obj._objects) {
+          obj._objects[o].top = o * ((obj.getBoundingRect().height / (zoom * obj.scaleY)) / (obj._objects.length - 1)) - (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - o * ((obj._objects[o].height * obj._objects[o].scaleY) / (obj._objects.length - 1))
+
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+
+        obj._objects.forEach((one, o) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('top', obj.top + o * ((obj.getBoundingRect().height / (zoom * obj.scaleY)) / (obj._objects.length - 1)) - (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - o * ((obj._objects[o].height * obj._objects[o].scaleY) / (obj._objects.length - 1)) - one.text.offsetTop)
+            } else {
+              one.text.set('top', obj.top + o * ((obj.getBoundingRect().height / (zoom * obj.scaleY)) / (obj._objects.length - 1)) - (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - o * ((obj._objects[o].height * obj._objects[o].scaleY) / (obj._objects.length - 1)))
+            }
+          }
+        })
+
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 左对齐
+    toLeftAlign () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+
+        for (var o in obj._objects) {
+          obj._objects[o].left = -(obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2
+          // this.getactiveobj(obj._objects[o].id).marginLeft = obj.getBoundingRect().left;
+
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('left', obj.left - (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - one.text.offsetLeft)
+            } else {
+              one.text.set('left', obj.left - (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2)
+            }
+          }
+        })
+
+        this.canvas.requestRenderAll()
+
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 水平居中对齐
+    toHorizontalCenterAlign () {
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        for (var o in obj._objects) {
+          obj._objects[o].left = -(obj._objects[o].width * obj._objects[o].scaleX) / 2
+
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('left', obj.left - (obj._objects[o].width * obj._objects[o].scaleX) / 2 - one.text.offsetLeft)
+            } else {
+              one.text.set('left', obj.left - (obj._objects[o].width * obj._objects[o].scaleX) / 2)
+            }
+          }
+        })
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 右对齐
+    toRightAlign () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      let Textincludes = [] // 用于筛选被滑动多选选中的text
+      if (obj._objects) {
+        for (var o in obj._objects) {
+          obj._objects[o].left = (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - (obj._objects[o].width * obj._objects[o].scaleX)
+
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('left', obj.left + (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - (obj._objects[o].width * obj._objects[o].scaleX) - one.text.offsetLeft)
+            } else {
+              one.text.set('left', obj.left + (obj.getBoundingRect().width / (zoom * obj.scaleX)) / 2 - (obj._objects[o].width * obj._objects[o].scaleX))
+            }
+          }
+        })
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 顶对齐
+    toTopAlign () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        for (var o in obj._objects) {
+          obj._objects[o].top = -(obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2
+          // this.getactiveobj(obj._objects[o].id).marginTop = obj.getBoundingRect().top;
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('top', obj.top - (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - one.text.offsetTop)
+            } else {
+              one.text.set('top', obj.top - (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2)
+            }
+          }
+        })
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 垂直居中对齐
+    toVerticalCenterAlign () {
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        for (var o in obj._objects) {
+          obj._objects[o].top = -(obj._objects[o].height * obj._objects[o].scaleY) / 2
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('top', obj.top - (obj._objects[o].height * obj._objects[o].scaleY) / 2 - one.text.offsetTop)
+            } else {
+              one.text.set('top', obj.top - (obj._objects[o].height * obj._objects[o].scaleY) / 2)
+            }
+          }
+        })
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
+    },
+    // 底对齐
+    toBottomAlign () {
+      var zoom = this.canvas.getZoom()
+      var obj = this.getEditObj()
+      if (!obj) {
+        return
+      }
+      if (obj._objects) {
+        let Textincludes = [] // 用于筛选被滑动多选选中的text
+        for (var o in obj._objects) {
+          obj._objects[o].top = (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - (obj._objects[o].height * obj._objects[o].scaleY)
+          if (obj._objects[o].isType === 'TextRect-text') {
+            Textincludes.push(obj._objects[o].id)
+          }
+        }
+        obj._objects.forEach((one) => {
+          if (one.isType === 'TextRect' && Textincludes.indexOf(one.id) === -1) { // 部分文本编辑后不会被滑动多选选中
+            if (one.isElasticSize === 2) {
+              one.text.set('top', obj.top + (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - (obj._objects[o].height * obj._objects[o].scaleY) - one.text.offsetTop)
+            } else {
+              one.text.set('top', obj.top + (obj.getBoundingRect().height / (zoom * obj.scaleY)) / 2 - (obj._objects[o].height * obj._objects[o].scaleY))
+            }
+          }
+        })
+        this.canvas.renderTop()
+        this.canvas.renderAll()
+      }
     },
 
     /**
@@ -2146,7 +2441,7 @@ export default {
 
               width: options.width,
               height: options.height,
-              fill: '#ff0', // options.rectColor?(options.rectColor===''?'rgba(0,0,0,0)':options.rectColor):
+              fill: '', // options.rectColor?(options.rectColor===''?'rgba(0,0,0,0)':options.rectColor):
               rectColor: options.rectColor ? options.rectColor : '#ffffff',
 
               stroke: options.stroke ? options.stroke : '',
@@ -2206,10 +2501,10 @@ export default {
               width: options.width,
               height: options.height,
 
-              fill: options.fontColor ? options.fontColor : '#f00',
+              fill: options.fontColor ? options.fontColor : '#000',
               fontSize: options.fontSize ? options.fontSize : 14,
 
-              fontColor: options.fontColor ? options.fontColor : '#f00',
+              fontColor: options.fontColor ? options.fontColor : '#000',
               fontFamily: options.fontFamily ? options.fontFamily : '微软雅黑',
               textdemo: options.textdemo ? options.textdemo : 'TextRect',
 

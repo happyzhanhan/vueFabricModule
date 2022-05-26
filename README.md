@@ -292,6 +292,103 @@ obj
 this.$refs.canvas.createElement(name, options)
 ```
 
+> toHorizontalCenterDistribution() 水平居中分布
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toHorizontalCenterDistribution()
+```
+
+> toVerticalCenterDistribution() 垂直居中分布
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toVerticalCenterDistribution()
+```
+
+> toLeftAlign() 左对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toLeftAlign()
+```
+
+> toHorizontalCenterAlign() 水平居中对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toHorizontalCenterAlign()
+```
+
+> toRightAlign() 右对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toRightAlign()
+```
+
+> toTopAlign() 顶对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toTopAlign()
+```
+
+> toVerticalCenterAlign() 垂直居中对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toVerticalCenterAlign()
+```
+
+> toBottomAlign() 底对齐
+
+参数：无
+
+对象：画布中的活跃对象
+
+ 使用：
+```
+  this.$refs.canvas.toBottomAlign()
+```
+
+> moveToshow(object, index) 移动层级
+
+参数：object, index
+
+
+ 使用：
+```
+  this.$refs.canvas.moveToshow(object, index)
+```
 
 ## Changelog
 
@@ -349,5 +446,19 @@ this.$refs.canvas.createElement(name, options)
 
 ### 2022.05.25
 
-> v0.0.8 \* 修复画布的点击感应透明的问题
+> v0.0.8 \* 修复画布的点击感应透明的问题,修复条码不能旋转的问题
+
+### 2022.05.26
+
+> v0.0.9 \* 新增API接口
+
+- 新增api 水平居中分布
+- 新增api 垂直居中分布
+- 新增api 左对齐
+- 新增api 水平居中对齐
+- 新增api 右对齐
+- 新增api 顶对齐
+- 新增api 垂直居中对齐
+- 新增api 底对齐 
+- 新增api 移动层级
 

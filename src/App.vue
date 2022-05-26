@@ -66,9 +66,21 @@
       <button @click="draw('Html')">Html</button>
     </div>
 
-     <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
-      <button @click="draw('TextRect')">TextRect</button>
-      <button @click="draw('textboxnew')">textboxnew</button>
+     <div style="position: fixed; top:0; right:20px; display: flex; flex-direction: column;">
+      <button @click="$refs.canvas.toHorizontalCenterDistribution()">水平居中分布</button>
+      <button @click="$refs.canvas.toVerticalCenterDistribution()">垂直居中分布</button>
+     </div>
+
+    <div style="position: fixed; top:0; right:120px; display: flex; flex-direction: column;">
+      <button @click="$refs.canvas.toTopAlign()">顶对齐</button>
+      <button @click="$refs.canvas.toVerticalCenterAlign()">垂直居中对齐</button>
+      <button @click="$refs.canvas.toBottomAlign()">底对齐</button>
+     </div>
+
+    <div style="position: fixed; top:0; right:220px; display: flex; flex-direction: column;">
+      <button @click="$refs.canvas.toLeftAlign()">左对齐</button>
+      <button @click="$refs.canvas.toHorizontalCenterAlign()">水平居中对齐</button>
+      <button @click="$refs.canvas.toRightAlign()">右对齐</button>
      </div>
 
      <!-- <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
@@ -76,6 +88,11 @@
       <button @click="draw('tableView')">tableView</button>
       <button @click="draw('tableList')">tableList</button>
     </div> -->
+
+    <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
+      <button @click="draw('TextRect')">TextRect</button>
+      <button @click="draw('textboxnew')">textboxnew</button>
+     </div>
 
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
@@ -304,7 +321,7 @@ export default {
             imgText: '69012345679',
             color: '#f00',
             visible: true,
-            angle: 270
+            angle: 0
 
           }
           break

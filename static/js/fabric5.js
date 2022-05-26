@@ -31395,6 +31395,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             });
 
+            this.on('selected', async (e) => {
+                // console.log('选择',e)
+                
+            })
 
             this.on('moving', async (e) => {
                 //console.log('moving----------------',this);
