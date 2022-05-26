@@ -146,35 +146,21 @@ export default {
       this.cid = val
     },
     boxWidth (val, oldval) {
+      console.log('', val, oldval)
       if (val !== oldval) {
         this.canvas.setWidth(val)
         this.canvas.setHeight(this.boxHeight)
         this.changeBigZoom()
-        setTimeout(() => {
-          if (this.zoom !== 1) {
-            this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
-          }
-        }, 100)
-
-        this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
-        this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
-        this.setCursor(99)
+        this.changeWH({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
       }
     },
     boxHeight (val, oldval) {
+      console.log('', val, oldval)
       if (val !== oldval) {
         this.canvas.setWidth(this.boxWidth)
         this.canvas.setHeight(val)
         this.changeBigZoom()
-        setTimeout(() => {
-          if (this.zoom !== 1) {
-            this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
-          }
-        }, 100)
-
-        this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
-        this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
-        this.setCursor(99)
+        this.changeWH({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
       }
     }
   },
@@ -480,8 +466,9 @@ export default {
       options = {
         width: options.width ? options.width : this.width,
         height: options.height ? options.height : this.height,
-        backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : '#fff'
+        backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : ''
       }
+
       this.xLeft = -left
       this.yTop = -top
       // eslint-disable-next-line no-undef
@@ -516,6 +503,12 @@ export default {
         excludeFromExport: true,
         perPixelTargetFind: false
       })
+      if (options.backgroundColor === '') {
+        rect.set({
+          stroke: '#333',
+          strokeWidth: 1
+        })
+      }
       this.canvas.add(rect)
       rect.sendToBack()
       this.canvas.requestRenderAll()
@@ -569,8 +562,9 @@ export default {
       }
       console.log(x1, x2, y1, y2)
       let bg = that.returnbg()
-      // console.log(bg)
-      that.canvas.remove(...that.canvas.getObjects('sMask'))
+      if (that.returnsMask().length && that.returnsMask().length > 0) {
+        that.canvas.remove(...that.returnsMask())
+      }
       const pathOption = {
         type: 'Rect',
         selectable: false,
@@ -641,7 +635,7 @@ export default {
       that.canvas.requestRenderAll()
       that.canvas.renderAll()
 
-      this.canvas.remove(...this.canvas.getObjects('sRuler')) // 删除已有的标尺
+      this.canvas.remove(...this.returnsRuler()) // 删除已有的标尺
       setTimeout(() => {
         that.drawRulerInit({
           axisWidth: 1,
@@ -663,21 +657,40 @@ export default {
         height: options.height ? options.height : this.height,
         backgroundColor: options.backgroundColor !== '' ? options.backgroundColor : this.backgroundColor
       }
+
+      this.canvas.setWidth(this.boxWidth)
+      this.canvas.setHeight(this.boxHeight)
       let bg = this.returnbg()
       this.canvas.remove(bg)
-      this.changeBigZoom()
-      this.initbg(options)
-      this.getBlack({width: options.width, height: options.height}, this.BgColor)
+      let that = this
+      setTimeout(() => {
+        console.warn(this.returnbg())
+        that.changeBigZoom()
+        that.initbg(options) // 画布初始化
+        that.getBlack({width: options.width, height: options.height}, that.BgColor) // 遮罩
+      }, 100)
+      // this.setCursor(99)
+
       this.$emit('canvasToData', bg, '画布宽高颜色改变')
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
     // 改变画布背景颜色
     changeBackgroundColor (color) {
+      console.log(color)
       let bg = this.returnbg()
-      bg.set({
-        fill: color
-      })
+      if (color !== null && color !== undefined && color !== '') {
+        bg.set({
+          fill: color
+        })
+      } else {
+        bg.set({
+          fill: '#E1E6F6',
+          stroke: '#333',
+          strokeWidth: 1,
+          shadow: 'rgba(0, 0, 0, 0.8) 5px 5px 2px'
+        })
+      }
       this.$emit('canvasToData', bg, '画布颜色改变')
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
@@ -799,6 +812,28 @@ export default {
       objects.forEach((one) => {
         if (one.isType === 'sBg') {
           returndata = one
+        }
+      })
+      return returndata
+    },
+    // 返回标尺
+    returnsRuler () {
+      let objects = this.canvas.getObjects()
+      let returndata = []
+      objects.forEach((one) => {
+        if (one.isType === 'sRuler') {
+          returndata.push(one)
+        }
+      })
+      return returndata
+    },
+    // 返回背景
+    returnsMask () {
+      let objects = this.canvas.getObjects()
+      let returndata = []
+      objects.forEach((one) => {
+        if (one.isType === 'sMask') {
+          returndata.push(one)
         }
       })
       return returndata

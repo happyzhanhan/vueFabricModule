@@ -4,9 +4,9 @@
       <inputSearchVue pname="width" v-model="width"></inputSearchVue>
       <inputSearchVue pname="height" v-model="height"></inputSearchVue>
       <inputSearchVue pname="background" v-model="background"></inputSearchVue>
-      <button @click="commit">改变宽高</button>
+      <button @click="changeWH">改变宽高颜色</button>
       <button @click="changecolor">改变背景颜色</button>
-      <button @click="changebox">改变窗口大小</button>
+      <!-- <button @click="changebox">改变窗口大小</button> -->
       <button @click="createImgae">createImgae</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png')">改变url</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHXi6AeIf6AAAHJzlefYU987.png')">改变url</button>
@@ -102,6 +102,7 @@
 </template>
 
 <script>
+import { debounce } from './utils/debounceThrottle.js' // 事件注册
 import inputSearchVue from './components/inputSearch.vue'
 import vuefabricmodule from './components/vuefabricmodule.vue'
 export default {
@@ -114,7 +115,7 @@ export default {
       id: 1,
       width: '2000',
       height: '600',
-      boxWidth: document.documentElement.clientWidth,
+      boxWidth: 800,
       boxHeight: document.documentElement.clientHeight - 200,
       background: '#f0f',
       zoom: 1,
@@ -209,28 +210,27 @@ export default {
   mounted () {
     let that = this
     window.onresize = function () {
-      that.changebox()
+      debounce(() => { // 防抖执行计算画布宽高
+        that.changebox()
+      }, 1000)
     }
   },
   methods: {
     // 改变画布窗口大小
     changebox () {
-      this.boxWidth = document.documentElement.clientWidth
-      this.boxHeight = document.documentElement.clientHeight - 200
-      this.showcanvasbox = false
-      setTimeout(() => {
-        this.showcanvasbox = true
-      }, 100)
+      this.$nextTick(() => {
+        this.boxWidth = document.documentElement.clientWidth
+        this.boxHeight = document.documentElement.clientHeight - 200
+      })
     },
-    commit () {
+    // 改变宽高颜色
+    changeWH () {
       console.log('width:', this.width, 'height:', this.height)
       this.$refs.canvas.changeWH({width: parseInt(this.width), height: parseInt(this.height), backgroundColor: this.background})
     },
+    // 改变画布颜色
     changecolor () {
-      this.$refs.canvas.changeBackgroundColor('#f00')
-    },
-    changeZoomTo (zoom) {
-      this.zoom = parseFloat(zoom.toFixed(2))
+      this.$refs.canvas.changeBackgroundColor('')
     },
     // 点击画组件
     async draw (name) {
@@ -588,6 +588,10 @@ export default {
     idAdd (id) {
       console.log('新增id:', id)
     },
+    // 缩放回调
+    changeZoomTo (zoom) {
+      this.zoom = parseFloat(zoom.toFixed(2))
+    },
     copy () {
       let copydata = this.$refs.canvas.copyData()
       console.log(copydata)
@@ -612,7 +616,7 @@ export default {
   color: #2c3e50;
 }
 .canvasbox{
-  width: 100%;
+  width: 800px;
   /* height: 800px; */
   overflow: auto;
   margin: 0 auto;
