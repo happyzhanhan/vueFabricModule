@@ -96,7 +96,7 @@
 
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
-    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @canvasToData="canvasToData" ></vuefabricmodule>
+    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" ></vuefabricmodule>
     </div>
   </div>
 </template>
@@ -585,8 +585,17 @@ export default {
     canvasToData (obj, name) {
       console.log('键盘移动回调：', name, obj)
     },
+    // 新增回调
     idAdd (id) {
       console.log('新增id:', id)
+    },
+    // 删除回调
+    deleteId (ids) {
+      console.log('删除id:', ids)
+    },
+    // 选择回调
+    selectId (ids) {
+      console.log('选择id:', ids)
     },
     // 缩放回调
     changeZoomTo (zoom) {

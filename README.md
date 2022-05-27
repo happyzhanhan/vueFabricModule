@@ -132,6 +132,7 @@ this.$refs.canvas.方法名(params)
 > changeWH(options) 改变宽高，并且居中适配显示
 
  options:{}
+ 
 | options        | Type   | Default             | Description   |
 | -------------- | ------ | ------------------- | ------------- |
 |width           | Number | this.width          | 重置宽        |
@@ -146,6 +147,7 @@ this.$refs.canvas.方法名(params)
 > changeBackgroundColor(color) 仅改变画布颜色
 
 参数：
+
 | options        | Type    | Default             | Description                                  |
 | -------------- | ------  | ------------------- | -------------------------------------------- |
 | color          | String  | '#fff'              | 画布颜色                                     |
@@ -158,6 +160,7 @@ this.$refs.canvas.方法名(params)
 > changemoveing(bol) 改变画布操作状态是 抓手：可以移动、缩放，不可选择， 箭头：不可移动缩放，可选择
 
 参数：
+
 | options        | Type    | Default             | Description                                  |
 | -------------- | ------  | ------------------- | -------------------------------------------- |
 | bol            | Boolean | false               | true:可以移动缩放抓手，false:不可移动缩放箭头 |
@@ -461,4 +464,16 @@ this.$refs.canvas.createElement(name, options)
 - 新增api 垂直居中对齐
 - 新增api 底对齐 
 - 新增api 移动层级
+
+### 2022.05.27
+
+> v0.0.11 \* 新增API接口
+
+- 新增api 回调选择的id集合
+- 新增api 新增根据ids id删除元素的接口
+- 新增api 新增根据ids id设置元素活跃的接口
+- 修复 宽高颜色设置的bug
+- 背景颜色允许不填透明色，但是加边框
+- 修复文本TextRect组件多选选择移动的bug
+
 

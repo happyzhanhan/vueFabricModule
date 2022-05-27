@@ -387,12 +387,26 @@ export default {
         options.target.hasRotatingPoint = false
         options.target.hasControls = false
       }
+      // console.log('选择元素selection:created', options.selected)
+      let selectid = []
+      options.selected.forEach(one => {
+        selectid.push(one.id)
+      })
+      that.$emit('selectId', selectid)
       that.$emit('selection:created', options)
     })
     this.canvas.on('selection:updated', function (options) {
+      // console.log('选择元素selection:updated', options.selected)
+      let selectid = []
+      options.selected.forEach(one => {
+        selectid.push(one.id)
+      })
+      that.$emit('selectId', selectid)
       that.$emit('selection:updated', options)
     })
     this.canvas.on('selection:cleared', function (options) {
+      // console.log('选择元素selection:cleared', options)
+      that.$emit('selectId', [])
       that.$emit('selection:cleared', options)
     })
     this.canvas.on('before:selection:cleared', function (options) {
@@ -403,6 +417,10 @@ export default {
     })
     this.canvas.on('object:removed', function (options) {
       that.$emit('object:removed', options)
+    })
+    this.canvas.on('object:selected', function (options) {
+      // console.log('选择元素object:selected', options)
+      that.$emit('object:selected', options)
     })
     this.canvas.on('object:modified', function (options) {
       that.$emit('object:modified', options)
@@ -1157,6 +1175,50 @@ export default {
       this.canvas.remove(obj)
       this.canvas.renderAll()
     },
+    // 删除指定ID
+    deleteObjById (id) {
+      this.discardActive()
+      let allobjects = this.getObjectsNew()
+      allobjects.forEach((one) => {
+        if (one.id === id) {
+          this.removeObj(one)
+        }
+      })
+    },
+    // 删除指定IDs
+    deleteObjByIds (ids) {
+      this.discardActive()
+      let allobjects = this.getObjectsNew()
+      ids.forEach(id => {
+        allobjects.forEach((one) => {
+          if (one.id === id) {
+            this.removeObj(one)
+          }
+        })
+      })
+    },
+    // 指定ID活跃
+    setActiveById (id) {
+      this.discardActive()
+      let allobjects = this.getObjectsNew()
+      allobjects.forEach((one) => {
+        if (one.id === id) {
+          this.setActiveObject(one)
+        }
+      })
+    },
+    // 指定IDs活跃
+    setActiveByIds (ids) {
+      this.discardActive()
+      let allobjects = this.getObjectsNew()
+      ids.forEach(id => {
+        allobjects.forEach((one) => {
+          if (one.id === id) {
+            this.setActiveObject(one)
+          }
+        })
+      })
+    },
     // 新增指定元素
     addObj (obj) {
       this.canvas.add(obj)
@@ -1262,6 +1324,13 @@ export default {
             canvaobjs.push(canvaobj)
           }
         }
+        setTimeout(() => {
+          let selectid = []
+          canvaobjs.forEach(one => {
+            selectid.push(one.id)
+          })
+          this.$emit('selectId', selectid)
+        }, 10)
         // eslint-disable-next-line no-undef
         var sel = new fabric.ActiveSelection(canvaobjs, { // 多元素混合选中
           canvas: this.canvas
