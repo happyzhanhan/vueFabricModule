@@ -476,4 +476,10 @@ this.$refs.canvas.createElement(name, options)
 - 背景颜色允许不填透明色，但是加边框
 - 修复文本TextRect组件多选选择移动的bug
 
+> v0.0.12 \* 修复bug
+
+- 修复组合shift选择没有返回id
+- 新增选择的id回调selectId
+- 根据id删除新增动画效果
+
 

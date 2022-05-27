@@ -227,6 +227,7 @@ export default {
     // eslint-disable-next-line no-undef
     fabric.Object.prototype.hasControls = true
     this.canvas.skipTargetFind = false
+    this.canvas.FX_DURATION = 500 // 设置动画时长，默认500毫秒
 
     this.canvas.setWidth(this.boxWidth)
     this.canvas.setHeight(this.boxHeight)
@@ -396,16 +397,27 @@ export default {
       that.$emit('selection:created', options)
     })
     this.canvas.on('selection:updated', function (options) {
-      // console.log('选择元素selection:updated', options.selected)
+      // console.log('选择元素selection:updated', options)
       let selectid = []
-      options.selected.forEach(one => {
-        selectid.push(one.id)
-      })
+      if (options.target._objects) {
+        options.target._objects.forEach(one => {
+          selectid.push(one.id)
+        })
+      } else {
+        options.selected.forEach(one => {
+          selectid.push(one.id)
+        })
+      }
       that.$emit('selectId', selectid)
       that.$emit('selection:updated', options)
     })
     this.canvas.on('selection:cleared', function (options) {
       // console.log('选择元素selection:cleared', options)
+      if (options.deselected) {
+        options.deselected.forEach(one => {
+          one.set('opacity', 1) // 解决sheift选择元素透明度0.8恢复不了的问题
+        })
+      }
       that.$emit('selectId', [])
       that.$emit('selection:cleared', options)
     })
@@ -1181,7 +1193,13 @@ export default {
       let allobjects = this.getObjectsNew()
       allobjects.forEach((one) => {
         if (one.id === id) {
-          this.removeObj(one)
+          // this.removeObj(one)
+          this.canvas.fxRemove(one, {
+            onComplete () {
+              console.log('删除成功后调用')
+            }
+          })
+          this.canvas.renderAll()
         }
       })
     },
@@ -1192,7 +1210,13 @@ export default {
       ids.forEach(id => {
         allobjects.forEach((one) => {
           if (one.id === id) {
-            this.removeObj(one)
+            // this.removeObj(one)
+            this.canvas.fxRemove(one, {
+              onComplete () {
+                console.log('删除成功后调用')
+              }
+            })
+            this.canvas.renderAll()
           }
         })
       })
