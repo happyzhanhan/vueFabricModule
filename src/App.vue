@@ -7,7 +7,7 @@
       <button @click="changeWH">改变宽高颜色</button>
       <button @click="changecolor">改变背景颜色</button>
       <!-- <button @click="changebox">改变窗口大小</button> -->
-      <button @click="createImgae">createImgae</button>
+      <button @click="getZoom">getZoom</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png')">改变url</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHXi6AeIf6AAAHJzlefYU987.png')">改变url</button>
     </div>
@@ -621,8 +621,8 @@ export default {
     getLocalPointer () {
       this.$refs.canvas.getLocalPointer()
     },
-    createImgae () {
-      console.log(1)
+    getZoom () {
+      console.log(this.$refs.canvas.getZoom())
     }
   }
 }

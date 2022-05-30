@@ -707,7 +707,7 @@ export default {
       }, 100)
       // this.setCursor(99)
 
-      this.$emit('canvasToData', bg, '画布宽高颜色改变')
+      this.$emit('canvasToData', bg, 'canvaswhcolor')
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
@@ -727,7 +727,7 @@ export default {
           shadow: 'rgba(0, 0, 0, 0.8) 5px 5px 2px'
         })
       }
-      this.$emit('canvasToData', bg, '画布颜色改变')
+      this.$emit('canvasToData', bg, 'canvasColor')
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
@@ -1560,7 +1560,7 @@ export default {
             }
           }
         })
-
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1594,7 +1594,7 @@ export default {
             }
           }
         })
-
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1627,7 +1627,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'LeftAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.requestRenderAll()
 
         this.canvas.renderTop()
@@ -1658,7 +1658,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'HorizontalCenterAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1688,7 +1688,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'RightAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1718,7 +1718,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'TopAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1746,7 +1746,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'VerticalCenterAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1775,7 +1775,7 @@ export default {
             }
           }
         })
-        this.$emit('canvasToData', obj, 'BottomAlign')
+        this.$emit('canvasToData', obj, 'align')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
