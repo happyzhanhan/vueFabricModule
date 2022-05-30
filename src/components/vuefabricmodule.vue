@@ -745,6 +745,10 @@ export default {
         this.$emit('changeZoomTo', n)
       }, 100)
     },
+    // 获取当前的比例
+    getZoom () {
+      return this.canvas.getZoom()
+    },
     // 按照1:1缩放
     changeOneZoom () {
       this.canvas.setZoom(1)
