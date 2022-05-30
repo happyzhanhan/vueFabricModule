@@ -96,7 +96,7 @@
 
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
-    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" ></vuefabricmodule>
+    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved" @object:modified="objectmodified"></vuefabricmodule>
     </div>
   </div>
 </template>
@@ -584,6 +584,18 @@ export default {
     },
     canvasToData (obj, name) {
       console.log('键盘移动回调：', name, obj)
+    },
+    objectrotated (obj) {
+      console.log('objectrotated', obj)
+    },
+    objectscaled (obj) {
+      console.log('objectscaled', obj)
+    },
+    objectmoved (obj) {
+      console.log('objectmoved', obj)
+    },
+    objectmodified (obj) {
+      console.log('0 --- objectmodified', obj)
     },
     // 新增回调
     idAdd (id) {

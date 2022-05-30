@@ -122,6 +122,9 @@ new Vue({
 | object:rotating          | event | object rotating                                |
 | object:scaling           | event | object scaling                                 |
 | object:moving            | event | object moving                                  |
+| object:rotated           | event | object rotated                                 |
+| object:scaled            | event | object scaled                                  |
+| object:moved             | event | object moved                                   |
 
 ### 方法调用
 调用格式：
@@ -482,4 +485,6 @@ this.$refs.canvas.createElement(name, options)
 - 新增选择的id回调selectId
 - 根据id删除新增动画效果
 
+### 2022.05.30
 
+> v0.0.13 \* 新增几个事件的回调

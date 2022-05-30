@@ -474,6 +474,12 @@ export default {
         // that.setActiveObject(options.target)
       }
     })
+    this.canvas.on('object:rotated', function (options) {
+      that.$emit('object:rotated', options)
+    })
+    this.canvas.on('object:moved', function (options) {
+      that.$emit('object:moved', options)
+    })
   },
   methods: {
     // 初始化背景
