@@ -258,7 +258,7 @@ export default {
             obj.left = parseInt(obj.left - 1)
           }
         })
-        that.$emit('canvasToData', that.getEditObj(), '左移-1 更新')
+        that.$emit('canvasToData', that.getEditObj(), '←-1')
 
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
@@ -274,7 +274,7 @@ export default {
             obj.top = parseInt(obj.top - 1)
           }
         })
-        that.$emit('canvasToData', that.getEditObj(), '上移-1 更新')
+        that.$emit('canvasToData', that.getEditObj(), '↑-1')
 
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
@@ -290,7 +290,7 @@ export default {
             obj.left = parseInt(obj.left + 1)
           }
         })
-        that.$emit('canvasToData', that.getEditObj(), '右移+1 更新')
+        that.$emit('canvasToData', that.getEditObj(), '→+1')
 
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
@@ -306,7 +306,7 @@ export default {
             obj.top = parseInt(obj.top + 1)
           }
         })
-        that.$emit('canvasToData', that.getEditObj(), '下移+1 更新')
+        that.$emit('canvasToData', that.getEditObj(), '↓+1')
 
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
@@ -1484,6 +1484,11 @@ export default {
       this.canvas.setActiveObject(obj)
       this.canvas.renderAll()
     },
+    // 渲染
+    renderAll () {
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
     // 删除当前活跃元素 (键盘Delete)
     removeActiveObject () {
       let obj = this.canvas.getActiveObject()
@@ -1618,7 +1623,7 @@ export default {
             }
           }
         })
-
+        this.$emit('canvasToData', obj, 'LeftAlign')
         this.canvas.requestRenderAll()
 
         this.canvas.renderTop()
@@ -1649,6 +1654,7 @@ export default {
             }
           }
         })
+        this.$emit('canvasToData', obj, 'HorizontalCenterAlign')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1678,6 +1684,7 @@ export default {
             }
           }
         })
+        this.$emit('canvasToData', obj, 'RightAlign')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1707,6 +1714,7 @@ export default {
             }
           }
         })
+        this.$emit('canvasToData', obj, 'TopAlign')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1734,6 +1742,7 @@ export default {
             }
           }
         })
+        this.$emit('canvasToData', obj, 'VerticalCenterAlign')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }
@@ -1762,6 +1771,7 @@ export default {
             }
           }
         })
+        this.$emit('canvasToData', obj, 'BottomAlign')
         this.canvas.renderTop()
         this.canvas.renderAll()
       }

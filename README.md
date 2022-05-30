@@ -488,3 +488,4 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.05.30
 
 > v0.0.13 \* 新增几个事件的回调
+> v0.0.14 \* 页面渲染的方法和布局回调改变
