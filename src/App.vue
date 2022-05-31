@@ -8,6 +8,8 @@
       <button @click="changecolor">改变背景颜色</button>
       <!-- <button @click="changebox">改变窗口大小</button> -->
       <button @click="getZoom">getZoom</button>
+      <button @click="preview">预览</button>
+      <button @click="cut">当前元素剪切</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png')">改变url</button>
       <button @click="$refs.canvas.setSrc($refs.canvas.getEditObj(), 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHXi6AeIf6AAAHJzlefYU987.png')">改变url</button>
     </div>
@@ -96,7 +98,7 @@
 
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
-    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="ALL" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved" @object:modified="objectmodified"></vuefabricmodule>
+    <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="NONE" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved" @object:modified="objectmodified"></vuefabricmodule>
     </div>
   </div>
 </template>
@@ -283,7 +285,7 @@ export default {
           break
 
         case 'Image':
-          let imgurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          let imgurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
             left: 10,
             top: 200,
@@ -295,6 +297,20 @@ export default {
           }
           let img = await this.loadImage(imgurl)
           console.log(img)
+          break
+        case 'Icon':
+          let iconurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          options = {
+            left: 100,
+            top: 200,
+            width: 200,
+            height: 100,
+            src: iconurl,
+            url: iconurl,
+            visible: true
+          }
+          let iimg = await this.loadImage(iconurl)
+          console.log(iimg)
           break
         case 'equalImage':
           let url = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png'
@@ -558,6 +574,7 @@ export default {
           }
       }
       // options.id = JSON.parse(JSON.stringify(this.id))
+      console.warn('创建类型：', name)
       canvaobj = await this.$refs.canvas.createElement(name, options)
       console.log('canvaobj:', canvaobj.id)
       // canvaobj.setControlsVisibility({
@@ -623,6 +640,16 @@ export default {
     },
     getZoom () {
       console.log(this.$refs.canvas.getZoom())
+    },
+    async preview () {
+      let img = await this.$refs.canvas.toDataUrlImg()
+      console.log('preview', img)
+    },
+    async cut () {
+      let obj = this.$refs.canvas.getEditObj()
+      console.log(obj)
+      let img = await this.$refs.canvas.toCutObject(obj)
+      console.log('cut', img)
     }
   }
 }

@@ -396,6 +396,26 @@ this.$refs.canvas.createElement(name, options)
   this.$refs.canvas.moveToshow(object, index)
 ```
 
+> toCutObject(object) 画布单个元素预览
+
+参数：object
+
+
+ 使用：
+```
+  this.$refs.canvas.toCutObject(object)
+```
+
+> toDataUrlImg 画布预览
+
+参数：无
+
+
+ 使用：
+```
+  this.$refs.canvas.toDataUrlImg()
+```
+
 ## Changelog
 
 ### 2022.05.16
@@ -491,3 +511,9 @@ this.$refs.canvas.createElement(name, options)
 > v0.0.14 \* 页面渲染的方法和布局回调改变
 > v0.0.15 \* getZoom获取当前缩放
 > v0.0.16 \* canvasToData横纵对齐回调
+
+### 2022.05.31
+
+> v0.0.17 \* 新增api 画布预览和画布内组件切割生成图片
+
+- Image元素换方法解决预览跨域报错

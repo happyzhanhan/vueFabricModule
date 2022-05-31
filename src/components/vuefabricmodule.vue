@@ -3152,67 +3152,64 @@ export default {
         }
       })
     },
-    // 获取创建的图片结果
+    // 创建图片可跨域生成预览
     createURLImage (options) {
       return new Promise(function (resolve, reject) {
         options.src = options.src ? options.src : './static/images/img.svg'
 
-        // console.log(options.src);
-        var downImg = new Image()
-        downImg.crossOrigin = 'anonymous'
-        downImg.src = options.src
+        var img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = options.src
+        img.setAttribute('crossOrigin', 'Anonymous')
 
-        downImg.onload = function () {
+        img.onload = function () {
           // eslint-disable-next-line no-undef
-          fabric.Image.fromURL(options.src, function (img) {
-            img.crossOrigin = 'Anonymous'
-            options.crossOrigin = 'Anonymous'
+          var canvasImage = new fabric.Image(img, {
+            id: options.id ? options.id : 'image',
+            copyId: options.copyId,
+            type: options.type ? options.type : 0,
+            isType: 'Image',
+            component: 'component',
+            isDiff: 'static',
+            padding: 0,
+            flipX: false,
+            flipY: false,
+            originX: 'left',
+            originY: 'top',
+            stopContextMenu: true, //  禁掉鼠标右键默认事件
+            minScaleLimit: 0.0001, //  最小限制
+            lockSkewingX: true, //  禁掉按住shift时的变形
+            lockSkewingY: true,
 
-            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
-              id: options.id ? options.id : 'image',
-              copyId: options.copyId,
-              type: options.type ? options.type : 0,
-              isType: 'Image',
-              component: 'component',
-              isDiff: 'static',
-              padding: 0,
-              flipX: false,
-              flipY: false,
-              originX: 'left',
-              originY: 'top',
-              stopContextMenu: true, //  禁掉鼠标右键默认事件
-              minScaleLimit: 0.0001, //  最小限制
-              lockSkewingX: true, //  禁掉按住shift时的变形
-              lockSkewingY: true,
+            left: options.left,
+            top: options.top,
+            angle: options.angle ? options.angle : 0,
+            name: options.name ? options.name : 'Image',
 
-              left: options.left,
-              top: options.top,
-              angle: options.angle ? options.angle : 0,
-              name: options.name ? options.name : 'Image',
+            scaleX: options.width / img.width,
+            scaleY: options.height / img.height,
+            width: img.width,
+            height: img.height,
+            stroke: options.stroke ? options.stroke : '', // 边框颜色
+            strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+            strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
 
-              scaleX: options.width / img.width,
-              scaleY: options.height / img.height,
-              width: img.width,
-              height: img.height,
-              stroke: options.stroke ? options.stroke : '', // 边框颜色
-              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
-              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+            selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+            visible: options.visible, // 元素是否可见
+            hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
 
-              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
-              visible: options.visible, // 元素是否可见
-              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
-
-              eyeshow: options.eyeshow,
-              screenIndex: options.screenIndex
-            })
-            resolve(img)
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
           })
+          resolve(canvasImage)
         }
-        downImg.onerror = function (err) {
+        img.onerror = function (err) {
           console.warn(err)
           options.src = './static/images/img.svg'
           // eslint-disable-next-line no-undef
           fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
             img.set({ // 图片不设置宽度高度，来定义图片放大缩小
               id: options.id ? options.id : 'image',
               type: options.type ? options.type : 0,
@@ -3254,72 +3251,65 @@ export default {
         }
       })
     },
-    // 获取创建的图片结果
+    // 创建图片只可本地图片生成预览，远程图片跨域报错
     createIcon (options) {
       return new Promise(function (resolve, reject) {
         options.src = options.src ? options.src : './static/images/img.svg'
 
-        var downImg = new Image()
-        downImg.crossOrigin = 'anonymous'
-        downImg.src = options.src
+        var img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = options.src
 
-        downImg.onload = function () {
+        img.onload = function () {
+          // fabric.Image.fromURL(options.src, function (img) {
+          // eslint-disable-next-line no-undef
+          var canvasImage = new fabric.Image(img, { // 图片不设置宽度高度，来定义图片放大缩小
+            id: options.id ? options.id : 'image',
+            copyId: options.copyId,
+            zIndex: options.zIndex ? options.zIndex : options.id,
+            type: options.type ? options.type : 0,
+            isType: 'Icon',
+            component: 'component',
+            isDiff: 'static',
+            padding: 0,
+            flipX: false,
+            flipY: false,
+            originX: 'left',
+            originY: 'top',
+            stopContextMenu: true, //  禁掉鼠标右键默认事件
+            minScaleLimit: 0.0001, //  最小限制
+            lockSkewingX: true, //  禁掉按住shift时的变形
+            lockSkewingY: true,
+
+            left: options.left,
+            top: options.top,
+            angle: options.angle ? options.angle : 0,
+            name: options.name ? options.name : 'Image',
+
+            scaleX: options.width / img.width,
+            scaleY: options.height / img.height,
+            width: img.width,
+            height: img.height,
+            stroke: options.stroke ? options.stroke : '', // 边框颜色
+            strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+            strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+            selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+            visible: options.visible !== false ? true : options.visible, // 元素是否可见
+            hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+
+          resolve(canvasImage)
+        }
+        img.onerror = function () {
+          options.src = './static/images/img.svg'
           // eslint-disable-next-line no-undef
           fabric.Image.fromURL(options.src, function (img) {
             img.crossOrigin = 'Anonymous'
             options.crossOrigin = 'Anonymous'
-
-            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
-              id: options.id ? options.id : 'image',
-              copyId: options.copyId,
-              zIndex: options.zIndex ? options.zIndex : options.id,
-              type: options.type ? options.type : 0,
-              isType: 'Icon',
-              component: 'component',
-              isDiff: 'static',
-              padding: 0,
-              flipX: false,
-              flipY: false,
-              originX: 'left',
-              originY: 'top',
-              stopContextMenu: true, //  禁掉鼠标右键默认事件
-              minScaleLimit: 0.0001, //  最小限制
-              lockSkewingX: true, //  禁掉按住shift时的变形
-              lockSkewingY: true,
-
-              left: options.left,
-              top: options.top,
-              angle: options.angle ? options.angle : 0,
-              name: options.name ? options.name : 'Image',
-
-              scaleX: options.width / img.width,
-              scaleY: options.height / img.height,
-              width: img.width,
-              height: img.height,
-              stroke: options.stroke ? options.stroke : '', // 边框颜色
-              strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
-              strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
-
-              selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
-              visible: options.visible !== false ? true : options.visible, // 元素是否可见
-              hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
-
-              eyeshow: options.eyeshow,
-              screenIndex: options.screenIndex
-            })
-            // canvas.add(img)
-            // img.setCoords()
-            // that.setActiveObject(img)
-            // canvas.renderAll.bind(canvas)
-            // that.setTop()
-
-            resolve(img)
-          })
-        }
-        downImg.onerror = function () {
-          options.src = './static/images/img.svg'
-          // eslint-disable-next-line no-undef
-          fabric.Image.fromURL(options.src, function (img) {
             img.set({ // 图片不设置宽度高度，来定义图片放大缩小
               id: options.id ? options.id : 'image',
               copyId: options.copyId,
@@ -4345,6 +4335,100 @@ export default {
           reject(err)
         }
       })
+    },
+    // 图片转base64
+    imgToBase64 (imgSrc, imgType, callback) {
+      let type = imgType || 'image/png'
+      let dataURL
+      let img = new Image()
+      // 允许资源跨域使用
+      img.setAttribute('crossOrigin', 'anonymous')
+      img.src = imgSrc
+      img.onload = function () {
+        let imgWidth = img.width
+        let imgHeight = img.height
+
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        canvas.width = imgWidth
+        canvas.height = imgHeight
+        ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
+        dataURL = canvas.toDataURL(type)
+        console.log(dataURL)
+        callback && callback(dataURL)
+        return dataURL
+      }
+    },
+    // 生成全画布预览图
+    toDataUrl () {
+      let canvas = this.canvas
+      let dataURL = canvas.toDataURL({
+        format: 'jpeg',
+        quality: 1
+      })
+      return dataURL
+    },
+
+    // 切割画布
+    cutImg (img, x1, y1, x2, y2) {
+      // let canvas = this.canvas
+      let xStart = x1 * this.canvasZoom
+      let yStart = y1 * this.canvasZoom
+      let xEnd = x2 * this.canvasZoom
+      let yEnd = y2 * this.canvasZoom
+      return new Promise(function (resolve, reject) {
+        var dirtyWidth = yStart - xStart
+        var dirtyHeight = yEnd - xEnd
+        let canvas = document.createElement('canvas')
+        var nowText = canvas.getContext('2d')// 获取2d环境
+        var img1 = new Image()
+        // img1.crossOrigin="anonymous";
+        img1.src = img
+        var newCanvas = document.createElement('canvas')
+        var newText = newCanvas.getContext('2d')
+
+        img1.onload = function () {
+          nowText.drawImage(img1, 0, 0, canvas.width, canvas.height)// 绘制图像
+          var imgData = nowText.getImageData(x1, y1, dirtyWidth, dirtyHeight)// 获取截图画布像素数据
+          newCanvas.width = dirtyWidth
+          newCanvas.height = dirtyHeight
+          console.log(newCanvas.width, newCanvas.height)
+          newText.putImageData(imgData, 0, 0, 0, 0, newCanvas.width, newCanvas.height)// 将截取的图像放回画布上
+          var imgUrl = newCanvas.toDataURL('image/png')// 将图片转为dataURL(base64);
+          resolve(imgUrl)
+        }
+        img1.onerror = function () {
+          reject(new Error('Could not load image at '))
+        }
+      })
+    },
+    // 组件切割
+    async toCutObject (obj) {
+      if (!obj) { return true }
+      this.discardActive()
+      var dataImg = this.canvas.toDataURL({
+        format: 'jpeg',
+        multiplier: 2,
+        left: obj.oCoords.tl.x,
+        top: obj.oCoords.tl.y,
+        width: obj.width * obj.scaleX * this.canvasZoom,
+        height: obj.height * obj.scaleY * this.canvasZoom
+      })
+      return dataImg
+    },
+    // 预览
+    async toDataUrlImg () {
+      this.discardActive()
+      let bg = this.returnbg()
+      var dataImg = this.canvas.toDataURL({
+        format: 'jpeg',
+        multiplier: 2,
+        left: bg.oCoords.tl.x,
+        top: bg.oCoords.tl.y,
+        width: bg.width * this.canvasZoom,
+        height: bg.height * this.canvasZoom
+      })
+      return dataImg
     }
   }
 }
