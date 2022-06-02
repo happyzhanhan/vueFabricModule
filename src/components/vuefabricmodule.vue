@@ -4647,6 +4647,13 @@ export default {
         canvas.requestRenderAll()
         canvas.renderAll()
       }, 10)
+    },
+    // 文本退出编辑
+    exitEditing () {
+      let obj = this.getEditObj()
+      if (obj.isType !== 'TextRect-text') { return }
+      obj.exitEditing()
+      this.discardActive()
     }
   }
 }

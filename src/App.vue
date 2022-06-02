@@ -94,6 +94,7 @@
     <div style="position: fixed; top:0; right:320px; display: flex; flex-direction: column;">
       <button @click="changeTextType">切换自适应</button>
       <button @click="changeTextStyle">改变文本换行</button>
+      <button @click="$refs.canvas.exitEditing()">退出编辑</button>
      </div>
 
     <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
@@ -450,10 +451,10 @@ export default {
 
             visible: true,
             fontSize: 100,
-            textdemo: '测试的文字测试的文字测试的文字测试的文字测试的文字',
+            textdemo: '测试的',
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 2,
+            isElasticSize: 0,
 
             maxLines: 3,
             omitStyleText: '...',
@@ -682,6 +683,7 @@ export default {
       }
       // this.$refs.canvas.renderCanvas() // 画布渲染变化
     }
+
   }
 }
 </script>

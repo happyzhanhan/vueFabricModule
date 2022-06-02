@@ -523,3 +523,5 @@ this.$refs.canvas.createElement(name, options)
 > v0.0.18 \*新增api 文本自适应的类型改变和文字改变
 
 - 修复二维码缩放图层置顶问题，文本条码图片新增图层参数
+
+> v0.0.19 \* 新增api 文本退出编辑的
