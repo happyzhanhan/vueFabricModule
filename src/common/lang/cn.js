@@ -1,4 +1,4 @@
-export const m = {
+export const canvas = {
   layer: '顺序',
   MoveUpALayer: '上移一层',
   DownALayer: '下移一层',

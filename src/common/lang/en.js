@@ -1,4 +1,4 @@
-export const m = {
+export const canvas = {
   layer: 'Layer',
   MoveUpALayer: 'Move Up A Layer',
   DownALayer: 'Down A Layer',

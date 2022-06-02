@@ -91,6 +91,11 @@
       <button @click="draw('tableList')">tableList</button>
     </div> -->
 
+    <div style="position: fixed; top:0; right:320px; display: flex; flex-direction: column;">
+      <button @click="changeTextType">切换自适应</button>
+      <button @click="changeTextStyle">改变文本换行</button>
+     </div>
+
     <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
       <button @click="draw('TextRect')">TextRect</button>
       <button @click="draw('textboxnew')">textboxnew</button>
@@ -432,7 +437,7 @@ export default {
             hasRotatingPoint: true,
             width: 400,
             height: 100,
-            fontColor: '#f00',
+            fontColor: '#fff',
             rectColor: '',
             fill: '#fff',
             /* stroke:'#f00', */
@@ -442,22 +447,26 @@ export default {
             xRight: 0,
             yBot: 0,
             fontFamily: '微软雅黑',
-            textAlign: 'left',
-            maxLines: 10,
+
+            visible: true,
+            fontSize: 100,
+            textdemo: '测试的文字测试的文字测试的文字测试的文字测试的文字',
+            originXY: ['right', 'bottom'],
+
+            isElasticSize: 2,
+
+            maxLines: 3,
             omitStyleText: '...',
             omitStyle: 1,
             newline: '',
             minFontSize: 12,
-            isElasticSize: 1,
-            visible: true,
-            fontSize: 20,
-            textdemo: '123',
-            originXY: ['right', 'bottom']
+            textAlign: 'left',
+            verticalSpace: 0
 
-            // fontWeight:'bold',
-            //  linethrough:true,
-            //  underline:true,
-            //  fontStyle:"italic"
+            // fontWeight: 'bold',
+            // linethrough: true,
+            // underline: true,
+            // fontStyle: 'italic'
 
           }
           break
@@ -493,11 +502,11 @@ export default {
             verticalAlign: 0,
 
             icon: null,
-            ifBold: 0,
+            ifBold: 1,
             ifCondition: 0,
-            ifItalic: 0,
-            ifStrikeThrough: 0,
-            ifUnderline: 0,
+            ifItalic: 1,
+            ifStrikeThrough: 1,
+            ifUnderline: 1,
 
             itemOrder: 1,
             itemPictureNameId: null,
@@ -650,6 +659,28 @@ export default {
       console.log(obj)
       let img = await this.$refs.canvas.toCutObject(obj)
       console.log('cut', img)
+    },
+    changeTextType () {
+      let obj = this.$refs.canvas.getEditObj()
+      if (obj.isType !== 'TextRect') { return }
+      if (obj.isElasticSize === 0) {
+        obj.isElasticSize = 2
+      } else {
+        obj.isElasticSize = 0
+      }
+      this.$refs.canvas.changeTextType(obj, 'text123456')
+    },
+    changeTextStyle () {
+      let obj = this.$refs.canvas.getEditObj()
+      if (obj.isType !== 'TextRect') { return }
+      if (obj.isElasticSize === 0) {
+        obj.text.maxLines = 2
+        obj.text.verticalSpace = 100
+        obj.text.omitStyleText = '…'
+        obj.text.newline = '|'
+        this.$refs.canvas.textIsUsually(obj, '我|是一段文字我想看看|看切换换行的效果等等问题哦')
+      }
+      // this.$refs.canvas.renderCanvas() // 画布渲染变化
     }
   }
 }

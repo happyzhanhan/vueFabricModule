@@ -71,7 +71,7 @@ export default {
     },
     idno: {
       type: Number,
-      default: 1,
+      default: 0,
       required: true
     }
   },
@@ -87,48 +87,48 @@ export default {
           y: null
         },
         menulists: [
-          {
-            fnHandler: '',
-            icoName: 'fa fa-home fa-fw',
-            btnName: '图层',
-            children: [
-              {
-                fnHandler: 'toLastLayer',
-                icoName: 'fa fa-home fa-fw',
-                btnName: this.$t('m.MoveUpALayer')
-              },
-              {
-                fnHandler: 'toNextLayer',
-                icoName: 'fa fa-home fa-fw',
-                btnName: this.$t('m.DownALayer')
-              },
-              {
-                fnHandler: 'toTopLayer',
-                icoName: 'fa fa-home fa-fw',
-                btnName: this.$t('m.OnTheTopFloor')
-              },
-              {
-                fnHandler: 'toBottomLayer',
-                icoName: 'fa fa-home fa-fw',
-                btnName: this.$t('m.AtTheBottom')
-              }
-            ]
-          },
+          // {
+          //   fnHandler: '',
+          //   icoName: 'fa fa-home fa-fw',
+          //   btnName: '图层',
+          //   children: [
+          //     {
+          //       fnHandler: 'toLastLayer',
+          //       icoName: 'fa fa-home fa-fw',
+          //       btnName: this.$t('m.MoveUpALayer')
+          //     },
+          //     {
+          //       fnHandler: 'toNextLayer',
+          //       icoName: 'fa fa-home fa-fw',
+          //       btnName: this.$t('m.DownALayer')
+          //     },
+          //     {
+          //       fnHandler: 'toTopLayer',
+          //       icoName: 'fa fa-home fa-fw',
+          //       btnName: this.$t('m.OnTheTopFloor')
+          //     },
+          //     {
+          //       fnHandler: 'toBottomLayer',
+          //       icoName: 'fa fa-home fa-fw',
+          //       btnName: this.$t('m.AtTheBottom')
+          //     }
+          //   ]
+          // },
           {
             fnHandler: 'copypaste',
             icoName: 'fa fa-home fa-fw',
-            btnName: this.$t('m.copy')
+            btnName: this.$t('canvas.copy')
           },
           {
             fnHandler: 'removeEditObj',
             icoName: 'fa fa-home fa-fw',
-            btnName: this.$t('m.delete')
+            btnName: this.$t('canvas.delete')
           }
         ]
       },
       isMoveing: false, // 抓手可移动画布 ，箭头不可移动画布
       panning: false,
-      cid: 1, // 底层获取id
+      cid: 0, // 底层获取id
       qrcodeImg: '',
       xLeft: -200,
       yTop: -100
@@ -576,6 +576,34 @@ export default {
           this.canvas.renderAll()
         }
       })
+    },
+    // 所有组件顺序保持
+    objectSetZindex () {
+      setTimeout(() => {
+        let objects = this.getObjectsNew()
+        objects.forEach(obj => {
+          console.log(obj.id, obj.isType, obj.layer, obj.text)
+          this.moveToshow(obj, obj.layer)
+          // eslint-disable-next-line no-constant-condition
+          if (typeof obj.text === 'object') {
+            console.log(typeof obj.text, obj.text.layer)
+            this.moveToshow(obj.text, obj.text.layer)
+          }
+          this.renderAll()
+        })
+      }, 100)
+      // let objectsmore = this.getObjects()
+      // objectsmore.forEach(oneobj => {
+      //   console.warn(oneobj.id, oneobj.isType, oneobj.component, oneobj.layer)
+      //   if (oneobj.component) {
+      //     this.moveToshow(oneobj, oneobj.layer)
+      //     if (typeof oneobj.text === 'object') {
+      //       console.log(typeof oneobj.text, oneobj.text.layer)
+      //       this.moveToshow(oneobj.text, oneobj.text.layer)
+      //     }
+      //   }
+      //   this.renderAll()
+      // })
     },
     // 画遮罩区域
     getBlack (options, color) {
@@ -1313,6 +1341,7 @@ export default {
           object.copyId = JSON.parse(JSON.stringify(object.id))
           object.id = this.cid
           object.zIndex = this.cid
+          object.layer = this.cid
           object.visible = true
           object.top = object.top + 10 + this.yTop
           object.left = object.left + 10 + this.xLeft
@@ -1386,6 +1415,7 @@ export default {
         _clipboard.copyId = JSON.parse(JSON.stringify(_clipboard.id))
         _clipboard.id = that.cid
         _clipboard.zIndex = that.cid
+        _clipboard.layer = that.cid
         _clipboard.top = _clipboard.top + 10 + this.yTop
         _clipboard.left = _clipboard.left + 10 + this.xLeft
         _clipboard.visible = true
@@ -1492,6 +1522,13 @@ export default {
     renderAll () {
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
+    },
+    // 刷新渲染页面
+    renderCanvas () {
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+      this.canvas.renderAll.bind(this.canvas)
+      this.setTop()
     },
     // 删除当前活跃元素 (键盘Delete)
     removeActiveObject () {
@@ -1814,6 +1851,7 @@ export default {
           ...options,
           id: options.id ? options.id : that.cid,
           zIndex: options.zIndex ? options.zIndex : that.cid,
+          layer: options.layer ? options.layer : that.cid,
 
           component: 'component',
           isDiff: 'static',
@@ -2575,6 +2613,7 @@ export default {
             const rectOptions = {
               id: options.id,
               zIndex: options.zIndex ? options.zIndex : options.id,
+              layer: options.layer ? options.layer : options.id,
 
               copyId: options.copyId,
               type: options.type,
@@ -2626,6 +2665,7 @@ export default {
               newline: options.newline ? options.newline : '',
 
               verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize,
 
               visible: options.visible,
               eyeshow: options.eyeshow,
@@ -2635,6 +2675,7 @@ export default {
             const textOptions = {
               id: options.id,
               zIndex: options.zIndex + 0.5 ? options.zIndex + 0.5 : options.id + 0.5,
+              layer: options.layer ? options.layer : options.id,
               copyId: options.copyId,
               type: options.type,
               angle: options.angle,
@@ -2684,6 +2725,7 @@ export default {
               newline: options.newline ? options.newline : '',
 
               verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize,
 
               visible: options.visible,
               eyeshow: options.eyeshow,
@@ -3166,6 +3208,7 @@ export default {
           // eslint-disable-next-line no-undef
           var canvasImage = new fabric.Image(img, {
             id: options.id ? options.id : 'image',
+            layer: options.layer ? options.layer : options.id,
             copyId: options.copyId,
             type: options.type ? options.type : 0,
             isType: 'Image',
@@ -3212,6 +3255,7 @@ export default {
             options.crossOrigin = 'Anonymous'
             img.set({ // 图片不设置宽度高度，来定义图片放大缩小
               id: options.id ? options.id : 'image',
+              layer: options.layer ? options.layer : options.id,
               type: options.type ? options.type : 0,
               isType: 'Image',
               component: 'component',
@@ -3266,6 +3310,7 @@ export default {
           var canvasImage = new fabric.Image(img, { // 图片不设置宽度高度，来定义图片放大缩小
             id: options.id ? options.id : 'image',
             copyId: options.copyId,
+            layer: options.layer ? options.layer : options.id,
             zIndex: options.zIndex ? options.zIndex : options.id,
             type: options.type ? options.type : 0,
             isType: 'Icon',
@@ -3313,6 +3358,7 @@ export default {
             img.set({ // 图片不设置宽度高度，来定义图片放大缩小
               id: options.id ? options.id : 'image',
               copyId: options.copyId,
+              layer: options.layer ? options.layer : options.id,
               zIndex: options.zIndex ? options.zIndex : options.id,
               type: options.type ? options.type : 0,
               isType: 'Icon',
@@ -3568,6 +3614,7 @@ export default {
 
             id: options.id,
             copyId: options.copyId,
+            layer: options.layer ? options.layer : options.id,
             zIndex: options.zIndex,
             width: document.getElementById(barid).width, // document.getElementById('barcode').width, >options.width?document.getElementById('barcode').width:options.width
             color: options.color ? options.color : '#000000',
@@ -3607,6 +3654,7 @@ export default {
             top: 0,
 
             id: options.id,
+            layer: options.layer ? options.layer : options.id,
             zIndex: options.zIndex,
             copyId: options.copyId,
 
@@ -3631,6 +3679,7 @@ export default {
             originXY: [options.originXY[0], 'top'],
             id: options.id,
             copyId: options.copyId,
+            layer: options.layer ? options.layer : options.id,
             zIndex: options.zIndex,
 
             type: options.type ? options.type : 'group',
@@ -3741,6 +3790,7 @@ export default {
 
       let newoptions = {
         id: options.id ? options.id : 0,
+        layer: options.layer ? options.layer : options.id,
         format: options.item(1).format ? options.item(1).format : 'CODE128', // 条形码的格式
         lineColor: options.color ? options.color : '#000000', // 线条颜色
         margin: 0, // 条码四边空白（默认为10px）
@@ -3886,6 +3936,7 @@ export default {
               scaleY: options.height / img.height,
 
               copyId: options.copyId,
+              layer: options.layer ? options.layer : options.id,
               zIndex: options.zIndex ? options.zIndex : options.id,
               type: options.type ? options.type : '0',
               color: options.lineColor,
@@ -3987,6 +4038,7 @@ export default {
                 // scaleY: options.height / img.width,
 
                 copyId: options.copyId,
+                layer: options.layer ? options.layer : options.id,
                 zIndex: options.zIndex ? options.zIndex : options.id,
                 type: options.type ? options.type : 'Qrcode',
                 color: options.lineColor,
@@ -4053,6 +4105,7 @@ export default {
               top: options.top,
               id: options.id,
               copyId: options.copyId,
+              layer: options.layer ? options.layer : options.id,
               zIndex: options.zIndex ? options.zIndex : options.id,
               type: options.type ? options.type : 'Qrcode',
               color: options.lineColor,
@@ -4123,6 +4176,7 @@ export default {
         screenIndex: options.screenIndex
 
       })
+      await this.objectSetZindex() // 元素顺序
     },
     // 创建文本
     async createText (text, options) {
@@ -4429,6 +4483,170 @@ export default {
         height: bg.height * this.canvasZoom
       })
       return dataImg
+    },
+    // 文本不使用 的文本
+    textStyleFormat: function (target, text) {
+      //  console.log(target.maxLines,target.omitStyleText,target.newline);
+      if (!target.maxLines) {
+        return target.text
+      }
+      if (!target.omitStyleText) {
+        return target.text
+      }
+
+      let linewords = target.text
+      let wordJoiners = /[\n\t\r]/
+      // console.log(target.text,text)
+      //  console.warn('linewords*******************0',linewords);
+      let lines = linewords.split(wordJoiners) // 先按照回车符等分隔多行
+      let newtext = linewords
+
+      if (target.newline !== '') {
+        if (target.newline && target.newline !== '') { // 换行符 newline
+          let newwordJoiners = target.newline
+          lines.forEach((line, i) => {
+            if (line.indexOf(newwordJoiners) !== -1) { // 如果遇到填写的分隔符
+              let moreline = line.split(newwordJoiners)
+              lines.splice(i, 1)
+              lines.splice(i, 0, ...moreline)
+            }
+          })
+          newtext = ''
+          for (var i = 0; i < lines.length; i++) {
+            if (i === lines.length - 1) {
+              newtext = newtext + lines[i]
+            } else {
+              newtext = newtext + lines[i] + '\n'
+            }
+          }
+        }
+      }
+
+      // console.log(newtext);
+      let widthlines = target._splitTextIntoLines(newtext).lines // 根据宽度切割行
+      for (var j = 0; j < widthlines.length; j++) {
+        if (widthlines[j] === '') {
+          widthlines.splice(j, 1)
+        }
+      }
+      // console.log(widthlines);
+
+      if (target.maxLines && widthlines.length > target.maxLines) { // 最大行数 maxLines
+        // console.log('符合最大行数限制',target.maxLines);
+        newtext = ''
+        for (var s = 0; s < target.maxLines; s++) {
+          if (s === target.maxLines - 1) {
+            newtext = newtext + widthlines[s] // 重新组装显示行
+          } else {
+            newtext = newtext + widthlines[s] + '\n' // 重新组装显示行
+          }
+        }
+        if (target.omitStyleText !== '无') { // 超出替换 omitStyle
+          newtext = newtext.substring(0, newtext.length - 1) + target.omitStyleText // .substring(0, newtext.length - 3)
+          target.selectionEnd = target.selectionStart = newtext.length
+        } else {
+          target.selectionEnd = target.selectionStart = newtext.length
+        }
+      }
+
+      // console.log(newtext);
+      return newtext
+    },
+    /**  文本不使用时:
+         * isElasticSize === 0
+         * 文本内容切换时 content
+         * 最大行数切换时 maxLines
+         * 换行符切换时 omitStyleText omitStyle
+         * 结尾符切换时 newline
+         *
+         * target =====> TextRect
+         */
+    async textIsUsually (target, text) {
+      console.log('isElasticSize-----', target)
+
+      if (target.isElasticSize === 0) {
+        let allobjects = this.getObjectsNew()
+        console.log(target.text.maxLines, target.text.newline, target.text.omitStyleText)
+        let realtext = this.newtextStyleFormat(target.text, text)
+        allobjects.forEach((obj) => {
+          if (obj.id === target.id && obj.isType === 'TextRect') {
+            obj.textdemo = text
+            obj.content = text
+            obj.text.text = realtext
+            obj.text.textdemo = text
+            obj.text.height = target.height - obj.yTop - obj.yBot
+          }
+
+          if (obj.id === target.id && obj.isType === 'TextRect-text') {
+            obj.set('text', realtext)
+            obj.set('textdemo', text)
+            obj.set('height', target.height - obj.yTop - obj.yBot)
+
+            this.renderCanvas() // 渲染一下
+          }
+        })
+      }
+    },
+    // 返回背景坐标
+    returnXY () {
+      let bg = this.returnbg()
+      return {x: bg.oCoords.tl.x, y: bg.oCoords.tl.y, left: bg.left, top: bg.top}
+    },
+    // 文本切换类型需要重绘
+    async changeTextType (target, text) {
+      let newtext = target.textdemo.replace(/[\r\n]/g, '')
+      //  console.warn('textRectdata',target.id,target.isElasticSize,target.textdemo,newtext);
+      let newtextdata = {
+        id: JSON.parse(JSON.stringify(target.id)),
+        zIndex: JSON.parse(JSON.stringify(target.zIndex)),
+        layer: JSON.parse(JSON.stringify(target.layer)),
+
+        angle: JSON.parse(JSON.stringify(target.angle)),
+        left: JSON.parse(JSON.stringify(target.left)) - this.returnXY().left,
+        top: JSON.parse(JSON.stringify(target.top)) - this.returnXY().top,
+        width: JSON.parse(JSON.stringify(target.width)),
+        height: JSON.parse(JSON.stringify(target.height)),
+        fontColor: JSON.parse(JSON.stringify(target.fontColor)),
+        color: JSON.parse(JSON.stringify(target.fontColor)),
+        fontFamily: JSON.parse(JSON.stringify(target.fontFamily)),
+        textAlign: JSON.parse(JSON.stringify(target.textAlign ? target.textAlign : 'left')),
+        fontStyle: JSON.parse(JSON.stringify(target.fontStyle ? target.fontStyle : 'normal')),
+
+        maxLines: JSON.parse(JSON.stringify(target.maxLines ? target.maxLines : 3)),
+        omitStyleText: JSON.parse(JSON.stringify(target.omitStyleText ? target.omitStyleText : '无')),
+        omitStyle: JSON.parse(JSON.stringify(target.omitStyle ? target.omitStyle : 0)),
+        newline: JSON.parse(JSON.stringify(target.newline ? target.newline : '')),
+
+        minFontSize: JSON.parse(JSON.stringify(target.minFontSize ? target.minFontSize : 12)),
+
+        isElasticSize: JSON.parse(JSON.stringify(target.isElasticSize ? target.isElasticSize : 0)),
+        fontSize: JSON.parse(JSON.stringify(target.fontSize ? target.fontSize : 14)),
+        textdemo: JSON.parse(JSON.stringify(newtext || 'TEXT')), //
+        verticalSpace: target.verticalSpace ? target.verticalSpace : 0,
+        scaleX: 1,
+        scaleY: 1,
+
+        visible: JSON.parse(JSON.stringify(target.visible))
+
+      }
+
+      let canvas = this.canvas
+      canvas.remove(target)
+      let allobjects = this.getObjectsNew()
+      allobjects.forEach((obj) => {
+        if (obj.id === target.id && obj.isType === 'TextRect-text') {
+          canvas.remove(obj)
+        }
+      })
+
+      let that = this
+      await that.createElement('TextRect', {...newtextdata})
+      setTimeout(async () => {
+        await that.objectSetZindex() // 元素顺序
+        that.setTop() // 遮罩置顶
+        canvas.requestRenderAll()
+        canvas.renderAll()
+      }, 10)
     }
   }
 }

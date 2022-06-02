@@ -1,4 +1,4 @@
-export const m = {
+export const canvas = {
   layer: '順番',
   MoveUpALayer: '上の層に移動',
   DownALayer: '下の階層に移動',
