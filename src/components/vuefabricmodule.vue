@@ -4653,7 +4653,8 @@ export default {
       let obj = this.getEditObj()
       if (obj.isType !== 'TextRect-text') { return }
       obj.exitEditing()
-      this.discardActive()
+      this.renderCanvas() // 渲染一下
+      // this.discardActive()
     }
   }
 }

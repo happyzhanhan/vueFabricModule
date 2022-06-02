@@ -525,3 +525,5 @@ this.$refs.canvas.createElement(name, options)
 - 修复二维码缩放图层置顶问题，文本条码图片新增图层参数
 
 > v0.0.19 \* 新增api 文本退出编辑的
+> v0.0.20
+- 退出编辑修复取消选中文本的bug
