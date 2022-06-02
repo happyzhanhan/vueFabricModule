@@ -527,3 +527,5 @@ this.$refs.canvas.createElement(name, options)
 > v0.0.19 \* 新增api 文本退出编辑的
 > v0.0.20
 - 退出编辑修复取消选中文本的bug
+> v0.0.21
+- 多个文本编辑组件的退出编辑

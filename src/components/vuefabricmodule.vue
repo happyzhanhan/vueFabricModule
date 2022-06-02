@@ -4651,10 +4651,10 @@ export default {
     // 文本退出编辑
     exitEditing () {
       let obj = this.getEditObj()
-      if (obj.isType !== 'TextRect-text') { return }
+      if (obj.isType !== 'TextRect-text' && obj.isType !== 'Itext' && obj.isType !== 'Textbox') { return }
+      console.log(obj.isType)
       obj.exitEditing()
       this.renderCanvas() // 渲染一下
-      // this.discardActive()
     }
   }
 }
