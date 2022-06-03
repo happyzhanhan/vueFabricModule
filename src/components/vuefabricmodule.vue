@@ -579,15 +579,18 @@ export default {
     },
     // 所有组件顺序保持
     objectSetZindex () {
+      let objects = this.getObjectsNew()
+      objects.sort((a, b) => {
+        return a.layer - b.layer
+      })
       setTimeout(() => {
-        let objects = this.getObjectsNew()
-        objects.forEach(obj => {
+        objects.forEach(async obj => {
           console.log(obj.id, obj.isType, obj.layer, obj.text)
-          this.moveToshow(obj, obj.layer)
+          await this.moveToshow(obj, obj.layer)
           // eslint-disable-next-line no-constant-condition
           if (typeof obj.text === 'object') {
             console.log(typeof obj.text, obj.text.layer)
-            this.moveToshow(obj.text, obj.text.layer)
+            await this.moveToshow(obj.text, obj.text.layer)
           }
           this.renderAll()
         })
@@ -1145,12 +1148,21 @@ export default {
         }
       })
 
-      this.canvas.renderTop()
-      this.canvas.renderAll()
+      setTimeout(async () => {
+        allobjects.sort((a, b) => {
+          return a.layer - b.layer
+        })
+        await this.objectSetZindex() // 元素顺序
 
-      this.setTop() // 遮罩置顶，背景置底重置
+        this.setTop() // 遮罩置顶，背景置底重置
 
-      this.$emit('changeLayer', obj) // 层级变动回调
+        this.$emit('changeLayer', obj) // 层级变动回调
+      }, 100)
+    },
+    // 移动array
+    swapArray (arr, index1, index2) {
+      arr[index1] = arr.splice(index2, 1, arr[index1])[0]
+      return arr
     },
     // 上移一层
     toLastLayer () {
@@ -1158,15 +1170,46 @@ export default {
       if (!obj) {
         return
       }
+      // obj.bringForward(true)
 
-      obj.bringForward(true)
+      let index = obj.layer
+      let allobjects = this.getObjectsNew()
+      let array = []
+      allobjects.sort((a, b) => {
+        return a.layer - b.layer
+      })
+      allobjects.forEach((obj, index) => {
+        if (obj.isType !== 'TextRect-text') {
+          array.push({
+            id: obj.id,
+            layer: obj.layer,
+            isType: obj.isType
+          })
+        }
+      })
+      if (obj.layer === array.length) {
+        return
+      }
+      // console.log(array)
+      let newarry = this.swapArray(array, index, index - 1) // 对图层交换移动位置
+      console.log(newarry)
+      array.forEach((one, ilayer) => {
+        allobjects.forEach((obj, index) => {
+          if (obj.id === one.id) {
+            obj.set({layer: ilayer + 1, zIndex: ilayer + 1})
+          }
+        })
+      })
+      setTimeout(async () => {
+        allobjects.sort((a, b) => {
+          return a.layer - b.layer
+        })
+        await this.objectSetZindex() // 元素顺序
 
-      this.canvas.renderTop()
-      this.canvas.renderAll()
+        this.setTop() // 遮罩置顶，背景置底重置
 
-      this.setTop() // 遮罩置顶，背景置底重置
-
-      this.$emit('changeLayer', obj) // 层级变动回调
+        this.$emit('changeLayer', obj) // 层级变动回调
+      }, 100)
     },
     // 下移一层
     toNextLayer () {
@@ -1174,13 +1217,46 @@ export default {
       if (!obj) {
         return
       }
-      obj.sendBackwards(true)
-      this.canvas.renderTop()
-      this.canvas.renderAll()
+      // obj.sendBackwards(true)
 
-      this.setTop() // 遮罩置顶，背景置底重置
+      let index = obj.layer
+      let allobjects = this.getObjectsNew()
+      let array = []
+      allobjects.sort((a, b) => {
+        return a.layer - b.layer
+      })
+      allobjects.forEach((obj, index) => {
+        if (obj.isType !== 'TextRect-text') {
+          array.push({
+            id: obj.id,
+            layer: obj.layer,
+            isType: obj.isType
+          })
+        }
+      })
+      if (obj.layer === 1) {
+        return
+      }
+      console.log(obj.layer)
+      this.swapArray(array, index - 1, index - 2) // 对图层交换移动位置
+      console.log(obj.layer, array)
+      array.forEach((one, ilayer) => {
+        allobjects.forEach((obj, index) => {
+          if (obj.id === one.id) {
+            obj.set({layer: ilayer + 1, zIndex: ilayer + 1})
+          }
+        })
+      })
+      setTimeout(async () => {
+        allobjects.sort((a, b) => {
+          return a.layer - b.layer
+        })
+        await this.objectSetZindex() // 元素顺序
 
-      this.$emit('changeLayer', obj) // 层级变动回调
+        this.setTop() // 遮罩置顶，背景置底重置
+
+        this.$emit('changeLayer', obj) // 层级变动回调
+      }, 100)
     },
     // 置于底层
     toBottomLayer () {
@@ -1197,12 +1273,16 @@ export default {
         }
       })
       obj.sendToBack()
-      this.canvas.renderTop()
-      this.canvas.renderAll()
+      setTimeout(async () => {
+        allobjects.sort((a, b) => {
+          return a.layer - b.layer
+        })
+        await this.objectSetZindex() // 元素顺序
 
-      this.setTop() // 遮罩置顶，背景置底重置
+        this.setTop() // 遮罩置顶，背景置底重置
 
-      this.$emit('changeLayer', obj) // 层级变动回调
+        this.$emit('changeLayer', obj) // 层级变动回调
+      }, 100)
     },
     // 层级移动
     moveToshow (obj, index) {
@@ -1264,7 +1344,7 @@ export default {
       this.discardActive()
       let allobjects = this.getObjectsNew()
       allobjects.forEach((one) => {
-        if (one.id === id) {
+        if (one.id === id && one.isType !== 'TextRect-text') {
           this.setActiveObject(one)
         }
       })
@@ -4606,7 +4686,7 @@ export default {
         top: JSON.parse(JSON.stringify(target.top)) - this.returnXY().top,
         width: JSON.parse(JSON.stringify(target.width)),
         height: JSON.parse(JSON.stringify(target.height)),
-        fontColor: JSON.parse(JSON.stringify(target.fontColor)),
+        fontColor: JSON.parse(JSON.stringify(target.text.fill)),
         color: JSON.parse(JSON.stringify(target.fontColor)),
         fontFamily: JSON.parse(JSON.stringify(target.fontFamily)),
         textAlign: JSON.parse(JSON.stringify(target.textAlign ? target.textAlign : 'left')),

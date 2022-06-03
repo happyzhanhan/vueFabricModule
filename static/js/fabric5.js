@@ -31515,6 +31515,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             this.text.on('editing:entered',(e)=>{
 
+                this.text.bringForward(true)
+
+
                 if(this.text.isElasticSize===2){//自适应
                     this.set('fill','#fffdcaf2');
                     this.set('stroke','#999');

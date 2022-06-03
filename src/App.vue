@@ -27,6 +27,9 @@
       <button @click="copy">复制</button>
       <button @click="$refs.canvas.paste()">粘贴</button>
       <button @click="$refs.canvas.copypaste()">复制粘贴</button>
+      |
+      <button @click="$refs.canvas.toLastLayer()">上移一层</button>
+      <button @click="$refs.canvas.toNextLayer()">下移一层</button>
 
     </div>
 
@@ -102,6 +105,12 @@
       <button @click="draw('textboxnew')">textboxnew</button>
      </div>
 
+    <div style="position: fixed; top:300; right:20px; display: flex; flex-direction: column;">
+      <p>id:{{curobj.id}}</p>
+      <p>layer:{{curobj.layer}}</p>
+      <p>isType:{{curobj.isType}}</p>
+     </div>
+
     <!-- <router-view/> -->
     <div class="canvasbox" id="canvasbox" v-if="showcanvasbox">
     <vuefabricmodule ref="canvas" :idno="id" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="NONE" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved" @object:modified="objectmodified"></vuefabricmodule>
@@ -128,6 +137,7 @@ export default {
       background: '#f0f',
       zoom: 1,
       showcanvasbox: true,
+      curobj: {},
       textJSON: {
         DottedlineType: undefined,
         angle: 0,
@@ -336,9 +346,9 @@ export default {
         case 'Barcode':
           options = {
             left: 60,
-            top: 420,
-            width: 200,
-            height: 50,
+            top: 0,
+            width: 500,
+            height: 100,
             hasRotatingPoint: false,
             imgText: '69012345679',
             color: '#f00',
@@ -350,10 +360,10 @@ export default {
 
         case 'Qrcode':
           options = {
-            left: 300,
-            top: 420,
-            width: 50,
-            height: 50,
+            left: 200,
+            top: 0,
+            width: 500,
+            height: 500,
             barcodeType: 0, // 0:原二维码 1:datamaxtri
             hasRotatingPoint: false,
             imgText: '69012345679',
@@ -433,12 +443,12 @@ export default {
 
         case 'TextRect':
           options = {
-            left: 22,
-            top: 10,
+            left: 100,
+            top: 0,
             hasRotatingPoint: true,
             width: 400,
             height: 100,
-            fontColor: '#fff',
+            fontColor: '#000',
             rectColor: '',
             fill: '#fff',
             /* stroke:'#f00', */
@@ -585,8 +595,10 @@ export default {
       }
       // options.id = JSON.parse(JSON.stringify(this.id))
       console.warn('创建类型：', name)
+      options.id = this.id
       canvaobj = await this.$refs.canvas.createElement(name, options)
       console.log('canvaobj:', canvaobj.id)
+      this.id = this.id + 1
       // canvaobj.setControlsVisibility({
       //   mtr: false
       // })
@@ -635,6 +647,11 @@ export default {
     // 选择回调
     selectId (ids) {
       console.log('选择id:', ids)
+      if (ids.length === 1) {
+        this.curobj = this.$refs.canvas.getEditObj()
+      } else {
+        this.curobj = {}
+      }
     },
     // 缩放回调
     changeZoomTo (zoom) {
