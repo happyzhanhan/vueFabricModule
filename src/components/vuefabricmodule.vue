@@ -1140,14 +1140,47 @@ export default {
         return
       }
 
-      obj.bringToFront()
+      // obj.bringToFront()
       let allobjects = this.getObjectsNew()
-      allobjects.forEach((one) => {
-        if (one.id === obj.id && one.isType === 'TextRect-text') {
-          one.bringToFront()
+      // allobjects.forEach((one) => {
+      //   if (one.id === obj.id && one.isType === 'TextRect-text') {
+      //     one.bringToFront()
+      //   }
+      // })
+
+      let index = obj.layer
+      let array = []
+      allobjects.sort((a, b) => {
+        return a.layer - b.layer
+      })
+      allobjects.forEach((obj, index) => {
+        if (obj.isType !== 'TextRect-text') {
+          array.push({
+            id: obj.id,
+            layer: obj.layer,
+            isType: obj.isType
+          })
         }
       })
-
+      if (obj.layer === array.length) {
+        return
+      }
+      // console.log(array)
+      var moveNum = array.length - index
+      let newarry
+      // 循环出需要一个一个上移的次数
+      for (var i = 0; i < moveNum; i++) {
+        newarry = this.swapArray(array, index, index - 1)
+        index++
+      }
+      console.log(newarry)
+      array.forEach((one, ilayer) => {
+        allobjects.forEach((obj, index) => {
+          if (obj.id === one.id) {
+            obj.set({layer: ilayer + 1, zIndex: ilayer + 1})
+          }
+        })
+      })
       setTimeout(async () => {
         allobjects.sort((a, b) => {
           return a.layer - b.layer
@@ -1267,12 +1300,48 @@ export default {
       }
 
       let allobjects = this.getObjectsNew()
-      allobjects.forEach((one) => {
-        if (one.id === obj.id && one.isType === 'TextRect-text') {
-          one.sendToBack()
+      // allobjects.forEach((one) => {
+      //   if (one.id === obj.id && one.isType === 'TextRect-text') {
+      //     one.sendToBack()
+      //   }
+      // })
+      // obj.sendToBack()
+
+      let index = obj.layer
+      let array = []
+      allobjects.sort((a, b) => {
+        return a.layer - b.layer
+      })
+      allobjects.forEach((obj, index) => {
+        if (obj.isType !== 'TextRect-text') {
+          array.push({
+            id: obj.id,
+            layer: obj.layer,
+            isType: obj.isType
+          })
         }
       })
-      obj.sendToBack()
+      if (obj.layer === 1) {
+        return
+      }
+      console.log(obj.layer)
+      var moveNum = index - 1
+      // eslint-disable-next-line no-unused-vars
+      var newarry = []
+      // 循环出需要一个一个上移的次数
+      for (var i = 0; i < moveNum; i++) {
+        newarry = this.swapArray(array, index - 1, index - 2)
+        // console.log(this.allData);
+        index--
+      }
+      console.log(obj.layer, array)
+      array.forEach((one, ilayer) => {
+        allobjects.forEach((obj, index) => {
+          if (obj.id === one.id) {
+            obj.set({layer: ilayer + 1, zIndex: ilayer + 1})
+          }
+        })
+      })
       setTimeout(async () => {
         allobjects.sort((a, b) => {
           return a.layer - b.layer

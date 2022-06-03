@@ -28,8 +28,10 @@
       <button @click="$refs.canvas.paste()">粘贴</button>
       <button @click="$refs.canvas.copypaste()">复制粘贴</button>
       |
+      <button @click="$refs.canvas.toTopLayer()">置顶</button>
       <button @click="$refs.canvas.toLastLayer()">上移一层</button>
       <button @click="$refs.canvas.toNextLayer()">下移一层</button>
+      <button @click="$refs.canvas.toBottomLayer()">置底</button>
 
     </div>
 

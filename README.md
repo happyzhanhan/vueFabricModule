@@ -537,3 +537,5 @@ this.$refs.canvas.createElement(name, options)
 - 修复图层排序问题
 > v0.0.24
 - 修复图层排序置顶置底问题
+> v0.0.25
+- 修复图层排序置顶置底问题
