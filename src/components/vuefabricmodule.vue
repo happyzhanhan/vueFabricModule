@@ -1996,6 +1996,111 @@ export default {
       return new Promise(async (resolve, reject) => {
         let canvas = this.canvas
 
+        let initable = {
+          tableinfo: {
+            id: options.id,
+            left: options.left ? -this.xLeft + options.left : -this.xLeft,
+            top: options.top ? -this.yTop + options.top : -this.yTop,
+            layer: options.layer ? options.layer : that.cid,
+            row: 3,
+            col: 3,
+            width: 184,
+            height: 134,
+            titleLineHeight: 52,
+            bodyLineHeight: 40,
+            times: 5,
+            animate: 0,
+            borderWidth: 1,
+            borderColor: '#ffff00',
+            borderType: 0,
+            bgColors: ['#A4CFFC', '#AACF98']
+
+          },
+          tableList: [{
+            type: 0,
+            col: 1,
+            width: 60,
+            height: 50,
+            fontType: '',
+            fontSize: 14,
+            fontColor: '#000000',
+            value: 'A列',
+            bgcolor: '#EEEEEE',
+            position: 5,
+            field: 'itemTitle',
+            fieldType: 0
+          }, {
+            type: 0,
+            col: 2,
+            width: 60,
+            height: 50,
+            fontType: '',
+            fontSize: 16,
+            fontColor: '#000000',
+            value: 'B列',
+            bgcolor: '#EEEEEE',
+            position: 5,
+            field: 'itemTitle',
+            fieldType: 0
+          }, {
+            type: 0,
+            col: 3,
+            width: 60,
+            height: 50,
+            fontType: '',
+            fontSize: 16,
+            fontColor: '#000000',
+            value: 'C列',
+            bgcolor: '#EEEEEE',
+            position: 5,
+            field: 'itemTitle',
+            fieldType: 0
+          }, {
+            type: 1,
+            col: 1,
+            width: 60,
+            height: 40,
+            fontType: '',
+            fontSize: 14,
+            fontColor: '#000000',
+            value: 'A列值',
+            bgcolor: '#EEEEEE',
+            position: 5,
+            field: '',
+            fieldType: 0
+          }, {
+            type: 1,
+            col: 2,
+            width: 60,
+            height: 40,
+            fontType: '',
+            fontSize: 14,
+            fontColor: '#000000',
+            value: 'B列值',
+            bgcolor: '#EEEEEE',
+            position: 5,
+            field: '',
+            fieldType: 0
+          }, {
+            type: 1,
+            col: 3,
+            width: 60,
+            height: 40,
+            fontType: '',
+            fontSize: 12,
+            fontColor: '#ff0000',
+            value: 'C列值',
+            bgcolor: '#EEEEEE',
+            position: 9,
+            field: '',
+            fieldType: 0
+          }]
+        }
+        options.tabledata.tableinfo.left = options.tabledata.tableinfo.left ? -this.xLeft + options.tabledata.tableinfo.left : -this.xLeft
+        options.tabledata.tableinfo.top = options.tabledata.tableinfo.top ? -this.yTop + options.tabledata.tableinfo.top : -this.yTop
+        options.tabledata.tableinfo.id = options.tabledata.tableinfo.id ? options.tabledata.tableinfo.id : that.cid
+        options.tabledata.tableinfo.layer = options.tabledata.tableinfo.layer ? options.tabledata.tableinfo.layer : that.cid
+
         options = {
           ...options,
           id: options.id ? options.id : that.cid,
@@ -2038,8 +2143,11 @@ export default {
           hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint,
 
           screenIndex: options.screenIndex ? options.screenIndex : 0,
-          textdemo: options.textdemo ? options.textdemo : 'TEXT'
+          textdemo: options.textdemo ? options.textdemo : 'TEXT',
+
+          tabledata: options.tabledata ? options.tabledata : initable // 表格新增字段
         }
+
         // console.warn(options.visible);
 
         //  console.log('rect',options)
@@ -3068,106 +3176,8 @@ export default {
             canvasObject = new fabric.tableView(canvas, tableStyle, tableHead, tableBody)
             break
           case 'tableList':
-            // console.log('tableList',options.tableinfo.width);
-            let table = {
-              tableinfo: {
-                id: options.id,
-                left: options.left,
-                top: options.top,
-                row: 3,
-                col: 3,
-                width: 184,
-                height: 134,
-                titleLineHeight: 52,
-                bodyLineHeight: 40,
-                times: 5,
-                animate: 0,
-                borderWidth: 1,
-                borderColor: '#ffff00',
-                borderType: 0,
-                bgColors: ['#A4CFFC', '#AACF98']
-
-              },
-              tableList: [{
-                type: 0,
-                col: 1,
-                width: 60,
-                height: 50,
-                fontType: '微软雅黑',
-                fontSize: 16,
-                fontColor: '#000000',
-                value: 'A列',
-                bgcolor: '#EEEEEE',
-                position: 5,
-                field: 'itemTitle',
-                fieldType: 0
-              }, {
-                type: 0,
-                col: 2,
-                width: 60,
-                height: 50,
-                fontType: '微软雅黑',
-                fontSize: 16,
-                fontColor: '#000000',
-                value: 'B列',
-                bgcolor: '#EEEEEE',
-                position: 5,
-                field: 'itemTitle',
-                fieldType: 0
-              }, {
-                type: 0,
-                col: 3,
-                width: 60,
-                height: 50,
-                fontType: '微软雅黑',
-                fontSize: 16,
-                fontColor: '#000000',
-                value: 'C列',
-                bgcolor: '#EEEEEE',
-                position: 5,
-                field: 'itemTitle',
-                fieldType: 0
-              }, {
-                type: 1,
-                col: 1,
-                width: 60,
-                height: 40,
-                fontType: '',
-                fontSize: 14,
-                fontColor: '#000000',
-                value: 'A列值',
-                bgcolor: '#EEEEEE',
-                position: 5,
-                field: '',
-                fieldType: 0
-              }, {
-                type: 1,
-                col: 2,
-                width: 60,
-                height: 40,
-                fontType: '',
-                fontSize: 14,
-                fontColor: '#000000',
-                value: 'B列值',
-                bgcolor: '#EEEEEE',
-                position: 5,
-                field: '',
-                fieldType: 0
-              }, {
-                type: 1,
-                col: 3,
-                width: 60,
-                height: 40,
-                fontType: '',
-                fontSize: 12,
-                fontColor: '#ff0000',
-                value: 'C列值',
-                bgcolor: '#EEEEEE',
-                position: 9,
-                field: '',
-                fieldType: 0
-              }]
-            }
+            console.log('tableList', options.tabledata.tableinfo.left)
+            let table = options.tabledata
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.tableList(canvas, table)
             console.log(canvasObject)
@@ -4490,14 +4500,17 @@ export default {
       // eslint-disable-next-line no-undef
       let canvasObject = new fabric.tableList(this.canvas, table)
       let that = this
-      setTimeout(() => {
+      setTimeout(async () => {
         // console.warn(canvasObject.table);
         that.setActiveObject(canvasObject.table.group)
         canvasObject.table.group.setCoords()
         canvas.add(canvasObject)
+
+        await that.objectSetZindex() // 元素顺序
+        that.setTop() // 遮罩置顶
+        canvas.requestRenderAll()
+        canvas.renderAll()
       }, 1)
-      canvas.requestRenderAll()
-      canvas.renderAll()
     },
 
     // 元素对象转成json

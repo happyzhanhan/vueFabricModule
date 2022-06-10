@@ -60,7 +60,7 @@
     <div style="position: fixed; top:0; left:280px; display: flex; flex-direction: column;">
       <button @click="draw('Barcode')">Barcode</button>
       <button @click="draw('Qrcode')">Qrcode</button>
-      <button @click="draw('table')">table</button>
+      <button @click="draw('tableList')">tableList</button>
     </div>
 
     <div style="position: fixed; top:0; left:380px; display: flex; flex-direction: column;">
@@ -579,13 +579,129 @@ export default {
           break
         case 'tableList':
           options = {
-            left: 800,
-            top: 40,
+            left: 0,
+            top: 0,
             width: 186,
             height: 50,
-            fontSize: 16,
-            content: '',
-            visible: true
+            visible: true,
+
+            tabledata: {
+              tableinfo: {
+                id: this.id,
+                sysId: null,
+                layer: this.id,
+                layoutElementId: this.id,
+                layoutId: null,
+
+                left: 0,
+                top: 0,
+                width: 184,
+                height: 134,
+
+                row: 3,
+                col: 3,
+                titleLineHeight: 52,
+                bodyLineHeight: 40,
+                times: 5,
+                animate: 0,
+                borderWidth: 1,
+                borderColor: '#00FF00',
+                borderType: 0,
+                bgColors: ['#A4CFFC', '#AACF98']
+
+              },
+              tableList: [{
+                id: null,
+                layoutTableInformationId: null,
+                type: 0,
+                col: 1,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 20,
+                fontColor: '#FFFFFF',
+                value: 'Title',
+                bgColor: '#0000FF',
+                position: 5,
+                fieldCode: 'itemTitle',
+                fieldType: 0
+              }, {
+                id: null,
+                layoutTableInformationId: null,
+                type: 0,
+                col: 2,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 20,
+                fontColor: '#FFFFFF',
+                value: 'Title',
+                bgColor: '#0000FF',
+                position: 5,
+                fieldCode: 'price',
+                fieldType: 1
+              }, {
+                id: null,
+                layoutTableInformationId: null,
+                type: 0,
+                col: 3,
+                width: 60,
+                height: 50,
+                fontType: '微软雅黑',
+                fontSize: 20,
+                fontColor: '#FFFFFF',
+                value: 'Title',
+                bgColor: '#0000FF',
+                position: 5,
+                fieldCode: 'unit',
+                fieldType: 1
+              }, {
+                id: null,
+                layoutTableInformationId: null,
+                type: 1,
+                col: 1,
+                width: 60,
+                height: 40,
+                fontType: '微软雅黑',
+                fontSize: 14,
+                fontColor: '#000000',
+                value: 'DATA',
+                bgColor: '#EEEEEE',
+                position: 5,
+                fieldCode: 'itemTitle',
+                fieldType: 0
+              }, {
+                id: null,
+                layoutTableInformationId: null,
+                type: 1,
+                col: 2,
+                width: 60,
+                height: 40,
+                fontType: '微软雅黑',
+                fontSize: 14,
+                fontColor: '#ff0000',
+                value: 'DATA',
+                bgColor: '#EEEEEE',
+                position: 5,
+                fieldCode: 'price',
+                fieldType: 1
+              }, {
+                id: null,
+                layoutTableInformationId: null,
+                type: 1,
+                col: 3,
+                width: 60,
+                height: 40,
+                fontType: '微软雅黑',
+                fontSize: 12,
+                fontColor: '#000000',
+                value: 'DATA',
+                bgColor: '#EEEEEE',
+                position: 9,
+                fieldCode: 'unit',
+                fieldType: 1
+              }]
+            }
           }
           break
         default:

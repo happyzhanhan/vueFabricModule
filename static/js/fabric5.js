@@ -13737,6 +13737,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     hasControls: this.hasControls,
 
                     url: this.url,
+                    tabledata: this.tabledata,
 
                 };
 
@@ -32880,6 +32881,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 id:table.tableinfo.id,
                 sysId:table.tableinfo.id,
+                layer:table.tableinfo.layer,
+                tabledata: table,
                 layoutElementId:table.tableinfo.layoutElementId?table.tableinfo.layoutElementId:null,
                 tableStyle:table,
 
@@ -32910,6 +32913,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 tableStyle:table,
                 id:table.tableinfo.id,
+                layer:table.tableinfo.layer,
+                tabledata: table,
+
                 sysId:table.tableinfo.sysId,
                 layoutElementId:table.tableinfo.layoutElementId?table.tableinfo.layoutElementId:null,
             });
