@@ -348,10 +348,10 @@ export default {
       that.$emit('mouse:move', e)
     })
     this.canvas.on('mouse:over', function (options) {
-      let bound = options.target
-      if (bound) {
-        bound.set('opacity', 0.8)
-      }
+      // let bound = options.target
+      // if (bound) {
+      //   bound.set('opacity', 0.8)
+      // }
 
       if (options.target && options.target.id) {
         canvas.contextContainer.strokeStyle = 'rgba(0,98,178,1)'
@@ -376,10 +376,10 @@ export default {
       that.$emit('mouse:over', options)
     })
     this.canvas.on('mouse:out', function (options) {
-      let bound = options.target
-      if (bound) {
-        bound.set('opacity', 1)
-      }
+      // let bound = options.target
+      // if (bound) {
+      //   bound.set('opacity', 1)
+      // }
       that.canvas.renderAll()
       that.$emit('mouse:out', options)
     })
@@ -413,11 +413,11 @@ export default {
     })
     this.canvas.on('selection:cleared', function (options) {
       // console.log('选择元素selection:cleared', options)
-      if (options.deselected) {
-        options.deselected.forEach(one => {
-          one.set('opacity', 1) // 解决sheift选择元素透明度0.8恢复不了的问题
-        })
-      }
+      // if (options.deselected) {
+      //   options.deselected.forEach(one => {
+      //     one.set('opacity', 1) // 解决sheift选择元素透明度0.8恢复不了的问题
+      //   })
+      // }
       that.$emit('selectId', [])
       that.$emit('selection:cleared', options)
     })
@@ -472,6 +472,11 @@ export default {
         options.target.set('scaleY', 1)
         that.changeQrcodeImage(options.target)
         // that.setActiveObject(options.target)
+      }
+      if (options.target.isType === 'tableList') {
+        setTimeout(() => {
+          that.objectSetZindex() // 元素顺序
+        }, 100)
       }
     })
     this.canvas.on('object:rotated', function (options) {
@@ -2096,10 +2101,13 @@ export default {
             fieldType: 0
           }]
         }
-        options.tabledata.tableinfo.left = options.tabledata.tableinfo.left ? -this.xLeft + options.tabledata.tableinfo.left : -this.xLeft
-        options.tabledata.tableinfo.top = options.tabledata.tableinfo.top ? -this.yTop + options.tabledata.tableinfo.top : -this.yTop
-        options.tabledata.tableinfo.id = options.tabledata.tableinfo.id ? options.tabledata.tableinfo.id : that.cid
-        options.tabledata.tableinfo.layer = options.tabledata.tableinfo.layer ? options.tabledata.tableinfo.layer : that.cid
+        if (options.tabledata) {
+          options.tabledata.tableinfo.left = options.tabledata.tableinfo.left ? -this.xLeft + options.tabledata.tableinfo.left : -this.xLeft
+          options.tabledata.tableinfo.top = options.tabledata.tableinfo.top ? -this.yTop + options.tabledata.tableinfo.top : -this.yTop
+          options.tabledata.tableinfo.id = options.tabledata.tableinfo.id ? options.tabledata.tableinfo.id : that.cid
+          options.tabledata.tableinfo.layer = options.tabledata.tableinfo.layer ? options.tabledata.tableinfo.layer : that.cid
+        }
+        // console.log('id---------------', options.tabledata.tableinfo.id)
 
         options = {
           ...options,
@@ -3176,8 +3184,8 @@ export default {
             canvasObject = new fabric.tableView(canvas, tableStyle, tableHead, tableBody)
             break
           case 'tableList':
-            console.log('tableList', options.tabledata.tableinfo.left)
             let table = options.tabledata
+            console.log('tableList', table)
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.tableList(canvas, table)
             console.log(canvasObject)
@@ -4490,21 +4498,30 @@ export default {
     },
 
     // 按原来的id表格
-    setNewTable (groups, table) {
+    async setNewTable (groups, table) {
+      if (groups.isType !== 'tableList') { return }
       if (!table) {
         table = groups.item(0).tableStyle
       }
+      table.tableinfo.id = groups.id
+      table.tableinfo.layer = groups.layer
+      let options = {
+        id: groups.id,
+        layer: groups.layer,
+        tabledata: table
+      }
       let canvas = this.canvas
       canvas.remove(groups)
-      // console.log(table);
+      console.log(options)
       // eslint-disable-next-line no-undef
-      let canvasObject = new fabric.tableList(this.canvas, table)
+      // let canvasObject = new fabric.tableList(this.canvas, table)
+      let canvasObject = await this.createElement('tableList', options)
       let that = this
       setTimeout(async () => {
         // console.warn(canvasObject.table);
         that.setActiveObject(canvasObject.table.group)
-        canvasObject.table.group.setCoords()
-        canvas.add(canvasObject)
+        // canvasObject.table.group.setCoords()
+        // canvas.add(canvasObject)
 
         await that.objectSetZindex() // 元素顺序
         that.setTop() // 遮罩置顶

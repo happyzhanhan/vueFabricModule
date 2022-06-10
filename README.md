@@ -547,3 +547,8 @@ this.$refs.canvas.createElement(name, options)
 - 表格图层和坐标
 > v0.0.28
 - 表格重写方法修改
+> v0.0.29
+- 表格图层问题
+- 表格重置的id和layer
+- 拖拽元素的透明度与设置的冲突
+- 表格组件的封装

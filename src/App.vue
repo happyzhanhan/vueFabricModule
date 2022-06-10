@@ -100,6 +100,8 @@
       <button @click="changeTextType">切换自适应</button>
       <button @click="changeTextStyle">改变文本换行</button>
       <button @click="$refs.canvas.exitEditing()">退出编辑</button>
+
+      <button @click="setNewTable">改变表格</button>
      </div>
 
     <div style="position: fixed; top:0; left:480px; display: flex; flex-direction: column;">
@@ -817,6 +819,129 @@ export default {
         this.$refs.canvas.textIsUsually(obj, '我|是一段文字我想看看|看切换换行的效果等等问题哦')
       }
       // this.$refs.canvas.renderCanvas() // 画布渲染变化
+    },
+    // 重置表格
+    setNewTable () {
+      let cur = this.$refs.canvas.getEditObj()
+      console.log('setNewTable', cur)
+      let table = {
+        tableinfo: {
+          id: this.id,
+          sysId: null,
+          layer: this.id,
+          layoutElementId: this.id,
+          layoutId: null,
+
+          left: 0,
+          top: 0,
+          width: 184,
+          height: 134,
+
+          row: 3,
+          col: 3,
+          titleLineHeight: 52,
+          bodyLineHeight: 40,
+          times: 5,
+          animate: 0,
+          borderWidth: 1,
+          borderColor: '#ff0000',
+          borderType: 0,
+          bgColors: ['#A4CFFC', '#AACF98']
+
+        },
+        tableList: [{
+          id: null,
+          layoutTableInformationId: null,
+          type: 0,
+          col: 1,
+          width: 60,
+          height: 50,
+          fontType: '微软雅黑',
+          fontSize: 20,
+          fontColor: '#ff0000',
+          value: 'Title',
+          bgColor: '#FAF6C1',
+          position: 5,
+          fieldCode: 'itemTitle',
+          fieldType: 0
+        }, {
+          id: null,
+          layoutTableInformationId: null,
+          type: 0,
+          col: 2,
+          width: 60,
+          height: 50,
+          fontType: '微软雅黑',
+          fontSize: 20,
+          fontColor: '#ff0000',
+          value: 'Title',
+          bgColor: '#FAF6C1',
+          position: 5,
+          fieldCode: 'price',
+          fieldType: 1
+        }, {
+          id: null,
+          layoutTableInformationId: null,
+          type: 0,
+          col: 3,
+          width: 60,
+          height: 50,
+          fontType: '微软雅黑',
+          fontSize: 20,
+          fontColor: '#ff0000',
+          value: 'Title',
+          bgColor: '#FAF6C1',
+          position: 5,
+          fieldCode: 'unit',
+          fieldType: 1
+        }, {
+          id: null,
+          layoutTableInformationId: null,
+          type: 1,
+          col: 1,
+          width: 60,
+          height: 40,
+          fontType: '微软雅黑',
+          fontSize: 14,
+          fontColor: '#000000',
+          value: 'DATA',
+          bgColor: '#EEEEEE',
+          position: 5,
+          fieldCode: 'itemTitle',
+          fieldType: 0
+        }, {
+          id: null,
+          layoutTableInformationId: null,
+          type: 1,
+          col: 2,
+          width: 60,
+          height: 40,
+          fontType: '微软雅黑',
+          fontSize: 14,
+          fontColor: '#ff0000',
+          value: 'DATA',
+          bgColor: '#EEEEEE',
+          position: 5,
+          fieldCode: 'price',
+          fieldType: 1
+        }, {
+          id: null,
+          layoutTableInformationId: null,
+          type: 1,
+          col: 3,
+          width: 60,
+          height: 40,
+          fontType: '微软雅黑',
+          fontSize: 12,
+          fontColor: '#000000',
+          value: 'DATA',
+          bgColor: '#EEEEEE',
+          position: 9,
+          fieldCode: 'unit',
+          fieldType: 1
+        }]
+      }
+      this.$refs.canvas.setNewTable(cur, table)
     }
 
   }
