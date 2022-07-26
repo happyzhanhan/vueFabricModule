@@ -2153,7 +2153,8 @@ export default {
           screenIndex: options.screenIndex ? options.screenIndex : 0,
           textdemo: options.textdemo ? options.textdemo : 'TEXT',
 
-          tabledata: options.tabledata ? options.tabledata : initable // 表格新增字段
+          tabledata: options.tabledata ? options.tabledata : initable, // 表格新增字段
+          bgcolor: options.bgcolor ? options.bgcolor : '#fff' // 新增二维码和条码背景色
         }
 
         // console.warn(options.visible);
@@ -2408,6 +2409,7 @@ export default {
             // return canvasObject
             break
           case 'Barcode': // ----------------------------------------------------------------------------------------条码
+            console.log('Barcode', options)
             canvasObject = await that.createBarcode(options)
             break
             // resolve(canvasObject)
@@ -3771,6 +3773,7 @@ export default {
           margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
           width: options.barlineWidth, // 线宽
           height: options.height ? options.height : 20, // 条码高度
+          background: options.bgcolor ? options.bgcolor : '#f1edea', // 背景颜色
           displayValue: false // 是否显示文字信息
         })
 
@@ -3814,7 +3817,7 @@ export default {
           const rect = new fabric.Rect({
             width: options.width, // document.getElementById('barcode').width>options.width?document.getElementById('barcode').width:
             height: options.height,
-            fill: '#f1edea',
+            fill: options.bgcolor ? options.bgcolor : '#f1edea',
             originX: 'left',
             originY: 'top',
             left: 0,
@@ -3865,7 +3868,7 @@ export default {
 
             fill: options.lineColor,
             color: options.color ? options.color : '#000000',
-
+            bgcolor: options.bgcolor ? options.bgcolor : '#f1edea',
             format: options.format ? options.format : 'CODE128', // 条形码的格式
 
             lockRotation: true,
@@ -3960,6 +3963,7 @@ export default {
         layer: options.layer ? options.layer : options.id,
         format: options.item(1).format ? options.item(1).format : 'CODE128', // 条形码的格式
         lineColor: options.color ? options.color : '#000000', // 线条颜色
+        bgcolor: options.bgcolor ? options.bgcolor : '#f1edea', // 背景颜色
         margin: 0, // 条码四边空白（默认为10px）
         lineWidth: lineWidth, // 线宽
         height: options.item(1).height ? options.item(1).height : 20, // 条码高度
@@ -4011,7 +4015,7 @@ export default {
     },
     // 画条码
     drawbarcode (number, option) {
-      // console.log(option);
+      console.log('drawbarcode', option)
       return new Promise(function (resolve, reject) {
         let barbox = document.getElementById('barbox')
         let bardom = document.createElement('img')
@@ -4035,6 +4039,7 @@ export default {
           margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
           width: option.lineWidth ? option.lineWidth : 2, // 线宽
           height: option.height ? option.height : 20, // 条码高度
+          background: option.bgcolor ? option.bgcolor : '#f1edea', // 背景颜色
           displayValue: false // 是否显示文字信息
         })
 
@@ -4063,7 +4068,7 @@ export default {
           dim: options.barlineWidth,
           rct: 0,
           pad: 1,
-          pal: [options.color ? options.color : '#000000', '#f2f4f8'],
+          pal: [options.color ? options.color : '#000000', options.bgcolor ? options.bgcolor : '#f1edea'],
           vrb: 0
         })
         // img.src=svgNode
@@ -4160,7 +4165,7 @@ export default {
             dim: options.width,
             rct: 0,
             pad: 0,
-            pal: [options.lineColor ? options.lineColor : '#000000', '#f2f4f8'],
+            pal: [options.lineColor ? options.lineColor : '#000000', options.bgcolor ? options.bgcolor : '#f1edea'],
             vrb: 0
           })
           // img.src=svgNode
@@ -4227,6 +4232,7 @@ export default {
                 content: options.imgText,
 
                 lineColor: options.lineColor,
+                bgcolor: options.bgcolor,
                 hasRotatingPoint: false, // 元素是否旋转
 
                 barcodeType: 1,
@@ -4258,7 +4264,7 @@ export default {
             // eslint-disable-next-line no-undef
             correctLevel: QRErrorCorrectLevel.H, // 二维码容错level（默认为高）
             reverse: false, // 反色二维码，二维码颜色为上层容器的背景颜色
-            background: options.background ? options.background : '#ffffff', // 二维码背景颜色（默认白色）
+            background: options.bgcolor ? options.bgcolor : '#ffffff', // 二维码背景颜色（默认白色）
             foreground: options.lineColor ? options.lineColor : '#000000' // 二维码颜色（默认黑色）
           })
           let newimg = document.createElement('img')
@@ -4283,6 +4289,7 @@ export default {
               isType: 'Qrcode',
               isDiff: 'static',
               fill: options.fill ? options.fill : '#000000',
+              bgcolor: options.bgcolor,
               flipX: false,
               flipY: false,
               lockSkewingX: true, // 禁掉按住shift时的变形

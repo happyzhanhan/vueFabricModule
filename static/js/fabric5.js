@@ -13738,6 +13738,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
 
                     url: this.url,
                     tabledata: this.tabledata,
+                    bgcolor: this.bgcolor,
 
                 };
 

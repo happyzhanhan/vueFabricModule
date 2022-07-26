@@ -355,7 +355,8 @@ export default {
             height: 100,
             hasRotatingPoint: false,
             imgText: '69012345679',
-            color: '#f00',
+            color: '#000',
+            bgcolor: '#999',
             visible: true,
             angle: 0
 
@@ -371,8 +372,8 @@ export default {
             barcodeType: 0, // 0:原二维码 1:datamaxtri
             hasRotatingPoint: false,
             imgText: '69012345679',
-            color: '#f00',
-            lineColor: '#ff0000',
+            lineColor: '#ff0',
+            bgcolor: '#f00',
             visible: true
           }
           break

@@ -552,3 +552,7 @@ this.$refs.canvas.createElement(name, options)
 - 表格重置的id和layer
 - 拖拽元素的透明度与设置的冲突
 - 表格组件的封装
+
+### 2022.07.26
+> v0.0.30
+- 二维码和条形码支持背景颜色和内容颜色同时变化
