@@ -485,6 +485,9 @@ export default {
     this.canvas.on('object:moved', function (options) {
       that.$emit('object:moved', options)
     })
+    this.canvas.on('text:changed', function (options) {
+      that.$emit('text:changed', options)
+    })
   },
   methods: {
     // 初始化背景
