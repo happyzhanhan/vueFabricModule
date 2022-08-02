@@ -4267,7 +4267,7 @@ export default {
             // eslint-disable-next-line no-undef
             correctLevel: QRErrorCorrectLevel.H, // 二维码容错level（默认为高）
             reverse: false, // 反色二维码，二维码颜色为上层容器的背景颜色
-            background: options.bgcolor ? options.bgcolor : '#ffffff', // 二维码背景颜色（默认白色）
+            background: options.bgcolor ? options.bgcolor : '#ffffff', // 二维码背景颜色（默认白色）二维码
             foreground: options.lineColor ? options.lineColor : '#000000' // 二维码颜色（默认黑色）
           })
           let newimg = document.createElement('img')
