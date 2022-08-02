@@ -560,3 +560,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.07.27
 > v0.0.31
 - 文本编辑时回调
+
+### 2022.08.02
+> v0.0.32
+- 条码默认背景区域透明颜色

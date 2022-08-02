@@ -3776,7 +3776,7 @@ export default {
           margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
           width: options.barlineWidth, // 线宽
           height: options.height ? options.height : 20, // 条码高度
-          background: options.bgcolor ? options.bgcolor : '#f1edea', // 背景颜色
+          background: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
           displayValue: false // 是否显示文字信息
         })
 
@@ -3820,7 +3820,7 @@ export default {
           const rect = new fabric.Rect({
             width: options.width, // document.getElementById('barcode').width>options.width?document.getElementById('barcode').width:
             height: options.height,
-            fill: options.bgcolor ? options.bgcolor : '#f1edea',
+            fill: 'rgba(255,255,255,0.3)', // #f1edea
             originX: 'left',
             originY: 'top',
             left: 0,
@@ -3871,7 +3871,7 @@ export default {
 
             fill: options.lineColor,
             color: options.color ? options.color : '#000000',
-            bgcolor: options.bgcolor ? options.bgcolor : '#f1edea',
+            bgcolor: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)',
             format: options.format ? options.format : 'CODE128', // 条形码的格式
 
             lockRotation: true,
@@ -3966,7 +3966,7 @@ export default {
         layer: options.layer ? options.layer : options.id,
         format: options.item(1).format ? options.item(1).format : 'CODE128', // 条形码的格式
         lineColor: options.color ? options.color : '#000000', // 线条颜色
-        bgcolor: options.bgcolor ? options.bgcolor : '#f1edea', // 背景颜色
+        bgcolor: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
         margin: 0, // 条码四边空白（默认为10px）
         lineWidth: lineWidth, // 线宽
         height: options.item(1).height ? options.item(1).height : 20, // 条码高度
@@ -4042,7 +4042,7 @@ export default {
           margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
           width: option.lineWidth ? option.lineWidth : 2, // 线宽
           height: option.height ? option.height : 20, // 条码高度
-          background: option.bgcolor ? option.bgcolor : '#f1edea', // 背景颜色
+          background: option.bgcolor ? option.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
           displayValue: false // 是否显示文字信息
         })
 
