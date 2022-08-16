@@ -567,3 +567,6 @@ this.$refs.canvas.createElement(name, options)
 > v0.0.33
 - 忘记编译了
 
+### 2022.08.16
+> v0.0.34
+- 图片透明度添加

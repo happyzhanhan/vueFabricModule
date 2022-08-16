@@ -3414,7 +3414,8 @@ export default {
             hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
 
             eyeshow: options.eyeshow,
-            screenIndex: options.screenIndex
+            screenIndex: options.screenIndex,
+            opacity: options.opacity
           })
           resolve(canvasImage)
         }
@@ -3460,7 +3461,8 @@ export default {
               hasRotatingPoint: options.hasRotatingPoint !== false ? true : options.hasRotatingPoint, // 元素是否旋转
 
               eyeshow: options.eyeshow,
-              screenIndex: options.screenIndex
+              screenIndex: options.screenIndex,
+              opacity: options.opacity
             })
             resolve(img)
           })

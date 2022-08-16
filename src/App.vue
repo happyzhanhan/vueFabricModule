@@ -268,6 +268,7 @@ export default {
             width: 200,
             height: 100,
             color: colors[i],
+            opacity: 0.5,
             visible: true
           }
           break
@@ -305,7 +306,7 @@ export default {
           break
 
         case 'Image':
-          let imgurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          let imgurl = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
             left: 10,
             top: 200,
@@ -313,13 +314,14 @@ export default {
             height: 100,
             src: imgurl,
             url: imgurl,
+            opacity: 0.5,
             visible: true
           }
-          let img = await this.loadImage(imgurl)
-          console.log(img)
+          // let img = await this.loadImage(imgurl)
+          // console.log(img)
           break
         case 'Icon':
-          let iconurl = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          let iconurl = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
           options = {
             left: 100,
             top: 200,
@@ -333,7 +335,7 @@ export default {
           console.log(iimg)
           break
         case 'equalImage':
-          let url = 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHVGqAbqkLAAAMyF15P_k114.png'
+          let url = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
           options = {
             left: 220,
             top: 200,
