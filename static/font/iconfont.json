@@ -1,0 +1,275 @@
+{
+  "id": "2471178",
+  "name": "fabcanvas",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "363321",
+      "name": "图片",
+      "font_class": "tupian2",
+      "unicode": "e633",
+      "unicode_decimal": 58931
+    },
+    {
+      "icon_id": "4288154",
+      "name": "预览",
+      "font_class": "yulan",
+      "unicode": "e637",
+      "unicode_decimal": 58935
+    },
+    {
+      "icon_id": "5772874",
+      "name": "复制",
+      "font_class": "copy",
+      "unicode": "e62c",
+      "unicode_decimal": 58924
+    },
+    {
+      "icon_id": "8288874",
+      "name": "删除",
+      "font_class": "shanchu1",
+      "unicode": "e852",
+      "unicode_decimal": 59474
+    },
+    {
+      "icon_id": "8843063",
+      "name": "开锁",
+      "font_class": "kaisuo",
+      "unicode": "e63c",
+      "unicode_decimal": 58940
+    },
+    {
+      "icon_id": "8843087",
+      "name": "锁",
+      "font_class": "suo",
+      "unicode": "e63d",
+      "unicode_decimal": 58941
+    },
+    {
+      "icon_id": "14661404",
+      "name": "左对齐",
+      "font_class": "zuoduiqi1",
+      "unicode": "e697",
+      "unicode_decimal": 59031
+    },
+    {
+      "icon_id": "14661695",
+      "name": "右对齐",
+      "font_class": "youduiqi1",
+      "unicode": "e698",
+      "unicode_decimal": 59032
+    },
+    {
+      "icon_id": "14661707",
+      "name": "上对齐",
+      "font_class": "shangduiqi1",
+      "unicode": "e699",
+      "unicode_decimal": 59033
+    },
+    {
+      "icon_id": "14661728",
+      "name": "下对齐",
+      "font_class": "xiaduiqi1",
+      "unicode": "e69b",
+      "unicode_decimal": 59035
+    },
+    {
+      "icon_id": "14661734",
+      "name": "垂直居中",
+      "font_class": "chuizhijuzhong",
+      "unicode": "e69d",
+      "unicode_decimal": 59037
+    },
+    {
+      "icon_id": "14661756",
+      "name": "水平居中",
+      "font_class": "shuipingjuzhong",
+      "unicode": "e69e",
+      "unicode_decimal": 59038
+    },
+    {
+      "icon_id": "17558591",
+      "name": "二维码",
+      "font_class": "erweima1",
+      "unicode": "e683",
+      "unicode_decimal": 59011
+    },
+    {
+      "icon_id": "17558594",
+      "name": "条码",
+      "font_class": "tiaoma",
+      "unicode": "e689",
+      "unicode_decimal": 59017
+    },
+    {
+      "icon_id": "17558595",
+      "name": "图片",
+      "font_class": "tupian3",
+      "unicode": "e68a",
+      "unicode_decimal": 59018
+    },
+    {
+      "icon_id": "17558598",
+      "name": "三角形",
+      "font_class": "sanjiaoxing",
+      "unicode": "e68c",
+      "unicode_decimal": 59020
+    },
+    {
+      "icon_id": "17560032",
+      "name": "矩形",
+      "font_class": "juxing1",
+      "unicode": "e6a1",
+      "unicode_decimal": 59041
+    },
+    {
+      "icon_id": "17560034",
+      "name": "直线",
+      "font_class": "zhixian",
+      "unicode": "e6a3",
+      "unicode_decimal": 59043
+    },
+    {
+      "icon_id": "17560035",
+      "name": "圆角矩形",
+      "font_class": "yuanjiaojuxing",
+      "unicode": "e6a4",
+      "unicode_decimal": 59044
+    },
+    {
+      "icon_id": "17560036",
+      "name": "平行四边形",
+      "font_class": "pinghangsibianxing",
+      "unicode": "e6a5",
+      "unicode_decimal": 59045
+    },
+    {
+      "icon_id": "17560038",
+      "name": "椭圆形",
+      "font_class": "tuoyuanxing",
+      "unicode": "e6a7",
+      "unicode_decimal": 59047
+    },
+    {
+      "icon_id": "17580206",
+      "name": "向上",
+      "font_class": "xiangshang",
+      "unicode": "e6ab",
+      "unicode_decimal": 59051
+    },
+    {
+      "icon_id": "17580207",
+      "name": "向下",
+      "font_class": "xiangxia",
+      "unicode": "e6ac",
+      "unicode_decimal": 59052
+    },
+    {
+      "icon_id": "17580209",
+      "name": "置顶",
+      "font_class": "zhiding",
+      "unicode": "e6ae",
+      "unicode_decimal": 59054
+    },
+    {
+      "icon_id": "17580210",
+      "name": "置底",
+      "font_class": "zhidi",
+      "unicode": "e6af",
+      "unicode_decimal": 59055
+    },
+    {
+      "icon_id": "17580230",
+      "name": "隐藏",
+      "font_class": "yincang",
+      "unicode": "e6b0",
+      "unicode_decimal": 59056
+    },
+    {
+      "icon_id": "17580231",
+      "name": "显示",
+      "font_class": "xianshi",
+      "unicode": "e6b1",
+      "unicode_decimal": 59057
+    },
+    {
+      "icon_id": "17583643",
+      "name": "底层",
+      "font_class": "diceng",
+      "unicode": "e6b3",
+      "unicode_decimal": 59059
+    },
+    {
+      "icon_id": "17583644",
+      "name": "顶层",
+      "font_class": "dingceng",
+      "unicode": "e6b4",
+      "unicode_decimal": 59060
+    },
+    {
+      "icon_id": "17588462",
+      "name": "加粗",
+      "font_class": "jiacu",
+      "unicode": "e6b5",
+      "unicode_decimal": 59061
+    },
+    {
+      "icon_id": "17588463",
+      "name": "删除线",
+      "font_class": "shanchuxian1",
+      "unicode": "e6b6",
+      "unicode_decimal": 59062
+    },
+    {
+      "icon_id": "17588464",
+      "name": "下划线",
+      "font_class": "xiahuaxian",
+      "unicode": "e6b7",
+      "unicode_decimal": 59063
+    },
+    {
+      "icon_id": "17588465",
+      "name": "斜体",
+      "font_class": "xieti",
+      "unicode": "e6b8",
+      "unicode_decimal": 59064
+    },
+    {
+      "icon_id": "1526396",
+      "name": "图片",
+      "font_class": "tupian",
+      "unicode": "e678",
+      "unicode_decimal": 59000
+    },
+    {
+      "icon_id": "4354249",
+      "name": "形状-矩形",
+      "font_class": "xingzhuang-juxing",
+      "unicode": "eb97",
+      "unicode_decimal": 60311
+    },
+    {
+      "icon_id": "6266249",
+      "name": "椭圆形",
+      "font_class": "tuoyuanxing1",
+      "unicode": "e790",
+      "unicode_decimal": 59280
+    },
+    {
+      "icon_id": "7562959",
+      "name": "线条",
+      "font_class": "xiantiao-line",
+      "unicode": "e7ce",
+      "unicode_decimal": 59342
+    },
+    {
+      "icon_id": "10352343",
+      "name": "文本",
+      "font_class": "wenben",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "name": "vuefabricmodule",
   "description": "vue fabric module:[vuefabricmodule, inputSearch]",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "author": "zhouzhenhan <1659725767@qq.com>",
   "license": "MIT",
   "private": false,
@@ -15,12 +15,13 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "vue": "^2.5.2",
     "jr-qrcode": "^1.1.4",
     "jsbarcode": "^3.11.3",
+    "sass": "^1.54.5",
+    "vue": "^2.5.2",
     "vue-gemini-scrollbar": "^2.0.1",
-    "vue-router": "^3.0.1",
-    "vue-i18n": "^8.6.0"
+    "vue-i18n": "^8.6.0",
+    "vue-router": "^3.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
@@ -67,6 +68,9 @@
     "shelljs": "^0.7.6",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
+    "node-sass": "^4.13.1",
+    "sass": "^1.54.5",
+    "sass-loader": "^7.1.0",
     "vue-jest": "^1.0.2",
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",

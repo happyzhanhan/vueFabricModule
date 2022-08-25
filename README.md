@@ -416,6 +416,18 @@ this.$refs.canvas.createElement(name, options)
   this.$refs.canvas.toDataUrlImg()
 ```
 
+## 上线发包流程
+
+1.改pagckage.json版本号；
+2.填写版本记录发布内容；
+3.npm run build 生成js生成环境文件；
+4.git add . 
+  git commit -m 'vxx.xx.xx'
+  git push origin master
+4.npm publish --otp=xxxxxx;
+  
+
+
 ## Changelog
 
 ### 2022.05.16
@@ -570,3 +582,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.08.16
 > v0.0.34
 - 图片透明度添加
+
+### 2022.08.25
+> v0.0.35
+- 默认页面用仿PS的页面
