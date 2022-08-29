@@ -586,3 +586,8 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.08.25
 > v0.0.35
 - 默认页面用仿PS的页面
+
+
+### 2022.08.29
+> v0.0.36
+- 文本事件监听（text:changed， text:editing:entered， text:editing:exited）

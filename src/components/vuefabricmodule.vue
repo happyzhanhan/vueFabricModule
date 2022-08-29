@@ -488,6 +488,12 @@ export default {
     this.canvas.on('text:changed', function (options) {
       that.$emit('text:changed', options)
     })
+    this.canvas.on('text:editing:entered', function (options) {
+      that.$emit('text:editing:exited', options)
+    })
+    this.canvas.on('text:editing:exited', function (options) {
+      that.$emit('text:editing:exited', options)
+    })
   },
   methods: {
     // 初始化背景
