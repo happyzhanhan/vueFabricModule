@@ -14059,6 +14059,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
          */
         drawClipPathOnCache: function(ctx) {
             var path = this.clipPath;
+            if(!path){return;}
             ctx.save();
             // DEBUG: uncomment this line, comment the following
             // ctx.globalAlpha = 0.4
@@ -29932,7 +29933,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.height = this.calcTextHeight()>this.dynamicMinHeight?this.calcTextHeight() :this.dynamicMinHeight;
             this.saveState({ propertySet: '_dimensionAffectingProps' });
 
-           
+
         },
 
         /**
@@ -31399,7 +31400,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             this.on('selected', async (e) => {
                 // console.log('选择',e)
-                
+
             })
 
             this.on('moving', async (e) => {
@@ -31630,6 +31631,488 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
     };
 })(typeof exports !== 'undefined' ? exports : this);
 
+
+/**
+ * 文本组件复合 textRectNew
+ */
+(function(global) {
+
+    'use strict';
+
+    var fabric = global.fabric || (global.fabric = {});
+
+    fabric.Canvas.prototype.getAbsoluteCoords = function(object) {
+        return {
+            left: 0,
+            top: 0
+            // left: object.left + this._offset.left,
+            // top: object.top + this._offset.top
+        };
+    };
+
+    var btn = document.createElement('button');
+
+    fabric.textRectNew = fabric.util.createClass(fabric.Rect, {
+        type: 'textRectNew',
+        isType: 'TextRect',
+        text: null, //文本
+        clipPath: null, //裁切
+        btn: null, //提示按钮
+        textOffsetLeft: 0,
+        textOffsetTop: 0,
+        _prevObjectStacking: null,
+        _prevAngle: 0,
+        _wordJoiners:/[ \t\r\n\s]/g,
+        textRectData:{},
+
+
+
+        //按钮提示
+        positionBtn(obj) {
+            this.btn = btn;
+            var absCoords = this.canvas.getAbsoluteCoords(obj);
+
+            this.btn.innerHTML = 'Editing';
+            this.btn.style.position = "absolute";
+            this.btn.style.width = 60+'px';
+            this.btn.style.height = 20+'px';
+            this.btn.style.left = (absCoords.left ) + 'px';
+            this.btn.style.top = (absCoords.top ) + 'px';
+
+            let canvasbox = document.getElementsByClassName('canvas-container');
+            canvasbox[0].append(this.btn);
+            this.hiddenBtn() //隐藏按钮
+        },
+        //显示按钮
+        showBtn(){
+            this.btn.style.display = "none";
+        },
+        //隐藏按钮
+        hiddenBtn(){
+            this.btn.style.display = "none";
+        },
+
+        //文本不使用 的文本
+        textStyleFormat:function(target,text){
+            //console.log(target.maxLines,target.omitStyleText,target.newline);
+
+            if(!target.maxLines){
+                return target.text;
+            }
+            if(!target.omitStyleText){
+                return target.text;
+            }
+
+            let linewords = text?text:target.textdemo;
+            let wordJoiners = /[\n\t\r]/;
+            let lines = linewords.split(wordJoiners);     //先按照回车符等分隔多行
+            let newtext  = linewords;
+
+            if(target.newline!==''){
+
+                if(target.newline && target.newline!==''){   //换行符 newline
+                    let newwordJoiners = target.newline;
+                    for(var i=0;i<lines.length;i++){
+                        if(lines[i].indexOf(newwordJoiners)!==-1){   //如果遇到填写的分隔符
+                            let moreline = lines[i].split(newwordJoiners);
+                            lines.splice(i,1);
+                            lines.splice(i,0,...moreline);
+                        }
+                    }
+                    newtext = '';
+                    for(var i=0;i<lines.length;i++){
+                        if(i===lines.length-1){
+                            newtext = newtext + lines[i] ;
+                        }else{
+                            newtext = newtext + lines[i] + '\n';
+                        }
+
+                    }
+                }
+            }
+
+            let widthlines = target._splitTextIntoLines(newtext).lines; //根据宽度切割行
+            for(var j =0;j<widthlines.length;j++){
+                if(widthlines[j]===''){
+                    widthlines.splice(j,1);
+                }
+            }
+
+            if(target.maxLines && widthlines.length>target.maxLines){ //最大行数 maxLines
+                newtext = '';
+                for(var i=0;i<target.maxLines;i++){
+                    if(i===target.maxLines-1){
+                        newtext = newtext + widthlines[i] ; //重新组装显示行
+                    }else{
+                        newtext = newtext + widthlines[i] + '\n'; //重新组装显示行
+                    }
+
+                }
+                if(target.omitStyleText!=='无'){ //超出替换 omitStyle
+                    newtext = newtext.substring(0, newtext.length - 2) + target.omitStyleText;  //.substring(0, newtext.length - 3)
+                    target.selectionEnd = target.selectionStart = newtext.length;
+                }else{
+                    target.selectionEnd = target.selectionStart = newtext.length;
+                }
+            }
+
+            return newtext;
+
+        },
+
+        initialize: function (options) {
+
+            this.callSuper('initialize', options);
+
+            this.textRectData = options;
+
+            this.text = new fabric.Textbox(options.textdemo, {
+                ...options,
+
+                fill:options.fontColor?options.fontColor:'#ffffff',
+                fillColor:options.color?options.color:'#ffffff',
+                width:parseInt(this.width*this.scaleX),
+                height:parseInt(this.height*this.scaleY),
+                fontSize:options.fontSize?options.fontSize:12,
+
+                scaleX:1,
+                scaleY:1,
+                isElasticSize:options.isElasticSize?options.isElasticSize:0,
+                lineHeight:parseInt((options.fontSize + options.verticalSpace)/options.fontSize),
+
+                screenIndex:options.screenIndex,
+                visible:options.visible,
+                eyeshow:options.eyeshow,
+
+                isType: 'TextRect-text',
+                splitByGrapheme:  true,
+                selectable: false,
+                evented: false,
+            });
+
+            this.clipPath = new fabric.Rect({
+                originX:'left',
+                originY:'top',
+                left:-(this.width*this.scaleX)/2,
+                top:-(this.height*this.scaleY)/2,
+                width:this.width*this.scaleX,
+                height:this.height*this.scaleY
+            });
+
+
+            if(this.text.isElasticSize !== 2){
+                //文本重新赋值渲染
+                let newtext = this.textStyleFormat(this.text, this.text.textdemo);
+                this.text.set('text', newtext);
+
+                this.text.clipPath = this.clipPath; // 裁切一下形状
+            }else{
+                //自适应文本不换行
+                let newtext = this.text.textdemo.replace(this._wordJoiners, '');
+                this.text.set('text', newtext);
+
+                this.text.set('splitByGrapheme',false);
+
+                //计算当行的最大宽度和最大高度
+                var maxWidth = this.text.getLineWidth(0);
+                for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                    var currentLineWidth = this.text.getLineWidth(i);
+                    maxWidth = maxWidth + currentLineWidth;
+                }
+                var maxHeight = this.text.getHeightOfLine(0);
+                //文本变形
+                this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
+                this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+
+                this.text.clipPath = null;
+            }
+
+
+
+
+            this.on('added', async () => {
+
+                this.text.set('selected', false);
+                this.text.set('evented', false);
+
+                this.canvas.add(this.text);
+
+                this.positionBtn(this.text); //按钮新增
+
+            });
+            this.on('moving', async (e) => {
+
+                //文本绝对定位
+                const rectLeftTop = this.getPointByOrigin('left', 'top');
+                this.text.set('left', rectLeftTop.x);
+                this.text.set('top', rectLeftTop.y);
+
+            });
+            this.on('scaling', async (e) => {
+                if(this.text.isElasticSize !== 2){
+                    //文本重新赋值渲染
+                    let newtext = this.textStyleFormat(this.text, this.text.textdemo);
+                    this.text.set('text', newtext);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    //裁切区域宽高大小
+                    this.clipPath.set('width', parseInt(this.width*this.scaleX));
+                    this.clipPath.set('height',  parseInt(this.height*this.scaleY));
+                    //裁切区域相对定位
+                    this.clipPath.set('left', -parseInt(this.width*this.scaleX)/2);
+                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY)/2);
+
+                    this.text.clipPath = this.clipPath; // 裁切一下形状
+                }else{
+                    //自适应文本不换行
+                    let newtext = this.text.textdemo.replace(this._wordJoiners, '');
+                    this.text.set('text', newtext);
+
+                    //计算当行的最大宽度和最大高度
+                    var maxWidth = this.text.getLineWidth(0);
+                    for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                        var currentLineWidth = this.text.getLineWidth(i);
+                        maxWidth = maxWidth + currentLineWidth;
+                    }
+                    var maxHeight = this.text.getHeightOfLine(0);
+                    //文本变形
+                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    this.clipPath = null;
+                }
+
+            });
+            this.on('scaled', async (e) => {
+                if(this.text.isElasticSize !== 2){
+                    //文本重新赋值渲染
+                    let newtext = this.textStyleFormat(this.text, this.text.textdemo);
+                    this.text.set('text', newtext);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    //裁切区域宽高大小
+                    this.clipPath.set('width', parseInt(this.width*this.scaleX));
+                    this.clipPath.set('height',  parseInt(this.height*this.scaleY));
+                    //裁切区域相对定位
+                    this.clipPath.set('left', -parseInt(this.width*this.scaleX)/2);
+                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY)/2);
+
+                    this.text.clipPath = this.clipPath; // 裁切一下形状
+                }else{
+                    //自适应文本不换行
+                    let newtext = this.text.textdemo.replace(this._wordJoiners, '');
+                    this.text.set('text', newtext);
+
+                    //计算当行的最大宽度和最大高度
+                    var maxWidth = this.text.getLineWidth(0);
+                    for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                        var currentLineWidth = this.text.getLineWidth(i);
+                        maxWidth = maxWidth + currentLineWidth;
+                    }
+                    var maxHeight = this.text.getHeightOfLine(0);
+                    //文本变形
+                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    this.clipPath = null;
+                }
+
+            });
+            this.on('rotating', () => {
+                this.text.rotate(this.angle );
+                this._prevAngle = this.angle;
+
+            });
+
+            this.on('mousedown:before', () => {
+
+                this._prevObjectStacking = this.canvas.preserveObjectStacking;
+                this.canvas.preserveObjectStacking = true;
+
+                this.text.evented = false;
+                this.text.selectable = false;
+            });
+
+            this.on('mousedblclick', () => {
+
+                this.text.selectable = true;
+                this.text.evented = true;
+                this.text.set('text',this.text.textdemo); //文本重新赋值
+                this.text.set('scaleX',1); //文本取消变形
+                this.text.set('scaleY',1); //文本取消变形
+
+                this.text.set('splitByGrapheme',true); //允许换行
+
+                this.canvas.setActiveObject(this.text);
+                this.text.enterEditing();
+
+                this.selectable = false;
+
+                this.positionBtn(this.text); //按钮新增
+                this.showBtn(); // 显示按钮
+
+            });
+            this.on('deselected', async (e) => {
+                this.canvas.preserveObjectStacking =  true;
+            });
+
+            this.on('removed', () => {
+                this.canvas.remove(this.text);
+            });
+
+            this.text.on('added',async () =>{
+
+                //文本宽高大小
+                this.text.set('width', parseInt(this.width*this.scaleX));
+                this.text.set('height', parseInt(this.height*this.scaleY));
+                //文本绝对定位
+                const rectLeftTop = this.getPointByOrigin('left', 'top');
+                this.text.set('left', rectLeftTop.x);
+                this.text.set('top', rectLeftTop.y);
+
+            });
+
+            this.text.on('editing:entered',(e)=>{
+
+                this.text.bringForward(true);//文本拉到上面
+                //编辑文本时背景颜色
+                this.set('width',this.width*this.scaleX);
+                this.set('scaleX',1);
+                this.set('fill','#fffdcaf2');
+
+
+                this.text.set('hasBorders',false);
+
+                //文本编辑光标
+                this.text.enterEditing();
+                this.text.setSelectionStart(0); //设置光标位置
+                this.text.setSelectionEnd(this.text._text.length); //设置光标位置
+                this.text.hiddenTextarea.focus();
+                // this.text.hiddenTextarea.style.overflowY = 'auto';
+
+                //文本宽高大小
+                this.text.set('width', parseInt(this.width*this.scaleX));
+                this.text.set('height', parseInt(this.height*this.scaleY));
+
+
+            });
+            this.text.on('changed',(e)=>{
+
+                //文本宽高大小
+                this.text.set('width', parseInt(this.width*this.scaleX));
+                this.text.set('height', parseInt(this.height*this.scaleY));
+
+            });
+            this.text.on('editing:exited', async () => {
+                //退出编辑文本背景颜色
+                this.set('fill','');
+
+                //保存文本编辑时的数据
+                this.text.set('textdemo', this.text.text);
+                this.text.set('content', this.text.text);
+                this.set('textdemo', this.text.text);
+                this.set('content', this.text.text);
+
+                if(this.text.isElasticSize !== 2){
+                    //文本重新赋值渲染
+                    let newtext = this.textStyleFormat(this.text, this.text.textdemo);
+                    this.text.set('text', newtext);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    // //裁切区域宽高大小
+                    this.clipPath.set({
+                        originX:'left',
+                        originY:'top',
+                        width:parseInt(this.width*this.scaleX),
+                        height:parseInt(this.height*this.scaleY),
+                        left: -parseInt(this.width*this.scaleX)/2,
+                        top:-parseInt(this.height*this.scaleY)/2,
+                    })
+
+                }else{
+                    this.text.set('splitByGrapheme',false); //不允许换行
+                    //自适应文本不换行
+                    let newtext = this.text.textdemo.replace(this._wordJoiners, '');
+                    this.text.set('text', newtext);
+
+                    //计算当行的最大宽度和最大高度
+                    var maxWidth = this.text.getLineWidth(0);
+                    for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                        var currentLineWidth = this.text.getLineWidth(i);
+                        maxWidth = maxWidth + currentLineWidth;
+                    }
+                    var maxHeight = this.text.getHeightOfLine(0);
+                    //文本变形
+                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+
+                    //文本宽高大小
+                    this.text.set('width', parseInt(this.width*this.scaleX));
+                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    //文本绝对定位
+                    const rectLeftTop = this.getPointByOrigin('left', 'top');
+                    this.text.set('left', rectLeftTop.x);
+                    this.text.set('top', rectLeftTop.y);
+
+                    //裁切区域宽高大小
+                    this.clipPath = null;
+                }
+
+
+                this.text.evented = false;
+                this.text.selectable = false;
+                this.selectable = true;
+
+                this.hiddenBtn(); // 隐藏按钮
+                this.canvas.renderAll();
+                this.setCoords();
+
+
+            })
+        }
+    })
+
+    fabric.textRectNew.fromObject = function(object, callback) {
+        return fabric.Object._fromObject('textRectNew', object, callback, 'text');
+    };
+})(typeof exports !== 'undefined' ? exports : this);
 
 
 /**

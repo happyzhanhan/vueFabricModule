@@ -146,7 +146,7 @@ export default {
       this.cid = val
     },
     boxWidth (val, oldval) {
-      console.log('', val, oldval)
+      // console.log('', val, oldval)
       if (val !== oldval) {
         this.canvas.setWidth(val)
         this.canvas.setHeight(this.boxHeight)
@@ -155,7 +155,7 @@ export default {
       }
     },
     boxHeight (val, oldval) {
-      console.log('', val, oldval)
+      // console.log('', val, oldval)
       if (val !== oldval) {
         this.canvas.setWidth(this.boxWidth)
         this.canvas.setHeight(val)
@@ -510,7 +510,7 @@ export default {
       } else {
         top = 0
       }
-      console.log(top, left)
+      // console.log(top, left)
       this.xLeft = -left
       this.yTop = -top
       options = {
@@ -599,11 +599,11 @@ export default {
       })
       setTimeout(() => {
         objects.forEach(async obj => {
-          console.log(obj.id, obj.isType, obj.layer, obj.text)
+          // console.log(obj.id, obj.isType, obj.layer, obj.text)
           await this.moveToshow(obj, obj.layer)
           // eslint-disable-next-line no-constant-condition
           if (typeof obj.text === 'object') {
-            console.log(typeof obj.text, obj.text.layer)
+            // console.log(typeof obj.text, obj.text.layer)
             await this.moveToshow(obj.text, obj.text.layer)
           }
           this.renderAll()
@@ -758,7 +758,7 @@ export default {
     },
     // 改变画布背景颜色
     changeBackgroundColor (color) {
-      console.log(color)
+      // console.log(color)
       let bg = this.returnbg()
       if (color !== null && color !== undefined && color !== '') {
         bg.set({
@@ -809,12 +809,12 @@ export default {
     },
     // 画布左上对齐
     changeLeftTop () {
-      let bg = this.returnbg()
+      // let bg = this.returnbg()
       let zoom = this.canvas.getZoom()
       this.canvasZoom = zoom
       let canvaCenterLeft = this.boxWidth / 2 - this.width / 2
       let canvaCenterTop = this.boxHeight / 2 - this.height / 2
-      console.log(bg.left, bg.top, zoom, Math.abs(canvaCenterLeft * zoom), Math.abs(canvaCenterTop * zoom))
+      // console.log(bg.left, bg.top, zoom, Math.abs(canvaCenterLeft * zoom), Math.abs(canvaCenterTop * zoom))
       // eslint-disable-next-line no-undef
       let zoomPoint = new fabric.Point(canvaCenterLeft * zoom, canvaCenterTop * zoom) // 居中缩放中心
       this.canvas.absolutePan(zoomPoint)
@@ -852,7 +852,7 @@ export default {
       } else {
         Zoom = 1
       }
-      console.log('初始化缩放按最大的宽高适配：', Zoom)
+      // console.log('初始化缩放按最大的宽高适配：', Zoom)
       console.log('缩放：', zoom)
       this.setZoom(parseFloat(Zoom))
     },
@@ -1126,7 +1126,7 @@ export default {
           }
 
           if (canvas.containsPoint(event, object)) {
-            console.log('鼠标右键事件')
+            // console.log('鼠标右键事件')
             if (object.isType === 'TextRect-text') {
               // 如果是组合文本上的文本 则选中下面的矩形
               let objects = this.getObjectsNew()
@@ -1284,9 +1284,9 @@ export default {
       if (obj.layer === 1) {
         return
       }
-      console.log(obj.layer)
+      // console.log(obj.layer)
       this.swapArray(array, index - 1, index - 2) // 对图层交换移动位置
-      console.log(obj.layer, array)
+      // console.log(obj.layer, array)
       array.forEach((one, ilayer) => {
         allobjects.forEach((obj, index) => {
           if (obj.id === one.id) {
@@ -1338,7 +1338,7 @@ export default {
       if (obj.layer === 1) {
         return
       }
-      console.log(obj.layer)
+      // console.log(obj.layer)
       var moveNum = index - 1
       // eslint-disable-next-line no-unused-vars
       var newarry = []
@@ -1348,7 +1348,7 @@ export default {
         // console.log(this.allData);
         index--
       }
-      console.log(obj.layer, array)
+      // console.log(obj.layer, array)
       array.forEach((one, ilayer) => {
         allobjects.forEach((obj, index) => {
           if (obj.id === one.id) {
@@ -1397,7 +1397,7 @@ export default {
           // this.removeObj(one)
           this.canvas.fxRemove(one, {
             onComplete () {
-              console.log('删除成功后调用')
+              // console.log('删除成功后调用')
             }
           })
           this.canvas.renderAll()
@@ -1498,7 +1498,7 @@ export default {
         for (var i in _clipboard) {
           this.cid = this.cid + 1
           this.$emit('idAdd', this.cid)
-          console.log('多元素复制')
+          // console.log('多元素复制')
 
           let object = _clipboard[i]
           object.copyId = JSON.parse(JSON.stringify(object.id))
@@ -1569,7 +1569,7 @@ export default {
       } else {
         this.cid = this.cid + 1
         this.$emit('idAdd', this.cid)
-        console.log('单元素', _clipboard.isType)
+        // console.log('单元素', _clipboard.isType)
         // console.log('单个元素',_clipboard)
         if (_clipboard.isType === 'TextRect-text') {
           return
@@ -1638,7 +1638,7 @@ export default {
             'fontStyle': _clipboard.textRectData.fontStyle ? _clipboard.textRectData.fontStyle : 'normal'
           })
         } else {
-          console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height)
+          // console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height)
           canvaobj = await this.createElement(_clipboard.isType, JSON.parse(JSON.stringify(_clipboard)))
         }
         if (canvaobj) {
@@ -2004,7 +2004,7 @@ export default {
         that.cid = that.cid + 1
         this.$emit('idAdd', that.cid)
       }
-      console.log('新增时ID', options.id)
+      // console.log('新增时ID', options.id)
 
       // console.log(options);
       return new Promise(async (resolve, reject) => {
@@ -2284,7 +2284,7 @@ export default {
               name: options.name ? options.name : 'EqualCircle',
               radius: options.width / 2
             }
-            console.log(newOptions)
+            // console.log(newOptions)
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.Circle({...newOptions}) // 创建
             break
@@ -2418,7 +2418,7 @@ export default {
             // return canvasObject
             break
           case 'Barcode': // ----------------------------------------------------------------------------------------条码
-            console.log('Barcode', options)
+            // console.log('Barcode', options)
             canvasObject = await that.createBarcode(options)
             break
             // resolve(canvasObject)
@@ -2675,7 +2675,7 @@ export default {
 
             // Utils.registeObjectEvent(this, canvasObject);
             canvasObject.on('mousedblclick', (e) => {
-              console.log('mousedblclick', e)
+              // console.log('mousedblclick', e)
               this.canvas.preserveObjectStacking = true
               e.target._objects[1].selectable = true
               e.target._objects[1].evented = true
@@ -2883,7 +2883,7 @@ export default {
             })
 
             break
-          case 'TextRect': // -------------------------------------------------可编辑文本加： 边距 背景 边框
+          case 'TextRectOld': // -------------------------------------------------可编辑文本加： 边距 背景 边框
             // console.warn('文本矩形参数：',options.zIndex);
 
             const rectOptions = {
@@ -3020,7 +3020,18 @@ export default {
 
             canvasObject.setCoords()
 
-            console.log('999999999999999999999999', canvasObject)
+            // console.log('999999999999999999999999', canvasObject)
+            break
+
+          case 'TextRect': // -------------------------------------------------可编辑文本优化 文本的特殊属性： 边距 背景 边框
+
+            options.fill = 'rgba(0, 0, 0, 0)' // 矩形背景透明
+
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.textRectNew(options)
+            // console.log('TextRect New', canvasObject)
+            canvasObject.setCoords()
+
             break
 
           case 'table':
@@ -3196,10 +3207,10 @@ export default {
             break
           case 'tableList':
             let table = options.tabledata
-            console.log('tableList', table)
+            // console.log('tableList', table)
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.tableList(canvas, table)
-            console.log(canvasObject)
+            // console.log(canvasObject)
 
             setTimeout(() => {
               that.setActiveObject(canvasObject.table.group)
@@ -4004,7 +4015,7 @@ export default {
       })
 
       if (options.barlineWidth * ((options.width * options.scaleX) / (options.item(1).width * options.item(1).scaleX)) < 1) {
-        console.log('小于条码1倍')
+        // console.log('小于条码1倍')
         options.item(0).set({
           width: options.item(1)._element.width,
           scaleX: 1
@@ -4026,7 +4037,7 @@ export default {
     },
     // 画条码
     drawbarcode (number, option) {
-      console.log('drawbarcode', option)
+      // console.log('drawbarcode', option)
       return new Promise(function (resolve, reject) {
         let barbox = document.getElementById('barbox')
         let bardom = document.createElement('img')
@@ -4066,7 +4077,7 @@ export default {
     },
     // 创建datamatrix二维码
     async createBarcodedatamatrix (options) {
-      console.log('创建datamatrix条形码：', options)
+      // console.log('创建datamatrix条形码：', options)
       let that = this
       let curcanvas = this.canvas
       return new Promise(function (resolve, reject) {
@@ -4093,14 +4104,14 @@ export default {
 
         html2canvas(document.getElementById('datamatix')).then(function (canvas) {
           let url = canvas.toDataURL()
-          console.log(url)
+          // console.log(url)
 
           let img = new Image()
           img.crossOrigin = 'Anonymous'
           img.src = url
 
           img.onload = () => {
-            console.log(img)
+            // console.log(img)
 
             document.getElementById('datamatix').append(img)
 
@@ -4149,7 +4160,7 @@ export default {
 
             })
 
-            console.log(canvasObject)
+            // console.log(canvasObject)
             curcanvas.add(canvasObject)
             that.setActiveObject(canvasObject)
             // that.setTop();                                         //遮罩置顶
@@ -4530,7 +4541,7 @@ export default {
       }
       let canvas = this.canvas
       canvas.remove(groups)
-      console.log(options)
+      // console.log(options)
       // eslint-disable-next-line no-undef
       // let canvasObject = new fabric.tableList(this.canvas, table)
       let canvasObject = await this.createElement('tableList', options)
@@ -4605,7 +4616,7 @@ export default {
         canvas.height = imgHeight
         ctx.drawImage(img, 0, 0, imgWidth, imgHeight)
         dataURL = canvas.toDataURL(type)
-        console.log(dataURL)
+        // console.log(dataURL)
         callback && callback(dataURL)
         return dataURL
       }
@@ -4643,7 +4654,7 @@ export default {
           var imgData = nowText.getImageData(x1, y1, dirtyWidth, dirtyHeight)// 获取截图画布像素数据
           newCanvas.width = dirtyWidth
           newCanvas.height = dirtyHeight
-          console.log(newCanvas.width, newCanvas.height)
+          // console.log(newCanvas.width, newCanvas.height)
           newText.putImageData(imgData, 0, 0, 0, 0, newCanvas.width, newCanvas.height)// 将截取的图像放回画布上
           var imgUrl = newCanvas.toDataURL('image/png')// 将图片转为dataURL(base64);
           resolve(imgUrl)
@@ -4759,7 +4770,7 @@ export default {
          * target =====> TextRect
          */
     async textIsUsually (target, text) {
-      console.log('isElasticSize-----', target)
+      // console.log('isElasticSize-----', target)
 
       if (target.isElasticSize === 0) {
         let allobjects = this.getObjectsNew()
@@ -4849,7 +4860,7 @@ export default {
     exitEditing () {
       let obj = this.getEditObj()
       if (obj.isType !== 'TextRect-text' && obj.isType !== 'Itext' && obj.isType !== 'Textbox') { return }
-      console.log(obj.isType)
+      // console.log(obj.isType)
       obj.exitEditing()
       this.renderCanvas() // 渲染一下
     }

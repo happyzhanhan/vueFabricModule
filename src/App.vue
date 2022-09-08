@@ -768,40 +768,41 @@ export default {
         case 'TextRect':
           options = {
             left: 600,
-            top: 0,
+            top: 200,
             hasRotatingPoint: true,
-            width: 400,
-            height: 500,
-            fontColor: '#000',
-            rectColor: '',
-            fill: '#fff',
-            /* stroke:'#f00', */
-            strokeWidth: 0,
-            xLeft: 0,
-            yTop: 0,
-            xRight: 0,
-            yBot: 0,
-            fontFamily: '微软雅黑',
+            width: 600,
+            height: 200,
+            fontColor: '#333333',
+            fill: 'rgba(0,0,0,0)',
+            strokeWidth: 1,
+
+            fontFamily: '宋体',
 
             visible: true,
-            fontSize: 100,
-            textdemo: '我是测试的文字中显示我是测试的文字中显示我是测试的文字中显示我是测试的文字中显示我是测试的文字中显示我是测试的文字中显示我是测试的文字中显示',
+            fontSize: 30,
+            textdemo: 'Every single time you access a website,  ',
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 0,
+            isElasticSize: 2,
 
-            maxLines: 4,
-            omitStyleText: '...',
+            maxLines: 2,
+            omitStyleText: '...', // 两个汉字 4个字母
             omitStyle: 1,
-            newline: '中',
+            newline: '|',
+
             minFontSize: 12,
             textAlign: 'left',
-            verticalSpace: 0
+            verticalSpace: 0,
 
-            // fontWeight: 'bold',
-            // linethrough: true,
-            // underline: true,
-            // fontStyle: 'italic'
+            fontWeight: 'bold',
+            linethrough: true,
+            underline: true,
+            fontStyle: 'italic'
+
+            // xLeft: 0,
+            // yTop: 0,
+            // xRight: 0,
+            // yBot: 0,
 
           }
           break

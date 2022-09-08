@@ -591,3 +591,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.08.29
 > v0.0.36
 - 文本事件监听（text:changed， text:editing:entered， text:editing:exited）
+
+### 2022.09.08
+> v0.0.37
+- 文本组件优化，编辑和退出编辑模式
