@@ -31696,67 +31696,90 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
         textStyleFormat:function(target,text){
             //console.log(target.maxLines,target.omitStyleText,target.newline);
 
-            if(!target.maxLines){
-                return target.text;
+            if (!target.maxLines) {
+                return target.text
             }
-            if(!target.omitStyleText){
-                return target.text;
+            if (!target.omitStyleText) {
+                return target.text
             }
 
-            let linewords = text?text:target.textdemo;
-            let wordJoiners = /[\n\t\r]/;
-            let lines = linewords.split(wordJoiners);     //先按照回车符等分隔多行
-            let newtext  = linewords;
+            let linewords = text || target.textdemo
+            let wordJoiners = /[\n\t\r]/
+            let lines = linewords.split(wordJoiners) // 先按照回车符等分隔多行
+            let newtext = linewords
 
-            if(target.newline!==''){
-
-                if(target.newline && target.newline!==''){   //换行符 newline
-                    let newwordJoiners = target.newline;
-                    for(var i=0;i<lines.length;i++){
-                        if(lines[i].indexOf(newwordJoiners)!==-1){   //如果遇到填写的分隔符
-                            let moreline = lines[i].split(newwordJoiners);
-                            lines.splice(i,1);
-                            lines.splice(i,0,...moreline);
+            if (target.newline !== '') {
+                if (target.newline && target.newline !== '') { // 换行符 newline
+                    let newwordJoiners = target.newline
+                    for (var i = 0; i < lines.length; i++) {
+                        if (lines[i].indexOf(newwordJoiners) !== -1) { // 如果遇到填写的分隔符
+                            let moreline = lines[i].split(newwordJoiners)
+                            lines.splice(i, 1)
+                            lines.splice(i, 0, ...moreline)
                         }
                     }
-                    newtext = '';
-                    for(var i=0;i<lines.length;i++){
-                        if(i===lines.length-1){
-                            newtext = newtext + lines[i] ;
-                        }else{
-                            newtext = newtext + lines[i] + '\n';
+                    newtext = ''
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1) {
+                            newtext = newtext + lines[i]
+                        } else {
+                            newtext = newtext + lines[i] + '\n'
                         }
-
                     }
                 }
             }
 
-            let widthlines = target._splitTextIntoLines(newtext).lines; //根据宽度切割行
-            for(var j =0;j<widthlines.length;j++){
-                if(widthlines[j]===''){
-                    widthlines.splice(j,1);
+            let widthlines = target._splitTextIntoLines(newtext).lines // 根据宽度切割行
+            for (var j = 0; j < widthlines.length; j++) {
+                if (widthlines[j] === '') {
+                    widthlines.splice(j, 1)
                 }
             }
 
-            if(target.maxLines && widthlines.length>target.maxLines){ //最大行数 maxLines
-                newtext = '';
-                for(var i=0;i<target.maxLines;i++){
-                    if(i===target.maxLines-1){
-                        newtext = newtext + widthlines[i] ; //重新组装显示行
-                    }else{
-                        newtext = newtext + widthlines[i] + '\n'; //重新组装显示行
+            if (target.maxLines && widthlines.length > target.maxLines) { // 最大行数 maxLines
+                newtext = ''
+                for (let i = 0; i < target.maxLines; i++) {
+                    if (i === target.maxLines - 1) {
+                        newtext = newtext + widthlines[i] // 重新组装显示行
+                    } else {
+                        newtext = newtext + widthlines[i] + '\n' // 重新组装显示行
                     }
-
                 }
-                if(target.omitStyleText!=='无'){ //超出替换 omitStyle
-                    newtext = newtext.substring(0, newtext.length - 2) + target.omitStyleText;  //.substring(0, newtext.length - 3)
-                    target.selectionEnd = target.selectionStart = newtext.length;
-                }else{
-                    target.selectionEnd = target.selectionStart = newtext.length;
+                if (target.omitStyleText !== '无') { // 超出替换 omitStyle
+                    // // 验证是否是中文
+                    // var pattern = new RegExp('[\u4E00-\u9FA5]+')
+                    // var str = '中文字符'
+                    // if (pattern.test(str)) {
+                    //   alert('该字符串是中文')
+                    // }
+                    // // 验证是否是英文
+                    // var pattern2 = new RegExp('[A-Za-z]+')
+                    // var str2 = 'abcdefsgaaweg'
+                    // if (pattern2.test(str2)) {
+                    //   alert('该字符串是英文')
+                    // }
+                    // // 验证是否是数字
+                    // var pattern3 = new RegExp('[0-9]+')
+                    // var str3 = '234234'
+                    // if (pattern3.test(str3)) {
+                    //   alert('该字符串是数字')
+                    // }
+                    var pattern = new RegExp('[\u4E00-\u9FA5]+')
+
+                    // console.log('含有中文：',pattern.test(newtext.substring(newtext.length - 2, newtext.length)));
+                    if (pattern.test(newtext.substring(newtext.length - 2, newtext.length))) {
+                        newtext = newtext.substring(0, newtext.length - 2) + target.omitStyleText // .substring(0, newtext.length - 3)
+                        target.selectionEnd = target.selectionStart = newtext.length
+                    } else {
+                        newtext = newtext.substring(0, newtext.length - 4) + target.omitStyleText // .substring(0, newtext.length - 3)
+                        target.selectionEnd = target.selectionStart = newtext.length
+                    }
+                } else {
+                    target.selectionEnd = target.selectionStart = newtext.length
                 }
             }
 
-            return newtext;
+            return newtext
 
         },
 
@@ -31899,6 +31922,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             });
             this.on('scaled', async (e) => {
+                this.set('width', parseInt(this.width*this.scaleX));
+                this.set('height', parseInt(this.height*this.scaleY));
+                this.set('scaleX',1);
+                this.set('scaleY',1);
                 if(this.text.isElasticSize !== 2){
                     //文本重新赋值渲染
                     let newtext = this.textStyleFormat(this.text, this.text.textdemo);

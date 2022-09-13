@@ -17,6 +17,7 @@
 
 <script>
 import html2canvas from 'html2canvas'
+// import { letterSpacing } from 'html2canvas/dist/types/css/property-descriptors/letter-spacing'
 import vueContextMenu from '../examples/contextmenu.vue'
 
 // import { on, off } from '../examples/event' // 事件监听
@@ -3027,6 +3028,26 @@ export default {
 
             options.fill = 'rgba(0, 0, 0, 0)' // 矩形背景透明
 
+            options = {
+              ...options,
+              isType: 'TextRect',
+              component: 'component',
+              fontWeight: options.fontWeight ? options.fontWeight : 'normal',
+              linethrough: options.linethrough ? options.linethrough : false,
+              underline: options.underline ? options.underline : false,
+              fontStyle: options.fontStyle ? options.fontStyle : 'normal',
+              textAlign: options.textAlign ? options.textAlign : 'left',
+
+              maxLines: options.maxLines ? options.maxLines : 10,
+              minFontSize: options.minFontSize ? options.minFontSize : 12,
+              omitStyle: options.omitStyle ? options.omitStyle : 0,
+              omitStyleText: options.omitStyleText ? options.omitStyleText : '无',
+              newline: options.newline ? options.newline : '',
+
+              verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
+              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize
+            }
+
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.textRectNew(options)
             // console.log('TextRect New', canvasObject)
@@ -4492,6 +4513,94 @@ export default {
       // console.log(newtext);
       return newtext
     },
+    textStyleFormatNew: function (target, text) {
+      // console.log(target.maxLines,target.omitStyleText,target.newline);
+
+      if (!target.maxLines) {
+        return target.text
+      }
+      if (!target.omitStyleText) {
+        return target.text
+      }
+
+      let linewords = text || target.textdemo
+      let wordJoiners = /[\n\t\r]/
+      let lines = linewords.split(wordJoiners) // 先按照回车符等分隔多行
+      let newtext = linewords
+
+      if (target.newline !== '') {
+        if (target.newline && target.newline !== '') { // 换行符 newline
+          let newwordJoiners = target.newline
+          for (var i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf(newwordJoiners) !== -1) { // 如果遇到填写的分隔符
+              let moreline = lines[i].split(newwordJoiners)
+              lines.splice(i, 1)
+              lines.splice(i, 0, ...moreline)
+            }
+          }
+          newtext = ''
+          for (let i = 0; i < lines.length; i++) {
+            if (i === lines.length - 1) {
+              newtext = newtext + lines[i]
+            } else {
+              newtext = newtext + lines[i] + '\n'
+            }
+          }
+        }
+      }
+
+      let widthlines = target._splitTextIntoLines(newtext).lines // 根据宽度切割行
+      for (var j = 0; j < widthlines.length; j++) {
+        if (widthlines[j] === '') {
+          widthlines.splice(j, 1)
+        }
+      }
+
+      if (target.maxLines && widthlines.length > target.maxLines) { // 最大行数 maxLines
+        newtext = ''
+        for (let i = 0; i < target.maxLines; i++) {
+          if (i === target.maxLines - 1) {
+            newtext = newtext + widthlines[i] // 重新组装显示行
+          } else {
+            newtext = newtext + widthlines[i] + '\n' // 重新组装显示行
+          }
+        }
+        if (target.omitStyleText !== '无') { // 超出替换 omitStyle
+          // // 验证是否是中文
+          // var pattern = new RegExp('[\u4E00-\u9FA5]+')
+          // var str = '中文字符'
+          // if (pattern.test(str)) {
+          //   alert('该字符串是中文')
+          // }
+          // // 验证是否是英文
+          // var pattern2 = new RegExp('[A-Za-z]+')
+          // var str2 = 'abcdefsgaaweg'
+          // if (pattern2.test(str2)) {
+          //   alert('该字符串是英文')
+          // }
+          // // 验证是否是数字
+          // var pattern3 = new RegExp('[0-9]+')
+          // var str3 = '234234'
+          // if (pattern3.test(str3)) {
+          //   alert('该字符串是数字')
+          // }
+          var pattern = new RegExp('[\u4E00-\u9FA5]+')
+
+          // console.log('含有中文：', pattern.test(newtext.substring(newtext.length - 2, newtext.length)))
+          if (pattern.test(newtext.substring(newtext.length - 2, newtext.length))) {
+            newtext = newtext.substring(0, newtext.length - 2) + target.omitStyleText // .substring(0, newtext.length - 3)
+            target.selectionEnd = target.selectionStart = newtext.length
+          } else {
+            newtext = newtext.substring(0, newtext.length - 4) + target.omitStyleText // .substring(0, newtext.length - 3)
+            target.selectionEnd = target.selectionStart = newtext.length
+          }
+        } else {
+          target.selectionEnd = target.selectionStart = newtext.length
+        }
+      }
+
+      return newtext
+    },
     // 创建表格
     async createTable (table) {
       let canvas = this.canvas
@@ -4774,21 +4883,20 @@ export default {
 
       if (target.isElasticSize === 0) {
         let allobjects = this.getObjectsNew()
-        console.log(target.text.maxLines, target.text.newline, target.text.omitStyleText)
-        let realtext = this.newtextStyleFormat(target.text, text)
+        // console.log(target.text.maxLines, target.text.newline, target.text.omitStyleText)
+        let realtext = this.textStyleFormatNew(target.text, text)
         allobjects.forEach((obj) => {
           if (obj.id === target.id && obj.isType === 'TextRect') {
             obj.textdemo = text
             obj.content = text
             obj.text.text = realtext
             obj.text.textdemo = text
-            obj.text.height = target.height - obj.yTop - obj.yBot
           }
 
           if (obj.id === target.id && obj.isType === 'TextRect-text') {
             obj.set('text', realtext)
             obj.set('textdemo', text)
-            obj.set('height', target.height - obj.yTop - obj.yBot)
+            obj.set('height', target.height)
 
             this.renderCanvas() // 渲染一下
           }

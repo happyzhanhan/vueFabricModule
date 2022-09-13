@@ -26,6 +26,16 @@ npm test
 # use
 npm install vuefabricmoudle --save
 ```
+## 更新淘宝镜像
+``` bash
+cnpm sync vuefabricmodule
+```
+自己发布了NPM包，有小伙伴反应，如果是TB源，CNPM上无法获取，不是最新等问题。
+排查了下，原来是 CNPM有时候 不能及时同步。
+所以需要自己去手工拉取下。
+[cnpm镜像](https://npmmirror.com/package/vuefabricmodule).
+
+
 ## 依赖
 下载到本地 static/js/文件下
 [customiseControls.js](https://github.com/happyzhanhan/vueFabricModule/blob/master/static/js/customiseControls.js).
@@ -599,3 +609,8 @@ this.$refs.canvas.createElement(name, options)
 ### 2022.09.08
 > v0.0.38
 - 文本组件优化，刷新时宽高缩小有问题
+
+### 2022.09.13
+> v0.0.39
+- 文本组件优化，拖拽宽高修改
+- 文本英文省略4个字，汉字省略2个字

@@ -172,7 +172,7 @@
                     隐藏
                 </div>
 
-                <div class="ps-button-new"  >
+                <div class="ps-button-new"  @click="textIsUsually">
                     改变自适应
                 </div>
 
@@ -780,24 +780,24 @@ export default {
 
             visible: true,
             fontSize: 30,
-            textdemo: 'Every single time you access a website,  ',
+            textdemo: 'Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you',
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 2,
+            isElasticSize: 0,
 
-            maxLines: 2,
+            maxLines: 7,
             omitStyleText: '...', // 两个汉字 4个字母
             omitStyle: 1,
             newline: '|',
 
             minFontSize: 12,
             textAlign: 'left',
-            verticalSpace: 0,
+            verticalSpace: 0
 
-            fontWeight: 'bold',
-            linethrough: true,
-            underline: true,
-            fontStyle: 'italic'
+            // fontWeight: 'bold',
+            // linethrough: true,
+            // underline: true,
+            // fontStyle: 'italic'
 
             // xLeft: 0,
             // yTop: 0,
@@ -1045,6 +1045,14 @@ export default {
       // })
       console.log(this.$refs.canvas.toJson(), this.$refs.canvas.getObjectsNew())
       this.textJSON = this.$refs.canvas.toJson(canvaobj)
+    },
+    // 文本改变文字
+    textIsUsually () {
+      let cur = this.$refs.canvas.getObjectsNew()
+      if (!cur && cur[0].isType !== 'TextRect') { return }
+      console.log(cur[0].text)
+
+      this.$refs.canvas.textIsUsually(cur[0], 'Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.')
     }
   }
 }
