@@ -175,6 +175,9 @@
                 <div class="ps-button-new"  @click="textIsUsually">
                     改变自适应
                 </div>
+                <div class="ps-button-new"  @click="exitEditing">
+                退出编辑exitEditing
+                </div>
 
             </div>
 
@@ -1053,6 +1056,9 @@ export default {
       console.log(cur[0].text)
 
       this.$refs.canvas.textIsUsually(cur[0], 'Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.')
+    },
+    exitEditing () {
+      this.$refs.canvas.exitEditing() // 退出编辑
     }
   }
 }
