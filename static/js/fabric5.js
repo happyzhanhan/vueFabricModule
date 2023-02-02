@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
-/*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) */
+/*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '3.6.1' };
+var fabric = fabric || { version: '0.1.0' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -13739,6 +13739,11 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     url: this.url,
                     tabledata: this.tabledata,
                     bgcolor: this.bgcolor,
+
+                    fillinColor: this.fillinColor,
+                    border: this.border,
+                    borderColor: this.borderColor,
+                    borderType: this.borderType
 
                 };
 
@@ -31667,6 +31672,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
 
+
         //按钮提示
         positionBtn(obj) {
             this.btn = btn;
@@ -31792,6 +31798,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.text = new fabric.Textbox(options.textdemo, {
                 ...options,
 
+                strokeWidth: 0,
+                stroke: options.borderColor ? options.borderColor : '#000000',
+
                 fill:options.fontColor?options.fontColor:'#ffffff',
                 fillColor:options.color?options.color:'#ffffff',
                 width:parseInt(this.width*this.scaleX),
@@ -31816,10 +31825,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.clipPath = new fabric.Rect({
                 originX:'left',
                 originY:'top',
-                left:-(this.width*this.scaleX)/2,
-                top:-(this.height*this.scaleY)/2,
-                width:this.width*this.scaleX,
-                height:this.height*this.scaleY
+                left:-(this.width*this.scaleX + this.strokeWidth)/2,
+                top:-(this.height*this.scaleY + this.strokeWidth)/2,
+                width:this.width*this.scaleX  + this.strokeWidth,
+                height:this.height*this.scaleY  + this.strokeWidth
             });
 
 
@@ -31855,6 +31864,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             this.on('added', async () => {
 
+                this.set('fill', options.fillinColor); // 矩形背景颜色填充
+
                 this.text.set('selected', false);
                 this.text.set('evented', false);
 
@@ -31886,11 +31897,11 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('top', rectLeftTop.y);
 
                     //裁切区域宽高大小
-                    this.clipPath.set('width', parseInt(this.width*this.scaleX));
-                    this.clipPath.set('height',  parseInt(this.height*this.scaleY));
+                    this.clipPath.set('width', parseInt(this.width*this.scaleX  + this.strokeWidth));
+                    this.clipPath.set('height',  parseInt(this.height*this.scaleY  + this.strokeWidth));
                     //裁切区域相对定位
-                    this.clipPath.set('left', -parseInt(this.width*this.scaleX)/2);
-                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY)/2);
+                    this.clipPath.set('left', -parseInt(this.width*this.scaleX + this.strokeWidth)/2);
+                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY + this.strokeWidth)/2);
 
                     this.text.clipPath = this.clipPath; // 裁切一下形状
                 }else{
@@ -31940,11 +31951,11 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('top', rectLeftTop.y);
 
                     //裁切区域宽高大小
-                    this.clipPath.set('width', parseInt(this.width*this.scaleX));
-                    this.clipPath.set('height',  parseInt(this.height*this.scaleY));
+                    this.clipPath.set('width', parseInt(this.width*this.scaleX  + this.strokeWidth));
+                    this.clipPath.set('height',  parseInt(this.height*this.scaleY  + this.strokeWidth));
                     //裁切区域相对定位
-                    this.clipPath.set('left', -parseInt(this.width*this.scaleX)/2);
-                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY)/2);
+                    this.clipPath.set('left', -parseInt(this.width*this.scaleX + this.strokeWidth)/2);
+                    this.clipPath.set('top',  -parseInt(this.height*this.scaleY + this.strokeWidth)/2);
 
                     this.text.clipPath = this.clipPath; // 裁切一下形状
                 }else{
@@ -32062,7 +32073,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             });
             this.text.on('editing:exited', async () => {
                 //退出编辑文本背景颜色
-                this.set('fill','');
+                this.set('fill', this.fillinColor);
 
                 //保存文本编辑时的数据
                 this.text.set('textdemo', this.text.text);
@@ -32087,10 +32098,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.clipPath.set({
                         originX:'left',
                         originY:'top',
-                        width:parseInt(this.width*this.scaleX),
-                        height:parseInt(this.height*this.scaleY),
-                        left: -parseInt(this.width*this.scaleX)/2,
-                        top:-parseInt(this.height*this.scaleY)/2,
+                        width:parseInt(this.width*this.scaleX  + this.strokeWidth),
+                        height:parseInt(this.height*this.scaleY  + this.strokeWidth),
+                        left: -parseInt(this.width*this.scaleX + this.strokeWidth)/2,
+                        top:-parseInt(this.height*this.scaleY + this.strokeWidth)/2,
                     })
 
                 }else{

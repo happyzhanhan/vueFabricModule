@@ -2149,9 +2149,13 @@ export default {
           fillColor: options.fillColor ? options.fillColor : 'rgba(0,0,0,0)', // 填充的颜色
 
           backgroundColor: options.backgroundColor ? options.backgroundColor : '', // 边框填充的颜色
-          stroke: options.stroke ? options.stroke : '', // 边框颜色
-          strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+          // stroke: options.stroke ? options.stroke : '', // 边框颜色
+          // strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
           strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+          fillinColor: options.fillinColor ? options.fillinColor : 'rgba(0,0,0,0)',
+          strokeWidth: options.border ? options.border : 0,
+          stroke: options.borderColor ? options.borderColor : '',
 
           selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中
           visible: options.visible, // 元素是否可见 options.visible!==false ? true :
@@ -2165,6 +2169,7 @@ export default {
 
           tabledata: options.tabledata ? options.tabledata : initable, // 表格新增字段
           bgcolor: options.bgcolor ? options.bgcolor : '#fff' // 新增二维码和条码背景色
+
         }
 
         // console.warn(options.visible);
@@ -3045,7 +3050,13 @@ export default {
               newline: options.newline ? options.newline : '',
 
               verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
-              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize
+              lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize,
+
+              fillinColor: options.fillinColor ? options.fillinColor : '#000000',
+              strokeWidth: options.border ? options.border : 1,
+              stroke: options.borderColor ? options.borderColor : '#000000',
+              borderType: options.borderType ? options.borderType : 1
+
             }
 
             // eslint-disable-next-line no-undef

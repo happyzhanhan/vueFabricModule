@@ -426,6 +426,17 @@ this.$refs.canvas.createElement(name, options)
   this.$refs.canvas.toDataUrlImg()
 ```
 
+> 对象新增参数 2023.02.02
+```
+| name                | Description                               | default                    |
+| border              | 边框粗细                                   | 0                          |
+| border              | 边框颜色                                   | ''                         |
+| borderType          | 边框类型                                   | 1                          |
+| strokeDashArray     | 边框类型设定 1:直线[0,0] ;  2:虚线 [5,1]    | 直线[0,0]                  |
+| fillinColor         | 文本组件填充背景颜色                        | 'rgba(0,0,0,0)'            |
+
+```
+
 ## 上线发包流程
 
 1.改pagckage.json版本号；
@@ -617,3 +628,9 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.0.40
 - 文本组件退出编辑的方法添加退出编辑选择当前文本的逻辑
+
+
+### 2023.02.02
+> v0.1.0
+- 文本组件新增边框，边框参数（border，borderColor，borderType，strokeDashArray，fillinColor）；
+- 矩形、椭圆形、圆角矩形 形状新增边框。
