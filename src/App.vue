@@ -589,8 +589,8 @@ export default {
             height: 100,
             color: colors[i],
             opacity: 0.5,
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           break
@@ -601,8 +601,8 @@ export default {
             width: 200,
             height: 100,
             color: colors[i],
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           break
@@ -613,8 +613,8 @@ export default {
             width: 200,
             height: 100,
             color: colors[i],
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           break
@@ -627,8 +627,8 @@ export default {
             strokeWidth: 3,
             DottedlineType: 1,
             color: colors[i],
-            border: 2,
-            borderColor: '#ff0000',
+            // stroke: '#ff0000',
+            // strokeWidth: 2,
             visible: true
           }
           break
@@ -643,8 +643,8 @@ export default {
             src: imgurl,
             url: imgurl,
             opacity: 0.5,
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           // let img = await this.loadImage(imgurl)
@@ -659,8 +659,8 @@ export default {
             height: 100,
             src: iconurl,
             url: iconurl,
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           let iimg = await this.loadImage(iconurl)
@@ -675,8 +675,8 @@ export default {
             height: 100,
             src: url,
             url: url,
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           let imgnew = await this.loadImage(url)
@@ -694,8 +694,8 @@ export default {
             color: '#000',
             bgcolor: '#999',
             visible: true,
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             angle: 0
 
           }
@@ -712,8 +712,8 @@ export default {
             imgText: '69012345679',
             lineColor: '#ff0',
             bgcolor: '#f00',
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           break
@@ -727,9 +727,8 @@ export default {
             height: 300,
             fontSize: 20,
             textdemo: '我是Text',
-            border: 2,
-            borderColor: '#ff0000',
-
+            stroke: '#ff0000',
+            strokeWidth: 2,
             hasRotatingPoint: true,
             visible: true
 
@@ -748,8 +747,8 @@ export default {
             width: 500,
             fontSize: 20,
             textdemo: '2022.05.23 15:23:12',
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
 
             hasRotatingPoint: true,
             visible: true
@@ -770,9 +769,8 @@ export default {
             height: 200,
             fontSize: 20,
             textdemo: 'Itext',
-            border: 2,
-            borderColor: '#ff0000',
-
+            stroke: '#ff0000',
+            strokeWidth: 2,
             hasRotatingPoint: true,
             visible: true
           }
@@ -786,8 +784,8 @@ export default {
             height: 200,
             fontSize: 20,
             textdemo: 'Textbox',
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
 
             hasRotatingPoint: true,
             visible: true
@@ -803,7 +801,7 @@ export default {
             height: 200,
             fontColor: '#000000',
             // fill: 'rgba(0,0,0,0)',
-            strokeWidth: 1,
+            // strokeWidth: 1,
 
             fontFamily: '宋体',
 
@@ -835,9 +833,10 @@ export default {
 
             fillinColor: '',
             border: 2,
-            borderColor: '#ff0000',
-            borderType: 1,
-            strokeDashArray: [0, 0]
+
+            stroke: '#9864FF',
+            strokeWidth: 4,
+            strokeDashArray: [3, 1]
 
           }
           break
@@ -913,8 +912,8 @@ export default {
             height: 50,
             fontSize: 16,
             content: '',
-            border: 2,
-            borderColor: '#ff0000',
+            stroke: '#ff0000',
+            strokeWidth: 2,
             visible: true
           }
           break
