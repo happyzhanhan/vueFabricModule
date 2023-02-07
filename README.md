@@ -640,3 +640,8 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.1
 - 文本组件新增边框，边框参数（strokeWidth，stroke，borderType，strokeDashArray，fillinColor）；
 - 矩形、椭圆形、圆角矩形 形状新增边框。
+
+
+### 2023.02.07
+> v0.1.2
+- 文本的具体属性修改

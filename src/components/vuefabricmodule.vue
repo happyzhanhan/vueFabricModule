@@ -3052,7 +3052,7 @@ export default {
               verticalSpace: options.verticalSpace ? options.verticalSpace : 0,
               lineHeight: (options.fontSize + options.verticalSpace) / options.fontSize,
 
-              fillinColor: options.fillinColor ? options.fillinColor : '#000000',
+              fillinColor: options.fillinColor ? options.fillinColor : '',
               stroke: options.stroke ? options.stroke : '', // 边框颜色
               strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
               borderType: options.borderType ? options.borderType : 1,
@@ -4934,6 +4934,11 @@ export default {
         top: JSON.parse(JSON.stringify(target.top)) - this.returnXY().top,
         width: JSON.parse(JSON.stringify(target.width)) * target.scaleX,
         height: JSON.parse(JSON.stringify(target.height)) * target.scaleY,
+
+        fillinColor: JSON.parse(JSON.stringify(target.fillinColor)),
+        stroke: JSON.parse(JSON.stringify(target.stroke)),
+        strokeWidth: JSON.parse(JSON.stringify(target.strokeWidth)),
+
         fontColor: JSON.parse(JSON.stringify(target.text.fill)),
         color: JSON.parse(JSON.stringify(target.fontColor)),
         fontFamily: JSON.parse(JSON.stringify(target.fontFamily)),

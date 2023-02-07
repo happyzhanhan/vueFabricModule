@@ -324,6 +324,7 @@
                 </div>
 
             </div>
+            <!-- 图层 -->
             <div class="one-but" :class="showlayer?'hover':''" >
                 <span @click="showlayer = !showlayer">
                     <i><img src="../static/newps/images/icon-tuceng.png" alt="" ></i><b>图层</b>
@@ -382,6 +383,70 @@
                     </div>
                 </div>
             </div>
+            <!-- 参数 -->
+            <div class="one-but" :class="showParam?'hover':''" >
+                <span @click="showParam = !showParam">
+                    <i><img src="../static/newps/images/icon-shuxing.png" alt="" ></i><b>属性</b>
+                </span>
+
+                <div class="ps-layerbox" v-if="showParam">
+                    <p class="ps-layer-title"><span><b>属性</b></span>  </p>
+                    <div  class="ps-params-data">
+
+                        <div class="ps-param-line">
+                            <div class="oneparam">
+                                <div class="param-name">
+                                    W:
+                                </div>
+                                <div>
+                                    <input type="text">
+                                </div>
+                            </div>
+                            <div class="oneparam">
+                                <div class="param-name">
+                                    H:
+                                </div>
+                                <div>
+                                    <input type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ps-param-line">
+                            <div class="oneparam">
+                                <div class="param-name">
+                                    X:
+                                </div>
+                                <div>
+                                    <input type="text">
+                                </div>
+                            </div>
+                            <div class="oneparam">
+                                <div class="param-name">
+                                    Y:
+                                </div>
+                                <div>
+                                    <input type="text">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div  class="ps-layer-botButton">
+                        <div class="color-btn">
+                            <span class="color-background"  @click="showColor = !showColor" :style="'background:'+ object.color +';'"></span>
+
+                            <photoshop-picker class="photoshop-color" v-model="colors" v-if="showColor" @ok="changeColor" @cancel="noChangeColor"
+                            head="填充颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                        </div>
+
+                        <div class="color-btn">
+                            <span class="color-background"  @click="showBorderColor = !showBorderColor" :style="'background:'+ object.stroke +';'"><i></i></span>
+
+                            <photoshop-picker class="photoshop-color" v-model="BorderColors" v-if="showBorderColor" @ok="changeBorderColor" @cancel="noChangeBorderColor"
+                            head="边框颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -392,11 +457,23 @@
 <script>
 import inputSearchVue from './components/inputSearch.vue'
 import vuefabricmodule from './components/vuefabricmodule.vue'
+import {
+  Material, Compact, Swatches, Slider, Photoshop, Chrome, Sketch, Twitter, Grayscale} from 'vue-color'
 
 export default {
   name: 'App',
   components: {
-    inputSearchVue, vuefabricmodule
+    inputSearchVue,
+    vuefabricmodule,
+    'material-picker': Material,
+    'compact-picker': Compact,
+    'swatches-picker': Swatches,
+    'slider-picker': Slider,
+    'photoshop-picker': Photoshop,
+    'chrome-picker': Chrome,
+    'sketch-picker': Sketch,
+    'twitter-picker': Twitter,
+    'grayscale-picker': Grayscale
   },
   data () {
     return {
@@ -404,6 +481,7 @@ export default {
       currentLayer: [0, 1],
       currentSuo: 0,
       showlayer: false,
+      showParam: false,
       layerlist: [
         {
           id: 0,
@@ -496,10 +574,51 @@ export default {
       height: '600',
       boxWidth: document.documentElement.clientWidth - 120,
       boxHeight: document.documentElement.clientHeight - 62,
-      background: '#ffffff'
+      background: '#ffffff',
+      /* 颜色选择器 */
+      colors: {
+        color: '',
+        hex: '#194d33',
+        hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+        hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
+        a: 1
+      },
+      showColor: false,
+      object: {
+        color: '#333333',
+        stroke: '#666666'
+      },
+      BorderColors: {
+        color: '',
+        hex: '#194d33',
+        hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+        hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
+        a: 1
+      },
+      showBorderColor: false
     }
   },
   methods: {
+    /* 颜色选择器 */
+    changeColor () {
+      this.$set(this.object, 'color', this.colors.hex)
+      this.noChangeColor()
+    },
+    /* 颜色选择器 */
+    noChangeColor () {
+      this.showColor = false
+    },
+    /* 颜色选择器 */
+    changeBorderColor () {
+      this.$set(this.object, 'stroke', this.BorderColors.hex)
+      this.noChangeBorderColor()
+    },
+    /* 颜色选择器 */
+    noChangeBorderColor () {
+      this.showBorderColor = false
+    },
     // 改变历史
     changeHistory (history) {
       this.currentHistory = history.id
@@ -831,12 +950,12 @@ export default {
             // xRight: 0,
             // yBot: 0,
 
-            fillinColor: '',
+            fillinColor: '#0f0',
             border: 2,
 
             stroke: '#9864FF',
-            strokeWidth: 4,
-            strokeDashArray: [3, 1]
+            strokeWidth: 4
+            // strokeDashArray: [3, 1]
 
           }
           break
@@ -1895,6 +2014,44 @@ export default {
                         line-height: 30px;
                     }
                 }
+                .ps-params-data{
+                    border-top:1px solid #707070;
+                    border-bottom:1px solid #282828;
+                    padding: 10px 5px 0 5px;
+                    // display: flex;
+                    // flex-direction: row;
+                    // align-items: center;
+
+                    input{
+                        background:#3a3a3a;
+                        width: 70px;
+                        height: 20px;
+                        outline: none;
+                        text-indent: 5px;
+                        margin-left:5px;
+                        color:#fff;
+
+                        &:focus{
+                            background:#ffffff;
+                            color:#333;
+                        }
+                    }
+                    .ps-param-line{
+                        width: 100%;
+                        display: flex;
+                        flex-direction: row;
+                        margin-bottom: 5px;
+                    }
+                    .oneparam{
+                        width: 50%;
+                        display: flex;
+                        flex-direction: row;
+                        .param-name{
+                            width: 20px;
+                        }
+                    }
+
+                }
                 .ps-history-data{
                     border-bottom:1px solid #282828;
                     height: 350px;
@@ -2029,16 +2186,38 @@ export default {
                 }
 
                 .ps-layer-botButton{
-                    padding: 0 5px;
+                    padding: 10px 5px;
                     display: flex;
                     flex-direction: row;
                     align-items: center;
                     height: 20px;
                     border-top:1px solid #707070;
-                    padding: 0 5px;
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;;
+
+                    .color-btn{
+                        margin-right:10px;
+                        width: 30px;
+                        height: 14px;
+                        border:1px solid #fff;
+                        position: relative;
+                        .color-background{
+                            background: #999999;
+                            display: inline-block;
+                            width: 100%;
+                            height: 100%;
+                            i{
+                                width: 10px;
+                                height: 1px;
+                                border: 1px solid #ffffff;
+                                margin: 6px 9px;
+                            }
+                        }
+                    }
+                    .photoshop-color{
+                        position: absolute;
+                        right: 0;
+                        top:15px;
+                        color:#333;
+                    }
                 }
 
             }

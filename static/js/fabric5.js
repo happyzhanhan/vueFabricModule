@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '0.1.1' };
+var fabric = fabric || { version: '0.1.2' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -13741,9 +13741,9 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     bgcolor: this.bgcolor,
 
                     fillinColor: this.fillinColor,
-                    border: this.border,
-                    borderColor: this.borderColor,
-                    borderType: this.borderType
+                    // border: this.border,
+                    // borderColor: this.borderColor,
+                    // borderType: this.borderType
 
                 };
 
@@ -31104,7 +31104,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
         initialize: function (rectOptions, textOptions, text) {
             //console.log(rectOptions,textOptions);
-            this.callSuper('initialize', rectOptions);
+            this.callSuper('initialize', {...rectOptions, fill:rectOptions.fillinColor?rectOptions.fillinColor:'rgba(0,0,0,0)'});
 
 
             if(textOptions.isElasticSize===0){
@@ -31341,6 +31341,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 }
                 this.text.set('selected', false);
                 this.text.set('evented', false);
+
+                this.text.set('stroke', '');
+                this.text.set('strokeWidth', 0);
 
                 this.canvas.add(this.text);
 
@@ -31799,7 +31802,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 ...options,
 
                 strokeWidth: 0,
-                stroke: options.borderColor ? options.borderColor : '#000000',
+                stroke: options.stroke ? options.stroke : '#000000',
 
                 fill:options.fontColor?options.fontColor:'#ffffff',
                 fillColor:options.color?options.color:'#ffffff',
