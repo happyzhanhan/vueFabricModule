@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '0.1.2' };
+var fabric = fabric || { version: '0.1.3' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -4543,7 +4543,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
     };
 })(fabric.ElementsParser.prototype);
 
-
+// fabric.Point
 (function(global) {
 
     'use strict';
@@ -6210,7 +6210,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
     }
 })();
 
-
+// fabric.Pattern
 (function() {
 
     'use strict';
@@ -6411,7 +6411,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
     });
 })();
 
-
+// fabric.Shadow
 (function(global) {
 
     'use strict';
@@ -13370,7 +13370,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
          * @type Boolean
          * @default false
          */
-        strokeUniform:              false,
+        strokeUniform:              true,  //改变试试 happy change true:
 
         /**
          * When set to `true`, object's cache will be rerendered next render call.
@@ -14171,11 +14171,17 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
             ctx.fillStyle = this.backgroundColor;
 
             ctx.fillRect(
-                -dim.x / 2,
-                -dim.y / 2,
-                dim.x,
+                -dim.x / 2 ,
+                -dim.y / 2 ,
+                dim.x ,
                 dim.y
             );
+            // ctx.fillRect(
+            //     -dim.x / 2 - this.strokeWidth / 2,
+            //     -dim.y / 2  - this.strokeWidth / 2,
+            //     dim.x +  this.strokeWidth / 2,
+            //     dim.y +  this.strokeWidth / 2
+            // );
             // if there is background color no other shadows
             // should be casted
             this._removeShadow(ctx);
@@ -14452,6 +14458,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
             pCtx.fillStyle = filler.toLive(ctx);
             pCtx.fill();
             ctx.translate(-this.width / 2 - this.strokeWidth / 2, -this.height / 2 - this.strokeWidth / 2);
+            // ctx.translate(-this.width / 2 - this.strokeWidth , -this.height / 2 - this.strokeWidth );
             ctx.scale(
                 retinaScaling * this.scaleX / dims.zoomX,
                 retinaScaling * this.scaleY / dims.zoomY
@@ -16511,6 +16518,9 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
                 strokeWidth = 1 / this.borderScaleFactor,
                 width = wh.x + strokeWidth,
                 height = wh.y + strokeWidth,
+                // width = wh.x ,
+                // height = wh.y,
+
                 drawRotatingPoint = typeof styleOverride.hasRotatingPoint !== 'undefined' ?
                     styleOverride.hasRotatingPoint : this.hasRotatingPoint,
                 hasControls = typeof styleOverride.hasControls !== 'undefined' ?
@@ -17669,7 +17679,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Ellipse
 (function(global) {
 
     'use strict';
@@ -17852,7 +17862,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Rect
 (function(global) {
 
     'use strict';
@@ -18060,7 +18070,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Polyline
 (function(global) {
 
     'use strict';
@@ -18321,7 +18331,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Polygon
 (function(global) {
 
     'use strict';
@@ -18403,7 +18413,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Path
 (function(global) {
 
     'use strict';
@@ -19318,7 +19328,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Group
 (function(global) {
 
     'use strict';
@@ -19913,7 +19923,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.ActiveSelection
 (function(global) {
 
     'use strict';
@@ -20073,7 +20083,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Image
 (function(global) {
 
     'use strict';
@@ -21737,7 +21747,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     return filter;
 };
 
-
+// filters.ColorMatrix
 (function(global) {
 
     'use strict';
@@ -21896,7 +21906,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     fabric.Image.filters.ColorMatrix.fromObject = fabric.Image.filters.BaseFilter.fromObject;
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Brightness
 (function(global) {
 
     'use strict';
@@ -22011,7 +22021,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Convolute
 (function(global) {
 
     'use strict';
@@ -22365,7 +22375,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+//  filters.Grayscale
 (function(global) {
 
     'use strict';
@@ -22521,7 +22531,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Invert
 (function(global) {
 
     'use strict';
@@ -22634,7 +22644,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Noise
 (function(global) {
 
     'use strict';
@@ -22770,7 +22780,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Pixelate
 (function(global) {
 
     'use strict';
@@ -22909,7 +22919,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.RemoveColor
 (function(global) {
 
     'use strict';
@@ -23171,7 +23181,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     }
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.BlendColor
 (function(global) {
     'use strict';
 
@@ -23418,7 +23428,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.BlendImage
 (function(global) {
     'use strict';
 
@@ -23666,7 +23676,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Resize
 (function(global) {
 
     'use strict';
@@ -24158,7 +24168,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Contrast
 (function(global) {
 
     'use strict';
@@ -24268,7 +24278,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Saturation
 (function(global) {
 
     'use strict';
@@ -24381,7 +24391,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Blur
 (function(global) {
 
     'use strict';
@@ -24598,7 +24608,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Gamma
 (function(global) {
 
     'use strict';
@@ -24736,7 +24746,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.Composed
 (function(global) {
 
     'use strict';
@@ -24810,7 +24820,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     };
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// filters.HueRotation
 (function(global) {
 
     'use strict';
@@ -24919,7 +24929,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
 
 })(typeof exports !== 'undefined' ? exports : this);
 
-
+// fabric.Text
 (function(global) {
 
     'use strict';
@@ -26734,7 +26744,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     });
 })();
 
-
+// fabric.IText
 (function() {
 
     function parseDecoration(object) {
@@ -29341,7 +29351,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 })();
 /* _TO_SVG_END_ */
 
-
+// fabric.Textbox
 (function(global) {
 
     'use strict';

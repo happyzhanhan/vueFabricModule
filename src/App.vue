@@ -389,63 +389,105 @@
                     <i><img src="../static/newps/images/icon-shuxing.png" alt="" ></i><b>属性</b>
                 </span>
 
-                <div class="ps-layerbox" v-if="showParam">
-                    <p class="ps-layer-title"><span><b>属性</b></span>  </p>
-                    <div  class="ps-params-data">
+                <div>
+                    <div class="ps-layerbox" v-if="showParam">
+                        <p class="ps-layer-title"><span><b>属性</b></span>  </p>
 
-                        <div class="ps-param-line">
-                            <div class="oneparam">
-                                <div class="param-name">
-                                    W:
-                                </div>
-                                <div>
-                                    <input type="text">
-                                </div>
-                            </div>
-                            <div class="oneparam">
-                                <div class="param-name">
-                                    H:
-                                </div>
-                                <div>
-                                    <input type="text">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ps-param-line">
-                            <div class="oneparam">
-                                <div class="param-name">
-                                    X:
-                                </div>
-                                <div>
-                                    <input type="text">
-                                </div>
-                            </div>
-                            <div class="oneparam">
-                                <div class="param-name">
-                                    Y:
-                                </div>
-                                <div>
-                                    <input type="text">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div  class="ps-layer-botButton">
-                        <div class="color-btn">
-                            <span class="color-background"  @click="showColor = !showColor" :style="'background:'+ object.color +';'"></span>
-
-                            <photoshop-picker class="photoshop-color" v-model="colors" v-if="showColor" @ok="changeColor" @cancel="noChangeColor"
-                            head="填充颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                        <div class="ps-params-data"  v-if="JSON.stringify(object)!=='{}'">
+                            <p class="ps-type-name">组件：</p>
                         </div>
 
-                        <div class="color-btn">
-                            <span class="color-background"  @click="showBorderColor = !showBorderColor" :style="'background:'+ object.stroke +';'"><i></i></span>
+                        <div class="ps-params-data"  v-else>
+                            <p class="ps-type-name">无属性</p>
+                        </div>
 
-                            <photoshop-picker class="photoshop-color" v-model="BorderColors" v-if="showBorderColor" @ok="changeBorderColor" @cancel="noChangeBorderColor"
-                            head="边框颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                        <div v-if="JSON.stringify(object)!=='{}'">
+
+                            <div  class="ps-params-data">
+
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            W:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.width"
+                                            @blur="changeObject('width', object.width)" />
+                                        </div>
+                                    </div>
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            H:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.height"
+                                            @blur="changeObject('height', object.height)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            X:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.left"
+                                            @blur="changeObject('left', object.left)"/>
+                                        </div>
+                                    </div>
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            Y:
+                                        </div>
+                                        <div>
+                                            <input type="text"  v-model="object.top"
+                                            @blur="changeObject('top', object.top)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div  class="ps-layer-botButton">
+                                <div class="color-btn">
+                                    <span class="color-background"  @click="showColor = !showColor" :style="'background:'+ object.fillinColor +';'"></span>
+
+                                    <photoshop-picker class="photoshop-color" v-model="colors" v-if="showColor" @ok="changeColor" @cancel="noChangeColor"
+                                    head="填充颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                                </div>
+
+                                <div class="color-btn">
+                                    <span class="color-background"  @click="showBorderColor = !showBorderColor" :style="'background:'+ object.stroke +';'"><i></i></span>
+
+                                    <photoshop-picker class="photoshop-color" v-model="BorderColors" v-if="showBorderColor" @ok="changeBorderColor" @cancel="noChangeBorderColor"
+                                    head="边框颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                                </div>
+
+                                <div class="border-btn">
+                                    <div class="name">边框：</div>
+
+                                    <div class="form"><input type="text" v-model="object.strokeWidth" @blur="changeObject('strokeWidth', object.strokeWidth)"/></div>
+
+                                    <div class="ps-button-new bordertype" @click="borderstyleshow=!borderstyleshow">
+                                        <span>类型</span>
+                                        <span class="rightbtn">
+                                            <img src="../static/newps/images/xia.png" alt="">
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="borderstyle" v-if="borderstyleshow">
+                                <p>描边选项：</p>
+                                <div class="borderstylelist">
+                                    <div @click="setObjectDash([0, 0])" :class="object.strokeDashArray[1] === 0?'hover':''"><i></i></div>
+                                    <div @click="setObjectDash([3, 1])" :class="{'hover':object.strokeDashArray[1] === 1}"><i class="dashed"></i></div>
+                                    <div @click="setObjectDash([1, 3])" :class="{'hover':object.strokeDashArray[1] === 3 }"><i class="dotted"></i></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -586,8 +628,14 @@ export default {
       },
       showColor: false,
       object: {
-        color: '#333333',
-        stroke: '#666666'
+        width: 100,
+        height: 100,
+        left: 0,
+        top: 0,
+        fillinColor: '#333333',
+        stroke: '#666666',
+        strokeWidth: 1,
+        strokeDashArray: [3, 1] // [0, 0] [0, 3]
       },
       BorderColors: {
         color: '',
@@ -597,13 +645,20 @@ export default {
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       },
-      showBorderColor: false
+      showBorderColor: false,
+      borderstyleshow: true
     }
   },
   methods: {
+    // 选择边框类型
+    setObjectDash (data) {
+      this.$set(this.object, 'strokeDashArray', data)
+      this.changeObject('strokeDashArray', data)
+    },
     /* 颜色选择器 */
     changeColor () {
-      this.$set(this.object, 'color', this.colors.hex)
+      this.$set(this.object, 'fillinColor', this.colors.hex)
+      this.changeObject('fillinColor', this.object.fillinColor)
       this.noChangeColor()
     },
     /* 颜色选择器 */
@@ -613,6 +668,7 @@ export default {
     /* 颜色选择器 */
     changeBorderColor () {
       this.$set(this.object, 'stroke', this.BorderColors.hex)
+      this.changeObject('stroke', this.object.stroke)
       this.noChangeBorderColor()
     },
     /* 颜色选择器 */
@@ -669,9 +725,47 @@ export default {
       console.log('选择id:', ids)
       if (ids.length === 1) {
         this.curobj = this.$refs.canvas.getEditObj()
+        let obj = this.$refs.canvas.getEditObj()
+        this.$set(this.object, 'width', obj.width)
+        this.$set(this.object, 'height', obj.height)
+        this.$set(this.object, 'left', parseInt(obj.left))
+        this.$set(this.object, 'top', parseInt(obj.top))
+        this.$set(this.object, 'fillinColor', obj.fill)
+        this.$set(this.object, 'stroke', obj.stroke)
+        this.$set(this.object, 'strokeWidth', obj.strokeWidth)
+        this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
       } else {
         this.curobj = {}
+        this.object = {}
       }
+    },
+    // 数据改变画布组件
+    changeObject (name, data) {
+      console.log(name, data)
+      let obj = this.$refs.canvas.getEditObj()
+      console.log(obj)
+      switch (name) {
+        case 'width': obj.set({'width': parseInt(data)})
+          break
+        case 'height': obj.set({'height': parseInt(data)})
+          break
+        case 'left': obj.set({'left': parseInt(data)})
+          break
+        case 'top': obj.set({'top': parseInt(data)})
+          break
+        case 'strokeWidth': obj.set({'strokeWidth': parseInt(data)})
+          break
+        case 'stroke': obj.set({'stroke': data})
+          break
+        case 'strokeDashArray': obj.set({'strokeDashArray': [parseInt(data[0] * this.object.strokeWidth), parseInt(data[1] * this.object.strokeWidth)]
+        })
+          break
+        case 'fillinColor': obj.set({'fill': data})
+          break
+        default:
+      }
+      obj.setCoords()
+      this.$refs.canvas.renderAll()
     },
     // 画布回调
     canvasToData (obj, name) {
@@ -690,8 +784,18 @@ export default {
       console.log('objectmoved', obj)
     },
     // 画布操作回调
-    objectmodified (obj) {
-      console.log('0 --- objectmodified', obj)
+    objectmodified (e) {
+      console.log('0 --- objectmodified', e)
+      this.curobj = e.target
+      let obj = e.target
+      this.$set(this.object, 'width', obj.width)
+      this.$set(this.object, 'height', obj.height)
+      this.$set(this.object, 'left', parseInt(obj.left))
+      this.$set(this.object, 'top', parseInt(obj.top))
+      this.$set(this.object, 'fillinColor', obj.fill)
+      this.$set(this.object, 'stroke', obj.stroke)
+      this.$set(this.object, 'strokeWidth', obj.strokeWidth)
+      this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
     },
     // 点击画组件
     async draw (name) {
@@ -1209,6 +1313,7 @@ export default {
 
       this.$refs.canvas.textIsUsually(cur[0], 'Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you.')
     },
+    // 退出编辑
     exitEditing () {
       this.$refs.canvas.exitEditing() // 退出编辑
     }
@@ -2014,6 +2119,15 @@ export default {
                         line-height: 30px;
                     }
                 }
+                .ps-noparams{
+                    border-top:1px solid #707070;
+                    border-bottom:1px solid #282828;
+                    padding: 10px 5px 10px 5px;
+                    min-height: 100px;
+                }
+                .ps-type-name{
+                    padding: 0 5px 8px 5px;
+                }
                 .ps-params-data{
                     border-top:1px solid #707070;
                     border-bottom:1px solid #282828;
@@ -2142,6 +2256,7 @@ export default {
                                 margin-left: 5px;
                                 margin-right: 10px;
                                 background: #fff;
+                                z-index:0;
 
                                 &:before{
                                     content:"";
@@ -2212,6 +2327,51 @@ export default {
                             }
                         }
                     }
+                    .border-btn{
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        input{
+                            background:#3a3a3a;
+                            width: 40px;
+                            height: 20px;
+                            outline: none;
+                            text-indent: 5px;
+                            margin-left:5px;
+                            color:#fff;
+
+                            &:focus{
+                                background:#ffffff;
+                                color:#333;
+                            }
+                        }
+                    }
+                    .bordertype{
+                      display: flex;
+                      span.rightbtn{
+                        display: inline-block;
+                        img{
+                            width: 10px;
+                            height: 10px;
+                        }
+                      }
+                    }
+
+                    .ps-button-new{
+                        font-size: 12px;
+                        color:#fff;
+                        padding: 1px 10px;
+                        margin:3px 5px;
+                        border-radius: 4px;
+                        background: linear-gradient(0deg, #606060 20%, #6c6c6c 50%, #707070 70%);
+                        border: 1px solid rgba(44,44,44,1);
+                        user-select: none;
+
+                        &:active,&.hover{
+                            background: #393939;
+                            border: 1px solid rgba(44,44,44,1);
+                        }
+                    }
                     .photoshop-color{
                         position: absolute;
                         right: 0;
@@ -2220,6 +2380,53 @@ export default {
                     }
                 }
 
+            }
+
+            .borderstyle{
+                width: 100%;
+                margin: 0px 10px;
+                display: inline-block;
+                box-sizing: border-box;
+                p{
+                    width: 100%;
+                }
+                div.borderstylelist{
+                    margin-top:5px;
+                    margin-bottom: 10px;
+                    width: 90%;
+                    box-sizing: border-box;
+                    background: #464646;
+                    border: 1px solid #383838;
+                    display: flex;
+                    flex-direction: column;
+                    z-index:0;
+                    >div{
+                        width: 100%;
+                        line-height: 30px;
+                        height:30px;
+                        text-align: center;
+                        border-bottom:1px solid #333333;
+                        cursor: pointer;
+                        &:hover{
+                            background: #6d7d92;
+                        }
+                        &.hover{
+                            background: #6d7d92;
+                        }
+                        i{
+                            width: 80%;
+                            margin:15px 10%;
+                            display: inline-block;
+                            border-top: 2px solid #ddd;
+                            &.dashed{
+                                border-top: 2px dashed #ddd;
+                            }
+                            &.dotted{
+                                border-top: 2px dotted #ddd;
+                            }
+                        }
+                    }
+                }
             }
 
         }

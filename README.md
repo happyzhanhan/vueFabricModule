@@ -645,3 +645,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.02.07
 > v0.1.2
 - 文本的具体属性修改
+
+### 2023.02.09
+> v0.1.3
+- 文本组件拖拽选择框较大问题修复

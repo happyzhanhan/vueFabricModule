@@ -605,7 +605,7 @@ export default {
           // eslint-disable-next-line no-constant-condition
           if (typeof obj.text === 'object') {
             // console.log(typeof obj.text, obj.text.layer)
-            await this.moveToshow(obj.text, obj.text.layer)
+            await this.moveToshow(obj.text, obj.text.layer + 0.5)
           }
           this.renderAll()
         })
