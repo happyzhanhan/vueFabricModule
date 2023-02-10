@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '0.1.3' };
+var fabric = fabric || { version: '0.1.5' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -13741,6 +13741,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     bgcolor: this.bgcolor,
 
                     fillinColor: this.fillinColor,
+                    textPadding: this.textPadding,
                     // border: this.border,
                     // borderColor: this.borderColor,
                     // borderType: this.borderType
@@ -30305,7 +30306,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
 /**
- * 新需求创建rectWithText
+ * 新需求创建rectWithText vuefabric2022 的旧文本组件
  *
  *
  * */
@@ -30339,8 +30340,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 this.text.set('left', rectLeftTop.x + newTop +this.text.xLeft);
 
                 this.text.set('top', rectLeftTop.y +newLeft + this.text.yTop );
-                this.text.set('width', parseInt(this.width*this.scaleX - this.text.xLeft - this.text.xRight));
-                this.text.set('height', parseInt(this.height*this.scaleY  - this.text.yTop - this.text.yBot));
+                this.text.set('width', parseInt(this.width*this.scaleX + this.strokeWidth - this.text.xLeft - this.text.xRight));
+                this.text.set('height', parseInt(this.height*this.scaleY + this.strokeWidth  - this.text.yTop - this.text.yBot));
 
 
             }
@@ -31123,8 +31124,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
                     scaleX:1,
                     scaleY:1,
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:0,
@@ -31162,8 +31163,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
 
                     lineHeight:parseInt((textOptions.fontSize + textOptions.verticalSpace)/textOptions.fontSize),
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:1,
@@ -31206,8 +31207,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     lineHeight:1,
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:2,
 
-                    width:parseInt(this.width*this.scaleX - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(rectOptions.height/(this.height/textOptions.fontSize)  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
+                    height:parseInt(rectOptions.height/(this.height/textOptions.fontSize)  + this.strokeWidth - textOptions.yTop - textOptions.yBot),
                     scaleX:1,
                     scaleY:1,
 
@@ -31257,8 +31258,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
                     scaleX:1,
                     scaleY:1,
                     lineHeight:parseInt((textOptions.fontSize + textOptions.verticalSpace)/textOptions.fontSize),
@@ -31305,7 +31306,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.on('added', async () => {
                // console.log('1----added');
 
-                console.log('add----------------',this);
+                // console.log('add----------------',this);
 
 
                 if(this.text.isElasticSize===2){//自适应
@@ -31337,14 +31338,14 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('offsetLeft',margin.marginLeft);
                     this.text.set('offsetTop',margin.marginTop);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.text.offsetTop * this.scaleY));
+                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.strokeWidth + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
+                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.strokeWidth + this.text.offsetTop * this.scaleY));
 
 
                 }else{
 
-                    this.text.set('width', this.width );
-                    this.text.set('height', this.height);
+                    this.text.set('width', this.width + this.strokeWidth );
+                    this.text.set('height', this.height + this.strokeWidth);
                     this.text.set('selected', false);
                     this.text.set('evented', false);
 
@@ -31407,8 +31408,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('offsetLeft',margin.marginLeft);
                     this.text.set('offsetTop',margin.marginTop);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.text.offsetTop * this.scaleY));
+                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX  + this.strokeWidth + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
+                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.strokeWidth + this.text.offsetTop * this.scaleY));
 
                 }else{
                     this.recalcTextPosition();
@@ -31448,12 +31449,14 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             });
 
             this.on('rotating', () => {
+                console.log(this.text.angle, this.angle, this._prevAngle)
                 this.text.rotate(this.angle ); //this.text.angle + this.angle - this._prevAngle
                 this.recalcTextPosition();
                 this._prevAngle = this.angle
             });
 
             this.on('scaling', async (e) => {
+                // console.log('scaling')
 
                 if(this.text.isElasticSize===2){//自适应
 
@@ -31462,8 +31465,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 }else{
 
-                    this.text.set('width', parseInt(this.width*this.scaleX - this.text.xLeft - this.text.xRight));
-                    this.text.set('height', parseInt(this.height*this.scaleY  - this.text.yTop - this.text.yBot));
+                    this.text.set('width', parseInt(this.width*this.scaleX + this.strokeWidth - this.text.xLeft - this.text.xRight));
+                    this.text.set('height', parseInt(this.height*this.scaleY + this.strokeWidth  - this.text.yTop - this.text.yBot));
 
                 }
 
@@ -31472,8 +31475,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 this.recalcTextPosition();
 
-                this.set('width', parseInt(this.width*e.target.scaleX));
-                this.set('height', parseInt(this.height*e.target.scaleY));
+                this.set('width', parseInt(this.width*e.target.scaleX ));
+                this.set('height', parseInt(this.height*e.target.scaleY ));
                 this.set('scaleX', 1);
                 this.set('scaleY', 1);
 
@@ -31483,15 +31486,15 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
                     this.set('content', newtext);
 
-                    this.text.set('height', parseInt(this.height*e.target.scaleY ));
+                    this.text.set('height', parseInt(this.height*e.target.scaleY  + this.strokeWidth));
 
                 }
 
                 if(this.text.isElasticSize===2){
 
                     let scale = await this.getTrueZoom({
-                        width:this.width * this.scaleX,
-                        height:this.height * this.scaleY,
+                        width:this.width * this.scaleX + this.strokeWidth,
+                        height:this.height * this.scaleY + this.strokeWidth,
                         fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
                         linethrough:textOptions.linethrough?textOptions.linethrough:false,
                         underline:textOptions.underline?textOptions.underline:false,
@@ -31502,8 +31505,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     });
                    // console.log('最终',scale);
                     let margin = await this.getLeftTopMargin({
-                        width:this.width * this.scaleX,
-                        height:this.height * this.scaleY,
+                        width:this.width * this.scaleX + this.strokeWidth,
+                        height:this.height * this.scaleY + this.strokeWidth,
                         fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
                         linethrough:textOptions.linethrough?textOptions.linethrough:false,
                         underline:textOptions.underline?textOptions.underline:false,
@@ -31520,8 +31523,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('offsetLeft',margin.marginLeft);
                     this.text.set('offsetTop',margin.marginTop);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.text.offsetTop * this.scaleY)); //+ this.text.offsetTop * this.scaleY
+                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.strokeWidth + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
+                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.strokeWidth + this.text.offsetTop * this.scaleY)); //+ this.text.offsetTop * this.scaleY
 
                     this.canvas.renderAll();
                     this.setCoords();
@@ -31548,8 +31551,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('hasBorders',false);
 
                 }else{
-                    this.text.set('width', parseInt(this.width - this.text.xLeft - this.text.xRight ));
-                    this.text.set('height', parseInt(this.height - this.text.yTop - this.text.yBot ));
+                    this.text.set('width', parseInt(this.width + this.strokeWidth - this.text.xLeft - this.text.xRight ));
+                    this.text.set('height', parseInt(this.height + this.strokeWidth - this.text.yTop - this.text.yBot ));
                 }
 
 
@@ -31563,8 +31566,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
                     this.set('textdemo', newtext);
 
-                    this.text.set('width', parseInt(this.width - this.text.xLeft - this.text.xRight ));
-                    this.text.set('height', parseInt(this.height - this.text.yTop - this.text.yBot ));
+                    this.text.set('width', parseInt(this.width + this.strokeWidth - this.text.xLeft - this.text.xRight ));
+                    this.text.set('height', parseInt(this.height + this.strokeWidth - this.text.yTop - this.text.yBot ));
 
                 }
                 if(this.text.isElasticSize===2){//自适应
@@ -31619,15 +31622,15 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('offsetLeft',margin.marginLeft);
                     this.text.set('offsetTop',margin.marginTop);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.text.offsetTop * this.scaleY));
+                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX + this.strokeWidth + this.text.offsetLeft * this.scaleX/this.text.scaleX) );
+                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY + this.strokeWidth + this.text.offsetTop * this.scaleY));
 
                     this.canvas.renderAll();
                     this.setCoords();
 
                 }else{
-                    this.text.set('width', parseInt(this.width - this.text.xLeft - this.text.xRight ));
-                    this.text.set('height', parseInt(this.height - this.text.yTop - this.text.yBot ));
+                    this.text.set('width', parseInt(this.width + this.strokeWidth - this.text.xLeft - this.text.xRight ));
+                    this.text.set('height', parseInt(this.height + this.strokeWidth - this.text.yTop - this.text.yBot ));
                 }
 
 
@@ -31651,7 +31654,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
 /**
- * 文本组件复合 textRectNew
+ * 文本组件复合 textRectNew 文本组件
  */
 (function(global) {
 
@@ -31678,6 +31681,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
         btn: null, //提示按钮
         textOffsetLeft: 0,
         textOffsetTop: 0,
+        textPadding: 0,
         _prevObjectStacking: null,
         _prevAngle: 0,
         _wordJoiners:/[ \t\r\n\s]/g,
@@ -31802,6 +31806,19 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
         },
 
+        // 文本的旋转，位置考虑角度
+        recalcTextPosition: function () {
+            const sin = Math.sin(fabric.util.degreesToRadians(this.angle))
+            const cos = Math.cos(fabric.util.degreesToRadians(this.angle))
+            const newTop = sin * this.textPadding + cos * this.textPadding
+            const newLeft = cos * this.textPadding - sin * this.textPadding
+            const rectLeftTop = this.getPointByOrigin('left', 'top')
+
+            this.text.set('left', rectLeftTop.x + newLeft)
+            this.text.set('top', rectLeftTop.y + newTop)
+          },
+
+
         initialize: function (options) {
 
             this.callSuper('initialize', options);
@@ -31816,8 +31833,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
                 fill:options.fontColor?options.fontColor:'#ffffff',
                 fillColor:options.color?options.color:'#ffffff',
-                width:parseInt(this.width*this.scaleX),
-                height:parseInt(this.height*this.scaleY),
+                width:parseInt(this.width*this.scaleX + this.strokeWidth),
+                height:parseInt(this.height*this.scaleY + this.strokeWidth),
                 fontSize:options.fontSize?options.fontSize:12,
 
                 scaleX:1,
@@ -31835,13 +31852,15 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 evented: false,
             });
 
+            this.textPadding = options.textPadding?options.textPadding:(options.strokeWidth?options.strokeWidth:0);
+
             this.clipPath = new fabric.Rect({
                 originX:'left',
                 originY:'top',
                 left:-(this.width*this.scaleX + this.strokeWidth)/2,
                 top:-(this.height*this.scaleY + this.strokeWidth)/2,
-                width:this.width*this.scaleX  + this.strokeWidth,
-                height:this.height*this.scaleY  + this.strokeWidth
+                width:this.width*this.scaleX + this.strokeWidth ,
+                height:this.height*this.scaleY + this.strokeWidth
             });
 
 
@@ -31866,8 +31885,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 }
                 var maxHeight = this.text.getHeightOfLine(0);
                 //文本变形
-                this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
-                this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+                this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                this.text.set('scaleY', (this.height*this.scaleY - this.textPadding)/maxHeight);
 
                 this.text.clipPath = null;
             }
@@ -31877,7 +31896,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             this.on('added', async () => {
 
-                this.set('fill', options.fillinColor); // 矩形背景颜色填充
+                console.warn('this.textPadding',this.textPadding)
+
+                this.set('fill', options.fillinColor); // 矩形背景颜色填充 
 
                 this.text.set('selected', false);
                 this.text.set('evented', false);
@@ -31890,9 +31911,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.on('moving', async (e) => {
 
                 //文本绝对定位
-                const rectLeftTop = this.getPointByOrigin('left', 'top');
-                this.text.set('left', rectLeftTop.x);
-                this.text.set('top', rectLeftTop.y);
+                // const rectLeftTop = this.getPointByOrigin('left', 'top');
+                // this.text.set('left', rectLeftTop.x + this.textPadding);
+                // this.text.set('top', rectLeftTop.y + this.textPadding);
+                this.recalcTextPosition() // 文本位置考虑角度
 
             });
             this.on('scaling', async (e) => {
@@ -31902,16 +31924,14 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     //裁切区域宽高大小
                     this.clipPath.set('width', parseInt(this.width*this.scaleX  + this.strokeWidth));
-                    this.clipPath.set('height',  parseInt(this.height*this.scaleY  + this.strokeWidth));
+                    this.clipPath.set('height',  parseInt(this.height*this.scaleY ));
                     //裁切区域相对定位
                     this.clipPath.set('left', -parseInt(this.width*this.scaleX + this.strokeWidth)/2);
                     this.clipPath.set('top',  -parseInt(this.height*this.scaleY + this.strokeWidth)/2);
@@ -31930,24 +31950,22 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     }
                     var maxHeight = this.text.getHeightOfLine(0);
                     //文本变形
-                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
-                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+                    this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY - this.textPadding)/maxHeight);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     this.clipPath = null;
                 }
 
             });
             this.on('scaled', async (e) => {
-                this.set('width', parseInt(this.width*this.scaleX));
-                this.set('height', parseInt(this.height*this.scaleY));
+                this.set('width', parseInt(this.width*this.scaleX ));
+                this.set('height', parseInt(this.height*this.scaleY ));
                 this.set('scaleX',1);
                 this.set('scaleY',1);
                 if(this.text.isElasticSize !== 2){
@@ -31956,15 +31974,13 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX  - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     //裁切区域宽高大小
-                    this.clipPath.set('width', parseInt(this.width*this.scaleX  + this.strokeWidth));
+                    this.clipPath.set('width', parseInt(this.width*this.scaleX  + this.textPadding));
                     this.clipPath.set('height',  parseInt(this.height*this.scaleY  + this.strokeWidth));
                     //裁切区域相对定位
                     this.clipPath.set('left', -parseInt(this.width*this.scaleX + this.strokeWidth)/2);
@@ -31984,23 +32000,25 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     }
                     var maxHeight = this.text.getHeightOfLine(0);
                     //文本变形
-                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
-                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+                    this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY - this.textPadding)/maxHeight);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     this.clipPath = null;
                 }
 
             });
+
             this.on('rotating', () => {
+
+                
                 this.text.rotate(this.angle );
+                this.recalcTextPosition(); // 文本位置考虑角度
                 this._prevAngle = this.angle;
 
             });
@@ -32044,12 +32062,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.text.on('added',async () =>{
 
                 //文本宽高大小
-                this.text.set('width', parseInt(this.width*this.scaleX));
-                this.text.set('height', parseInt(this.height*this.scaleY));
+                this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                 //文本绝对定位
-                const rectLeftTop = this.getPointByOrigin('left', 'top');
-                this.text.set('left', rectLeftTop.x);
-                this.text.set('top', rectLeftTop.y);
+                this.recalcTextPosition() // 文本位置考虑角度
 
             });
 
@@ -32072,16 +32088,16 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 // this.text.hiddenTextarea.style.overflowY = 'auto';
 
                 //文本宽高大小
-                this.text.set('width', parseInt(this.width*this.scaleX));
-                this.text.set('height', parseInt(this.height*this.scaleY));
+                this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
 
 
             });
             this.text.on('changed',(e)=>{
 
                 //文本宽高大小
-                this.text.set('width', parseInt(this.width*this.scaleX));
-                this.text.set('height', parseInt(this.height*this.scaleY));
+                this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
 
             });
             this.text.on('editing:exited', async () => {
@@ -32100,12 +32116,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     // //裁切区域宽高大小
                     this.clipPath.set({
@@ -32131,16 +32145,14 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     }
                     var maxHeight = this.text.getHeightOfLine(0);
                     //文本变形
-                    this.text.set('scaleX', (this.width*this.scaleX)/maxWidth);
-                    this.text.set('scaleY', (this.height*this.scaleY)/maxHeight);
+                    this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                    this.text.set('scaleY', (this.height*this.scaleY - this.textPadding)/maxHeight);
 
                     //文本宽高大小
-                    this.text.set('width', parseInt(this.width*this.scaleX));
-                    this.text.set('height', parseInt(this.height*this.scaleY));
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                     //文本绝对定位
-                    const rectLeftTop = this.getPointByOrigin('left', 'top');
-                    this.text.set('left', rectLeftTop.x);
-                    this.text.set('top', rectLeftTop.y);
+                    this.recalcTextPosition() // 文本位置考虑角度
 
                     //裁切区域宽高大小
                     this.clipPath = null;

@@ -592,24 +592,42 @@ export default {
         }
       })
     },
+    // 循环里单个移动层级
+    moveOneObject (obj, layer) {
+      return new Promise(async (resolve) => {
+        await this.moveToshow(obj, layer)
+        this.renderAll()
+        resolve({'obj': obj.isType, 'layer': layer})
+      })
+    },
     // 所有组件顺序保持
     objectSetZindex () {
-      let objects = this.getObjectsNew()
-      objects.sort((a, b) => {
-        return a.layer - b.layer
-      })
-      setTimeout(() => {
-        objects.forEach(async obj => {
-          // console.log(obj.id, obj.isType, obj.layer, obj.text)
-          await this.moveToshow(obj, obj.layer)
-          // eslint-disable-next-line no-constant-condition
-          if (typeof obj.text === 'object') {
-            // console.log(typeof obj.text, obj.text.layer)
-            await this.moveToshow(obj.text, obj.text.layer + 0.5)
-          }
-          this.renderAll()
+      return new Promise(resolve => {
+        let objects = this.getObjectsNew()
+        objects.sort((a, b) => {
+          return a.layer - b.layer
         })
-      }, 100)
+        setTimeout(async () => {
+          let res
+          for (let i = 0; i < objects.length; i++) {
+            let obj = objects[i]
+            // console.log(obj.id, obj.isType, obj.layer, obj.zIndex, obj.text)
+            if (typeof (obj.text) === 'string' && obj.isType === 'TextRect-text') {
+              obj.layer = obj.id * 2 + 1
+              res = await this.moveOneObject(obj, obj.layer)
+            } else {
+              res = await this.moveOneObject(obj, obj.layer)
+            }
+            // console.log(res)
+            // eslint-disable-next-line no-constant-condition
+            // if (typeof obj.text === 'object') {
+            //   console.log(typeof obj.text, obj.text.layer)
+            //   await this.moveToshow(obj.text, obj.layer + 0.5)
+            // }
+          }
+          resolve(res)
+        }, 100)
+      })
       // let objectsmore = this.getObjects()
       // objectsmore.forEach(oneobj => {
       //   console.warn(oneobj.id, oneobj.isType, oneobj.component, oneobj.layer)
@@ -1371,7 +1389,9 @@ export default {
     // 层级移动
     moveToshow (obj, index) {
       // let obj = this.canvas.getActiveObject();
-      this.canvas.moveTo(obj, index)
+      // console.log('moveToshow', Math.ceil(index))
+      // this.canvas.moveTo(obj, index)
+      obj.moveTo(Math.ceil(index))
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
@@ -2122,8 +2142,8 @@ export default {
         options = {
           ...options,
           id: options.id ? options.id : that.cid,
-          zIndex: options.zIndex ? options.zIndex : that.cid,
-          layer: options.layer ? options.layer : that.cid,
+          zIndex: options.zIndex ? options.zIndex : options.id * 2,
+          layer: options.layer ? options.layer : options.id * 2,
 
           component: 'component',
           isDiff: 'static',
@@ -2166,6 +2186,7 @@ export default {
 
           screenIndex: options.screenIndex ? options.screenIndex : 0,
           textdemo: options.textdemo ? options.textdemo : 'TEXT',
+          textPadding: options.textPadding ? options.textPadding : 0, // 文本复合组件的内边距
 
           tabledata: options.tabledata ? options.tabledata : initable, // 表格新增字段
           bgcolor: options.bgcolor ? options.bgcolor : '#fff' // 新增二维码和条码背景色
@@ -4956,6 +4977,8 @@ export default {
         fontSize: JSON.parse(JSON.stringify(target.fontSize ? target.fontSize : 14)),
         textdemo: JSON.parse(JSON.stringify(newtext || 'TEXT')), //
         verticalSpace: target.verticalSpace ? target.verticalSpace : 0,
+
+        textPadding: JSON.parse(JSON.stringify(target.textPadding)),
         scaleX: 1,
         scaleY: 1,
 
@@ -4974,12 +4997,11 @@ export default {
 
       let that = this
       await that.createElement('TextRect', {...newtextdata})
-      setTimeout(async () => {
-        await that.objectSetZindex() // 元素顺序
-        that.setTop() // 遮罩置顶
-        canvas.requestRenderAll()
-        canvas.renderAll()
-      }, 10)
+      await that.objectSetZindex() // 元素顺序
+      // console.log('元素顺序OK')
+      that.setTop() // 遮罩置顶
+      canvas.requestRenderAll()
+      canvas.renderAll()
     },
     // 文本退出编辑
     exitEditing () {

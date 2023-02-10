@@ -403,6 +403,13 @@
 
                         <div v-if="JSON.stringify(object)!=='{}'">
 
+                            <div class="ps-params-data">
+                                <div class="ps-switch" :class="object.textAdvanceProperty == 2?'hover':''"><span>
+                                    <b @click="changeObject('textAdvanceProperty', 0)">不使用</b>
+                                    <b @click="changeObject('textAdvanceProperty', 2)">自适应</b>
+                                </span><i></i></div>
+                            </div>
+
                             <div  class="ps-params-data">
 
                                 <div class="ps-param-line">
@@ -499,6 +506,7 @@
 <script>
 import inputSearchVue from './components/inputSearch.vue'
 import vuefabricmodule from './components/vuefabricmodule.vue'
+import {debounce} from './utils/debounce'
 import {
   Material, Compact, Swatches, Slider, Photoshop, Chrome, Sketch, Twitter, Grayscale} from 'vue-color'
 
@@ -635,7 +643,8 @@ export default {
         fillinColor: '#333333',
         stroke: '#666666',
         strokeWidth: 1,
-        strokeDashArray: [3, 1] // [0, 0] [0, 3]
+        strokeDashArray: [3, 1], // [0, 0] [0, 3]
+        textAdvanceProperty: 0
       },
       BorderColors: {
         color: '',
@@ -648,6 +657,9 @@ export default {
       showBorderColor: false,
       borderstyleshow: true
     }
+  },
+  mounted () {
+    // this.draw('TextRect')
   },
   methods: {
     // 选择边框类型
@@ -721,23 +733,32 @@ export default {
       console.log('删除id:', ids)
     },
     // 选择回调
-    selectId (ids) {
-      console.log('选择id:', ids)
-      if (ids.length === 1) {
-        this.curobj = this.$refs.canvas.getEditObj()
-        let obj = this.$refs.canvas.getEditObj()
-        this.$set(this.object, 'width', obj.width)
-        this.$set(this.object, 'height', obj.height)
-        this.$set(this.object, 'left', parseInt(obj.left))
-        this.$set(this.object, 'top', parseInt(obj.top))
-        this.$set(this.object, 'fillinColor', obj.fill)
-        this.$set(this.object, 'stroke', obj.stroke)
-        this.$set(this.object, 'strokeWidth', obj.strokeWidth)
-        this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
-      } else {
-        this.curobj = {}
-        this.object = {}
-      }
+    async selectId (ids) {
+      await debounce(async () => {
+        console.log('选择id:', ids)
+        if (ids.length === 1) {
+          this.curobj = this.$refs.canvas.getEditObj()
+          let obj = this.$refs.canvas.getEditObj()
+          this.$set(this.object, 'width', obj.width)
+          this.$set(this.object, 'height', obj.height)
+          this.$set(this.object, 'left', parseInt(obj.left))
+          this.$set(this.object, 'top', parseInt(obj.top))
+          this.$set(this.object, 'fillinColor', obj.fill)
+          this.$set(this.object, 'stroke', obj.stroke)
+          this.$set(this.object, 'strokeWidth', obj.strokeWidth)
+          this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
+          this.$set(this.object, 'textAdvanceProperty', obj.isElasticSize ? obj.isElasticSize : 0)
+        } else {
+          this.curobj = {}
+          this.object = {}
+        }
+      }, 500)
+    },
+    // 调用文字最大行数换行自适应等变形的方法
+    async changeTextType (curobj, text) {
+      await debounce(async () => {
+        await this.$refs.canvas.changeTextType(curobj, text)
+      }, 500)
     },
     // 数据改变画布组件
     changeObject (name, data) {
@@ -753,14 +774,16 @@ export default {
           break
         case 'top': obj.set({'top': parseInt(data)})
           break
-        case 'strokeWidth': obj.set({'strokeWidth': parseInt(data)})
+        case 'strokeWidth': obj.set({'strokeWidth': parseInt(data)}); obj.text.set({'textPadding': parseInt(data)}); this.changeTextType(obj, obj.content)
           break
         case 'stroke': obj.set({'stroke': data})
           break
         case 'strokeDashArray': obj.set({'strokeDashArray': [parseInt(data[0] * this.object.strokeWidth), parseInt(data[1] * this.object.strokeWidth)]
         })
           break
-        case 'fillinColor': obj.set({'fill': data})
+        case 'fillinColor': obj.set({'fill': data}); obj.set({'fillinColor': data})
+          break
+        case 'textAdvanceProperty': this.$set(this.object, 'textAdvanceProperty', data); this.$refs.canvas.exitEditing(); obj.set({'isElasticSize': data}); this.changeTextType(obj, obj.content)
           break
         default:
       }
@@ -802,6 +825,7 @@ export default {
       // this.id = this.id + 1
       let canvaobj, options
       let colors = ['#0ff', '#00f', '#000', '#f00', '#ff0', '#0f0', '#f0f', '#eee', '#ccc', '#efe', '#ef5']
+      let messages = ['0我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', 'I am Chiniese', '1我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '2我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '3我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '4我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '5我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '6我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '7我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '8我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '9我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '10我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '我是中古的文字4']
       let i = (Math.random() + '').charAt(3)
       switch (name) {
         case 'Rect':
@@ -811,7 +835,7 @@ export default {
             width: 200,
             height: 100,
             color: colors[i],
-            opacity: 0.5,
+            opacity: 1,
             stroke: '#ff0000',
             strokeWidth: 2,
             visible: true
@@ -943,15 +967,15 @@ export default {
 
         case 'Text':
           options = {
-            left: 22,
-            top: 500,
+            left: 220,
+            top: 200,
             fontFamily: '微软雅黑',
             width: 500,
             height: 300,
-            fontSize: 20,
+            fontSize: 50,
             textdemo: '我是Text',
             stroke: '#ff0000',
-            strokeWidth: 2,
+            strokeWidth: 0,
             hasRotatingPoint: true,
             visible: true
 
@@ -1008,8 +1032,8 @@ export default {
             fontSize: 20,
             textdemo: 'Textbox',
             stroke: '#ff0000',
-            strokeWidth: 2,
-
+            strokeWidth: 0,
+            padding: 0,
             hasRotatingPoint: true,
             visible: true
           }
@@ -1030,10 +1054,10 @@ export default {
 
             visible: true,
             fontSize: 30,
-            textdemo: 'Update Yourself:| Install all the latest update possible.| Service Pack 2 is a good way to start if you',
+            textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 0,
+            isElasticSize: 2,
 
             maxLines: 7,
             omitStyleText: '...', // 两个汉字 4个字母
@@ -1057,8 +1081,9 @@ export default {
             fillinColor: '#0f0',
             border: 2,
 
+            angle: 0,
             stroke: '#9864FF',
-            strokeWidth: 4
+            strokeWidth: 40
             // strokeDashArray: [3, 1]
 
           }
@@ -2136,6 +2161,58 @@ export default {
                     // flex-direction: row;
                     // align-items: center;
 
+                    .ps-switch{
+                        margin-left:8px;
+                        position: relative;
+                        width: 208px;
+                        margin-bottom: 10px;
+                        border-radius: 5px;
+                        height: 28px;
+                        background: #3a3a3a;
+                        border: 1px solid #383838;
+
+                        span{
+                            position: absolute;
+                            left:0;
+                            top:0;
+                            z-index:2;
+                            b{
+                                cursor: pointer;
+                                width: 103px;
+                                height: 28px;
+                                line-height: 28px;
+                                text-align: center;
+                                display: inline-block;
+                            }
+                        }
+                        i{
+                            position: absolute;
+                            cursor: pointer;
+                            width: 103px;
+                            border-radius: 5px;
+                            left:0;
+                            top:0;
+                            z-index:1;
+                            height: 28px;
+                            display: inline-block;
+                            background: linear-gradient(0deg, #606060 20%, #6c6c6c 50%, #707070 70%);
+                        }
+                        &.hover{
+                            i{
+                            position: absolute;
+                            cursor: pointer;
+                            width: 103px;
+                            border-radius: 5px;
+                            left:105px;
+                            top:0;
+                            z-index:1;
+                            height: 28px;
+                            display: inline-block;
+                            background: linear-gradient(0deg, #606060 20%, #6c6c6c 50%, #707070 70%);
+                        }
+                        }
+                    }
+
                     input{
                         background:#3a3a3a;
                         width: 70px;
@@ -2155,6 +2232,7 @@ export default {
                         display: flex;
                         flex-direction: row;
                         margin-bottom: 5px;
+                        padding-left:8px;
                     }
                     .oneparam{
                         width: 50%;
