@@ -613,7 +613,7 @@ export default {
             let obj = objects[i]
             // console.log(obj.id, obj.isType, obj.layer, obj.zIndex, obj.text)
             if (typeof (obj.text) === 'string' && obj.isType === 'TextRect-text') {
-              obj.layer = obj.id * 2 + 1
+              obj.layer = obj.zIndex + 1
               res = await this.moveOneObject(obj, obj.layer)
             } else {
               res = await this.moveOneObject(obj, obj.layer)

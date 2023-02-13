@@ -754,6 +754,22 @@ export default {
         }
       }, 500)
     },
+    // 修改全部图层
+    changeAllObjects () {
+      this.layerlist = []
+      let allobjects = this.$refs.canvas.getObjectsNew()
+      allobjects.forEach(one => {
+        if (one.isType !== 'TextRect-text') {
+          this.layerlist.push({
+            id: one.id,
+            type: one.isType,
+            name: one.isType,
+            isShow: one.visible ? 1 : 0,
+            isSuo: 0
+          })
+        }
+      })
+    },
     // 调用文字最大行数换行自适应等变形的方法
     async changeTextType (curobj, text) {
       await debounce(async () => {
@@ -774,7 +790,7 @@ export default {
           break
         case 'top': obj.set({'top': parseInt(data)})
           break
-        case 'strokeWidth': obj.set({'strokeWidth': parseInt(data)}); obj.text.set({'textPadding': parseInt(data)}); this.changeTextType(obj, obj.content)
+        case 'strokeWidth': obj.set({'strokeWidth': parseInt(data)}); obj.set({'textPadding': parseInt(data)}); obj.text.set({'textPadding': parseInt(data)}); this.changeTextType(obj, obj.content)
           break
         case 'stroke': obj.set({'stroke': data})
           break
@@ -1329,6 +1345,8 @@ export default {
       // })
       console.log(this.$refs.canvas.toJson(), this.$refs.canvas.getObjectsNew())
       this.textJSON = this.$refs.canvas.toJson(canvaobj)
+
+      this.changeAllObjects() // 同步图层
     },
     // 文本改变文字
     textIsUsually () {
