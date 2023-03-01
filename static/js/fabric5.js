@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '0.1.6' };
+var fabric = fabric || { version: '0.1.7' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -13742,9 +13742,11 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
 
                     fillinColor: this.fillinColor,
                     textPadding: this.textPadding,
-                    // border: this.border,
-                    // borderColor: this.borderColor,
-                    // borderType: this.borderType
+
+                  textOffsetLeft: this.textOffsetLeft,
+                  textOffsetTop: this.textOffsetTop,
+
+                  textTop: this.textTop,
 
                 };
 
@@ -30322,22 +30324,43 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
         text: null,
         textOffsetLeft: 0,
         textOffsetTop: 0,
+        textTop: 0,
         _prevObjectStacking: null,
         _prevAngle: 0,
         _wordJoiners:'b',
         textPadding:0,
+        clipPath:undefined,
 
 
         // 文本的旋转，位置考虑角度
         calcTextPosition: function () {
+          let leftmargin = this.textPadding + this.textOffsetLeft;
+          let topmargin = this.textPadding + this.textOffsetTop;
           const sin = Math.sin(fabric.util.degreesToRadians(this.angle))
           const cos = Math.cos(fabric.util.degreesToRadians(this.angle))
-          const newTop = sin * this.textPadding + cos * this.textPadding
-          const newLeft = cos * this.textPadding - sin * this.textPadding
+          const newTop = sin * topmargin + cos * topmargin
+          const newLeft = cos * leftmargin - sin * leftmargin
           const rectLeftTop = this.getPointByOrigin('left', 'top')
 
           this.text.set('left', rectLeftTop.x + newLeft)
           this.text.set('top', rectLeftTop.y + newTop)
+        },
+        // 返回坐标
+        getTextPosition: function () {
+          let leftmargin = this.textPadding + this.textOffsetLeft;
+          let topmargin = this.textPadding + this.textOffsetTop;
+          const sin = Math.sin(fabric.util.degreesToRadians(this.angle))
+          const cos = Math.cos(fabric.util.degreesToRadians(this.angle))
+          const newTop = sin * topmargin + cos * topmargin
+          const newLeft = cos * leftmargin - sin * leftmargin
+          const rectLeftTop = this.getPointByOrigin('left', 'top')
+
+          // this.text.set('left', rectLeftTop.x + newLeft)
+          // this.text.set('top', rectLeftTop.y + newTop)
+          return {
+            'left': rectLeftTop.x + newLeft,
+            'top': rectLeftTop.y + newTop,
+          }
         },
 
          recalcTextPosition:async function () {
@@ -30372,17 +30395,6 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
         },
 
-
-        recalcTextPosition2: function (h) {
-            this.text.clipTo = function(ctx) {
-                if(ctx){
-                    let height = parseInt(h - this.yTop - this.yBot );
-                    //console.log('hhh',height,this.height,h);
-                    ctx.rect(-this.width/2,-this.height/2,this.width,height);
-                }
-            }
-
-        },
 
         //文本不使用 的文本
         textStyleFormat:function(target,text){
@@ -30709,12 +30721,6 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 underline:textOptions.underline?textOptions.underline:false,
                 fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
             });
-          //  console.warn('init',data);
-
-          //  console.warn('分辨率:',screenzoom,window.devicePixelRatio);
-           // document.body.style.zoom =1/ window.devicePixelRatio;
-           // document.getElementById('canvas').style.zoom = 1/screenzoom;
-           // console.log(this.width,this.height,textOptions.width,textOptions.height);
 
             let measure = this.getMeasureText(textOptions.textdemo,textOptions);
             console.log('measure',measure);
@@ -30843,7 +30849,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     underline:textOptions.underline?textOptions.underline:false,
                     fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
                 });
-           // console.warn('计算margin',data2, data2.url);
+           console.warn('计算margin',data2, data2.url);
 
            let marginLeft = data2.offset[0]/screenzoom + (data2.fontTruewidth - textOptions.width*screenzoom)/2;
            let marginTop = data2.offset[2]/screenzoom  + (data2.fontTrueheight - textOptions.height*screenzoom)/2;
@@ -31115,13 +31121,14 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
 
             if(textOptions.isElasticSize===0){
+              // console.warn('0000')
                 this.text = new fabric.Textbox(text, {
                     ...textOptions,
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth ),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth ),
                     scaleX:1,
                     scaleY:1,
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:0,
@@ -31142,26 +31149,22 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     // }
                 });
 
-                this.textOffsetLeft = this.text.left - this.left ;
-                this.textOffsetTop = this.text.top - this.top ;
-
+                // this.textOffsetLeft = this.text.left - this.left ;
+                // this.textOffsetTop = this.text.top - this.top ;
 
                 this.text.text = this.textStyleFormat(this.text,this.text.textdemo);
                 this.content =  this.textStyleFormat(this.text,this.text.textdemo);
 
-
-
-
-
             }
             else if(textOptions.isElasticSize===1){
+              // console.warn('1111')
                 this.text = new fabric.Textbox(text, {
                     ...textOptions,
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth ),
 
                     lineHeight:parseInt((textOptions.fontSize + textOptions.verticalSpace)/textOptions.fontSize),
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:1,
@@ -31183,19 +31186,17 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     // }
                 });
 
-                this.textOffsetLeft = this.text.left - this.left ;
-                this.textOffsetTop = this.text.top - this.top ;
+                // this.textOffsetLeft = this.text.left - this.left ;
+                // this.textOffsetTop = this.text.top - this.top ;
 
 
                 this.text.text = this.textStyleFormat(this.text,this.text.textdemo);
                 this.content =  this.textStyleFormat(this.text,this.text.textdemo);
 
 
-
-
-
             }
             else if(textOptions.isElasticSize===2){ //自适应
+               // console.warn('2222')
                 this.text = new fabric.IText(text, {
                     ...textOptions,
 
@@ -31205,8 +31206,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     lineHeight:1,
                     isElasticSize:textOptions.isElasticSize?textOptions.isElasticSize:2,
 
-                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(rectOptions.height/(this.height/textOptions.fontSize)  + this.strokeWidth - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth),
+                    height:parseInt((rectOptions.height+ this.strokeWidth)/(this.height/textOptions.fontSize) ),
                     scaleX:1,
                     scaleY:1,
 
@@ -31232,19 +31233,20 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 });
 
 
-                this.textOffsetLeft = this.text.left - this.left ;
-                this.textOffsetTop = this.text.top - this.top ;
+                // this.textOffsetLeft = this.text.left - this.left ;
+                // this.textOffsetTop = this.text.top - this.top ;
 
 
             }
             else{
+              // console.warn('3333')
                 this.text = new fabric.Textbox(text, {
                     ...textOptions,
 
                     fill:textOptions.fontColor?textOptions.fontColor:'#ffffff',
                     fillColor:textOptions.fontColor?textOptions.fontColor:'#ffffff',
-                    width:parseInt(this.width*this.scaleX + this.strokeWidth - textOptions.xLeft - textOptions.xRight),
-                    height:parseInt(this.height*this.scaleY + this.strokeWidth  - textOptions.yTop - textOptions.yBot),
+                    width:parseInt(this.width*this.scaleX + this.strokeWidth ),
+                    height:parseInt(this.height*this.scaleY + this.strokeWidth ),
                     scaleX:1,
                     scaleY:1,
                     lineHeight:parseInt((textOptions.fontSize + textOptions.verticalSpace)/textOptions.fontSize),
@@ -31268,64 +31270,82 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     // }
                 });
 
-                this.textOffsetLeft = this.text.left - this.left ;
-                this.textOffsetTop = this.text.top - this.top ;
+                // this.textOffsetLeft = this.text.left - this.left ;
+                // this.textOffsetTop = this.text.top - this.top ;
 
 
                 this.text.text = this.textStyleFormat(this.text,this.text.textdemo);
                 this.content =  this.textStyleFormat(this.text,this.text.textdemo);
             }
 
-          this.textPadding = textOptions.textPadding?textOptions.textPadding:(textOptions.strokeWidth?textOptions.strokeWidth:0);
-
+            this.textPadding = textOptions.textPadding?textOptions.textPadding:(textOptions.strokeWidth?textOptions.strokeWidth:0);
 
             this.on('added', async () => {
 
-                if(this.text.isElasticSize===2){//自适应
+              // this.text.set('width', parseInt(this.width * this.scaleX - this.textPadding ) );
+              // this.text.set('height', parseInt(this.height * this.scaleY  - this.textPadding));
 
-                    let newscale = await this.getTrueZoom({...textOptions,...{
-                        width: textOptions.width - this.textPadding,
-                        height:  textOptions.height - this.textPadding
-                      }});
+              if(textOptions.isElasticSize===2){//自适应
 
-                    let scale = {
-                        scaleX: newscale.scaleX,
-                        scaleY:newscale.scaleY,
-                    };
+                let newscale = await this.getTrueZoom({...textOptions,...{
+                    width: textOptions.width - this.textPadding,
+                    height:  textOptions.height - this.textPadding
+                  }});
 
-                    let margin1 = await this.getLeftTopMargin(textOptions,newscale.scaleX,newscale.scaleY);
-
-                    this.text.set('selected', false);
-                    this.text.set('evented', false);
-
-                    this.text.set('scaleX', scale.scaleX);
-                    this.text.set('scaleY', scale.scaleY);
-
-                    this.text.set('width', parseInt(this.width * this.scaleX - this.textPadding ) );
-                    this.text.set('height', parseInt(this.height * this.scaleY  - this.textPadding));
-
-                    this.text.set('top', this.top + this.textPadding - margin1.marginTop);
-                    this.text.set('left', this.left + this.textPadding - margin1.marginLeft);
+                let scale = {
+                    scaleX: newscale.scaleX,
+                    scaleY:newscale.scaleY,
+                };
 
 
-                }else{
-
-                    this.text.set('width', this.width * this.scaleX  - this.textPadding );
-                    this.text.set('height', this.height * this.scaleY  - this.textPadding);
-
-                    this.text.set('top', this.top + this.textPadding);
-                    this.text.set('left', this.left + this.textPadding);
-
-                    this.text.set('selected', false);
-                    this.text.set('evented', false);
-
+                //计算当行的最大宽度和最大高度 calcTextWidth
+                var maxWidth = this.text.getLineWidth(0);
+                for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                  var currentLineWidth = this.text.getLineWidth(i);
+                  maxWidth = maxWidth + currentLineWidth;
                 }
-                this.text.set('selected', false);
-                this.text.set('evented', false);
+                // console.warn(maxWidth,this.text.calcTextWidth());
+                var maxHeight = this.text.getHeightOfLine(0);
+                //文本变形
+                console.warn((this.height*this.scaleY - this.textPadding )/maxHeight,scale.scaleY);
+                // this.text.set('scaleY', scale.scaleY);
+                this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                this.text.set('scaleY', scale.scaleY);
+
+                // this.text.clipTo = function(e) {
+                //   if (e) {
+                //     e.canvas.getContext('2d').rect(-this.width/2,-this.height/2,this.width,this.height);
+                //   }
+                // };
+
+                this.calcTextPosition();// 文本位置考虑角度
+
+                let margin = await this.getLeftTopMargin(textOptions,this.text.scaleX,this.text.scaleY);
+                this.textTop = -margin.offset[2];
+                this.text.set('top', this.text.top - margin.offset[2]);
+
+              }else{
+
+
+                this.text.set('width', this.width * this.scaleX  - this.textPadding );
+                this.text.set('height', this.height * this.scaleY  - this.textPadding);
+
+                this.text.clipTo = function(e) {
+                  if (e) {
+                    e.canvas.getContext('2d').rect(-this.width/2,-this.height/2,this.width,this.height);
+                  }
+                };
+
+                this.calcTextPosition();// 文本位置考虑角度
+              }
+
+
 
                 this.text.set('stroke', '');
                 this.text.set('strokeWidth', 0);
 
+
+                // console.warn('on:add');
                 this.canvas.add(this.text);
 
 
@@ -31357,13 +31377,44 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             });
 
             this.on('selected', async (e) => {
-                // console.log('选择',e)
+
             });
 
             this.on('moving', async (e) => {
-              this.calcTextPosition() // 文本位置考虑角度
+              let position = this.getTextPosition() // 文本位置考虑角度
+              if(this.text.isElasticSize ===2){
+                this.text.set('top', position.top + this.textTop);
+                this.text.set('left', position.left);
+              }else{
+                this.text.set('left', position.left);
+                this.text.set('top', position.top);
+              }
+
+
             });
-            this.on('moved',()=>{
+            this.on('moved',async ()=>{
+              let position = this.getTextPosition() // 文本位置考虑角度
+              if(this.text.isElasticSize ===2){
+
+                let margin = await this.getLeftTopMargin({
+                  width:this.width * this.scaleX- this.textPadding,
+                  height:this.height * this.scaleY- this.textPadding,
+                  fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
+                  linethrough:textOptions.linethrough?textOptions.linethrough:false,
+                  underline:textOptions.underline?textOptions.underline:false,
+                  fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
+                  fontSize:16,
+                  fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
+                  textdemo:this.text.text,
+                },this.text.scaleX,this.text.scaleY);
+                this.textTop = -margin.offset[2];
+                this.text.set('top', position.top - margin.offset[2]);
+                this.text.set('left', position.left);
+              }else{
+                this.text.set('left', position.left);
+                this.text.set('top', position.top);
+              }
+
                 this.text.evented = false;
                 this.text.selectable = false;
             });
@@ -31375,22 +31426,19 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             });
 
             this.on('scaling', async (e) => {
-              this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
-              this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
-              this.text.set('top', this.top + this.textPadding);
-              this.text.set('left', this.left + this.textPadding);
-
+              this.set('strokeWidth', this.strokeWidth);
               this.text.clipTo = function(e) {
-                if (e) {
-                  e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
-                }
+               /* if (e) {
+                  e.canvas.getContext('2d').rect(-parseInt(this.width/2),-parseInt(this.height/2),parseInt(this.width),parseInt(this.height));
+                }*/
               };
 
             });
             this.on('scaled', async (e) => {
+                let zoom = this.canvas.getZoom();
 
                 this.set('width', parseInt(this.width*e.target.scaleX ));
-                this.set('height', parseInt(this.height*e.target.scaleY ));
+                this.set('height', parseInt(this.height*e.target.scaleY));
                 this.set('scaleX', 1);
                 this.set('scaleY', 1);
 
@@ -31400,63 +31448,89 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
                     this.set('content', newtext);
 
+                    this.text.set('width', parseInt(this.width*e.target.scaleX  - this.textPadding));
                     this.text.set('height', parseInt(this.height*e.target.scaleY  - this.textPadding));
-                    this.text.set('top', this.top + this.textPadding );
-                    this.text.set('left', this.left + this.textPadding);
+
+                    this.text.set('top', this.top + this.textPadding + this.textOffsetTop);
+                    this.text.set('left', this.left + this.textPadding + this.textOffsetTop);
+
+                    this.calcTextPosition();// 文本位置考虑角度
+                    this.text.clipTo = function(e) {
+                    if (e) {
+                      e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
+                    }
+                  };
                 }
 
                 if(this.text.isElasticSize===2){
 
-                    let scale = await this.getTrueZoom({
-                        width:this.width * this.scaleX - this.textPadding,
-                        height:this.height * this.scaleY - this.textPadding,
-                        fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
-                        linethrough:textOptions.linethrough?textOptions.linethrough:false,
-                        underline:textOptions.underline?textOptions.underline:false,
-                        fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
-                        fontSize:textOptions.fontSize?textOptions.fontSize:14,
-                        fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
-                        textdemo:this.text.text,
-                        textPadding: textOptions.textPadding?textOptions.textPadding:0,
-                    });
-                   // console.log('最终',scale);
-                  let margin = await this.getLeftTopMargin({
-                        width:this.width * this.scaleX + this.strokeWidth,
-                        height:this.height * this.scaleY + this.strokeWidth,
-                        fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
-                        linethrough:textOptions.linethrough?textOptions.linethrough:false,
-                        underline:textOptions.underline?textOptions.underline:false,
-                        fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
-                        fontSize:textOptions.fontSize?textOptions.fontSize:14,
-                        fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
-                        textdemo:this.text.text,
-                      textPadding: textOptions.textPadding?textOptions.textPadding:0,
-                    },scale.scaleX,scale.scaleY);
+                  let newscale = await this.getTrueZoom({...{
+                      width:this.width * this.scaleX- this.textPadding,
+                      height:this.height * this.scaleY- this.textPadding,
+                      fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
+                      linethrough:textOptions.linethrough?textOptions.linethrough:false,
+                      underline:textOptions.underline?textOptions.underline:false,
+                      fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
+                      fontSize:16,
+                      fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
+                      textdemo:this.text.text,
+                    }});
 
-                    this.text.set('scaleX', scale.scaleX);
-                    this.text.set('scaleY', scale.scaleY);
+                  let scale = {
+                    scaleX: newscale.scaleX,
+                    scaleY:newscale.scaleY,
+                  };
 
-                    // this.text.set('offsetLeft',margin.marginLeft);
-                    // this.text.set('offsetTop',margin.marginTop);
+                  // console.warn(newscale);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX - this.textPadding) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY - this.textPadding)); //+ this.text.offsetTop * this.scaleY
+                  //计算当行的最大宽度和最大高度
+                  var maxWidth = this.text.getLineWidth(0);
+                  for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                    var currentLineWidth = this.text.getLineWidth(i);
+                    maxWidth = maxWidth + currentLineWidth;
+                  }
+                  var maxHeight = this.text.getHeightOfLine(0);
+                  // console.warn((this.height*this.scaleY - this.textPadding)/maxHeight, scale.scaleY)
 
+                  //文本变形 (this.height*this.scaleY - this.textPadding)/maxHeight
+                  this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                  this.text.set('scaleY', scale.scaleY);
 
-                  this.text.set('top', this.top + this.textPadding - margin.marginTop);
-                  this.text.set('left', this.left + this.textPadding - margin.marginLeft);
+                  // console.warn((this.height*this.scaleY - this.textPadding)/maxHeight,scale.scaleY);
+
+                  let position = this.getTextPosition() // 文本位置考虑角度
+
+                  let margin = await this.getLeftTopMargin({...{
+                      width:this.width * this.scaleX- this.textPadding,
+                      height:this.height * this.scaleY- this.textPadding,
+                      fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
+                      linethrough:textOptions.linethrough?textOptions.linethrough:false,
+                      underline:textOptions.underline?textOptions.underline:false,
+                      fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
+                      fontSize:16,
+                      fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
+                      textdemo:this.text.text,
+                    }},this.text.scaleX,this.text.scaleY);
+                  this.textTop = - margin.offset[2];
+                  this.text.set('top', position.top - margin.offset[2]);
+                  this.text.set('left', position.left);
+
+                    this.text.clipTo  = function(e) {
+                      // console.log(e)
+                      if (e) {
+
+                        e.canvas.getContext('2d').rect(-parseInt(this.width/2),-parseInt(this.height/2),parseInt(this.width),parseInt(this.height));
+                        // e.canvas.getContext('2d').rect(0, 0, 500, 600);
+                      }
+                    };
+
+                  // console.warn( this.text.clipPath ,this.text.clipTo)
                     this.canvas.renderAll();
                     this.setCoords();
                 }
 
-
-                this.text.clipTo = function(e) {
-                  if (e) {
-                    e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
-                  }
-                };
-
-                this.calcTextPosition();// 文本位置考虑角度
+                this.canvas.renderAll();
+                this.setCoords();
 
                 this.text.evented = false;
                 this.text.selectable = false;
@@ -31464,23 +31538,13 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
             });
 
-            this.text.on('added',async () =>{
 
-              //文本宽高大小
-              this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
-              this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
+            this.text.on('add',(e)=>{
 
-              //文本绝对定位
-              this.calcTextPosition() // 文本位置考虑角度
-
-              this.text.clipTo = function(e) {
-                if (e) {
-                  e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
-                }
-              };
+              // console.warn('add')
+              // this.calcTextPosition();// 文本位置考虑角度
 
             });
-
             this.text.on('editing:entered',(e)=>{
 
                 this.text.bringForward(true);
@@ -31489,8 +31553,18 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 this.text.set('hasBorders',false);
                 this.set('scaleX',1);
 
-                this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding ));
-                this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
+              this.text.set('top', this.top + this.textPadding);
+
+              this.text.set('fontSize',14); //文本取消变形
+                this.text.set('scaleX',1); //文本取消变形
+                this.text.set('scaleY',1); //文本取消变形
+
+              this.canvas.renderAll();
+
+              if(this.text.isElasticSize!==2) {
+                this.text.set('width', parseInt(this.width * this.scaleX - this.textPadding));
+                this.text.set('height', parseInt(this.height * this.scaleY - this.textPadding));
+              }
 
 
             });
@@ -31503,63 +31577,79 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.text.set('text', newtext);
                     this.set('textdemo', newtext);
 
+                    this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding ));
+                    this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
                 }
 
-              this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding ));
-              this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
+
 
             });
             this.text.on('editing:exited', async () => {
 
                 this.set('fill',this.fillinColor);
+                // this.text.set('fontSize',this.fontSize);
 
                 if(this.text.isElasticSize===2){//自适应
 
+                  let newscale = await this.getTrueZoom({...{
+                      width:this.width * this.scaleX- this.textPadding,
+                      height:this.height * this.scaleY- this.textPadding,
+                      fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
+                      linethrough:textOptions.linethrough?textOptions.linethrough:false,
+                      underline:textOptions.underline?textOptions.underline:false,
+                      fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
+                      fontSize:16,
+                      fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
+                      textdemo:this.text.text,
+                    }});
+                  // console.log(this.height * this.scaleY- this.textPadding,newscale);
 
-                    let scale = await this.getTrueZoom({
-                        width:this.width * this.scaleX - this.textPadding,
-                        height:this.height * this.scaleY - this.textPadding,
-                        fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
-                        linethrough:textOptions.linethrough?textOptions.linethrough:false,
-                        underline:textOptions.underline?textOptions.underline:false,
-                        fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
-                        fontSize:textOptions.fontSize?textOptions.fontSize:14,
-                        fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
-                        textdemo:this.text.text,
-                      textPadding: textOptions.textPadding?textOptions.textPadding:0,
-                    });
-                    let margin = await this.getLeftTopMargin({
-                        width:this.width * this.scaleX,
-                        height:this.height * this.scaleY,
-                        fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
-                        linethrough:textOptions.linethrough?textOptions.linethrough:false,
-                        underline:textOptions.underline?textOptions.underline:false,
-                        fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
-                        fontSize:textOptions.fontSize?textOptions.fontSize:14,
-                        fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
-                        textdemo:this.text.text,
-                      textPadding: textOptions.textPadding?textOptions.textPadding:0,
-                    },scale.scaleX,scale.scaleY);
+                  let scale = {
+                    scaleX: newscale.scaleX,
+                    scaleY:newscale.scaleY,
+                  };
 
-                    this.text.set('scaleX', scale.scaleX);
-                    this.text.set('scaleY', scale.scaleY);
-                    // this.text.set('top', this.top - margin.marginTop);
-                    // this.text.set('left', this.left - margin.marginLeft);
-                    // this.text.set('offsetLeft',margin.marginLeft);
-                    // this.text.set('offsetTop',margin.marginTop);
+                  //计算当行的最大宽度和最大高度
+                  var maxWidth = this.text.getLineWidth(0);
+                  for (var i = 1, len = this.text._textLines.length; i < len; i++) {
+                    var currentLineWidth = this.text.getLineWidth(i);
+                    maxWidth = maxWidth + currentLineWidth;
+                  }
+                  var maxHeight = this.text.getHeightOfLine(0);
+                  //文本变形 (this.height*this.scaleY - this.textPadding)/maxHeight
+                  // console.warn(this.height*this.scaleY - this.textPadding,(this.height*this.scaleY - this.textPadding)/maxHeight, scale.scaleY)
+                  this.text.set('scaleX', (this.width*this.scaleX - this.textPadding)/maxWidth);
+                  this.text.set('scaleY', scale.scaleY);
 
-                    this.text.set('width', parseInt(this.width * this.scaleX/this.text.scaleX  - this.textPadding) );
-                    this.text.set('height', parseInt(this.height * this.scaleY/this.text.scaleY  - this.textPadding));
+                  let position = this.getTextPosition() // 文本位置考虑角度
 
-                    this.canvas.renderAll();
-                    this.setCoords();
+                  let margin = await this.getLeftTopMargin({...{
+                      width:this.width * this.scaleX- this.textPadding,
+                      height:this.height * this.scaleY- this.textPadding,
+                      fontWeight:textOptions.fontWeight?textOptions.fontWeight:'normal',
+                      linethrough:textOptions.linethrough?textOptions.linethrough:false,
+                      underline:textOptions.underline?textOptions.underline:false,
+                      fontStyle:textOptions.fontStyle?textOptions.fontStyle:'normal',
+                      fontSize:16,
+                      fontFamily: textOptions.fontFamily?textOptions.fontFamily:'微软雅黑',
+                      textdemo:this.text.text,
+                    }},this.text.scaleX,this.text.scaleY);
+                  this.textTop = -margin.offset[2];
+                  this.text.set('top', position.top - margin.offset[2]);
+                  this.text.set('left', position.left);
+
+
 
                 }else{
                     this.text.set('width', parseInt(this.width * this.scaleX  - this.textPadding ));
                     this.text.set('height', parseInt(this.height * this.scaleY  - this.textPadding ));
+
+                  this.calcTextPosition() // 文本位置考虑角度
                 }
 
-                this.calcTextPosition() // 文本位置考虑角度
+
+                this.canvas.renderAll();
+                this.setCoords();
 
                 this.text.evented = false;
                 this.text.selectable = false;
@@ -31795,7 +31885,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 let newtext = this.textStyleFormat(this.text, this.text.textdemo);
                 this.text.set('text', newtext);
 
-                this.text.clipPath = this.clipPath; // 裁切一下形状
+                this.text.clipPath = null; // 裁切一下形状
             }else{
                 //自适应文本不换行
                 let newtext = this.text.textdemo.replace(this._wordJoiners, '');
@@ -31862,7 +31952,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     this.clipPath.set('left', -parseInt(this.width*this.scaleX + this.strokeWidth)/2);
                     this.clipPath.set('top',  -parseInt(this.height*this.scaleY + this.strokeWidth)/2);
 
-                    this.text.clipPath = this.clipPath; // 裁切一下形状
+                    this.text.clipPath = null; // 裁切一下形状
                 }else{
                     //自适应文本不换行
                     let newtext = this.text.textdemo.replace(this._wordJoiners, '');
@@ -31885,7 +31975,6 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                     //文本绝对定位
                     this.recalcTextPosition() // 文本位置考虑角度
 
-                    this.clipPath = null;
                 }
                 this.text.clipTo = function(e) {
                     if (e) {

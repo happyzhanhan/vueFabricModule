@@ -4965,6 +4965,9 @@ export default {
         fontFamily: JSON.parse(JSON.stringify(target.fontFamily)),
         textAlign: JSON.parse(JSON.stringify(target.textAlign ? target.textAlign : 'left')),
         fontStyle: JSON.parse(JSON.stringify(target.fontStyle ? target.fontStyle : 'normal')),
+        linethrough: JSON.parse(JSON.stringify(target.linethrough ? target.linethrough : false)),
+        underline: JSON.parse(JSON.stringify(target.underline ? target.underline : false)),
+        fontWeight: JSON.parse(JSON.stringify(target.fontWeight ? target.fontWeight : 'normal')),
 
         maxLines: JSON.parse(JSON.stringify(target.maxLines ? target.maxLines : 3)),
         omitStyleText: JSON.parse(JSON.stringify(target.omitStyleText ? target.omitStyleText : '无')),
