@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undef -->
 <template>
  <div class="bigbox" id="bigbox"  @contextmenu="showMenu">
     <div style="position: fixed; top: -9999999999999999999px; left:800px; z-index:999999;">
@@ -5033,6 +5034,44 @@ export default {
       this.setActiveById(id) // 文本选择
       this.renderCanvas() // 渲染一下
     },
+    // 模板设置显示
+    setShow (id) {
+      //   console.log('setShow',id);
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id) {
+          objects[i].set('selectable', true)
+          objects[i].set('visible', true)
+          objects[i].set('opacity', 1)
+          objects[i].set('eyeshow', true)
+
+          if (objects[i]._objects) { // 条码显示隐藏
+            // console.log('条码----------------',objects[i]);
+            objects[i]._objects.forEach((obj) => {
+              obj.set('visible', true)
+              obj.set('opacity', 1)
+              obj.set('eyeshow', true)
+            })
+          }
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+    },
+    // 模板设置隐藏
+    setHidden (id) {
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id) {
+          objects[i].set('selectable', false)
+          objects[i].set('visible', false)
+          objects[i].set('opacity', 0)
+          objects[i].set('eyeshow', false)
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+    },
 
     // 测量文字真实宽度
     getTextOffset (text, options) {
@@ -5542,6 +5581,7 @@ export default {
             IfUnderline: prefixIfUnderline,
             IfStrikeThrough: prefixIfStrikeThrough
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'prefixPlace':
           group.textStyle[name] = Number(value)
@@ -5724,6 +5764,7 @@ export default {
             IfBold: dotIfBold,
             IfItalic: dotIfItalic
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
 
         case 'decimalPlace':
@@ -6090,7 +6131,7 @@ export default {
       let price = new fabric.IText(prefix + priceText, {
         // textBackgroundColor: '#eee',
         fill: textColor,
-        fontSize: integerFontSize,
+        fontSize: 10,
         fontFamily: integerFontType,
         width: width,
         height: height,
@@ -6141,6 +6182,16 @@ export default {
         underline: prefixIfUnderline === 1 ? true : false || false,
         linethrough: prefixIfStrikeThrough === 1 ? true : false || false
       }, 0, prefix.length)
+      // 整数
+      price.setSelectionStyles({
+        deltaY: 0,
+        fontSize: integerFontSize,
+        fontFamily: integerFontType,
+        fontWeight: integerIfBold === 1 ? 'bold' : 'normal' || 'normal',
+        fontStyle: integerIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+        underline: integerIfUnderline === 1 ? true : false || false,
+        linethrough: integerIfStrikeThrough === 1 ? true : false || false
+      }, prefix.length, prefix.length + integer.length)
       if (decimalDigit > 0) {
         // 小数点
         price.setSelectionStyles({
@@ -6193,8 +6244,10 @@ export default {
         fontFamily: postfixFontType,
         originX: 'left',
         originY: 'top',
-        left: price.left,
-        top: price.top,
+        // left: price.left,
+        // top: price.top,
+        left: 0,
+        top: 0,
         scaleX: 1,
         scaleY: 1,
         visible: 1,
@@ -6204,14 +6257,13 @@ export default {
         postfix: postfix,
         decimalSeparator: '.',
         charSpacing: 0,
-        // eslint-disable-next-line no-dupe-keys
-        visible: 1,
         splitByGrapheme: false,
         flipX: false,
         flipY: false,
         selectable: false,
         evented: false
       })
+      // 背景颜色矩形
       // eslint-disable-next-line no-undef
       let textRect = new fabric.Rect({
         width: width - strokeWidth,
@@ -6229,6 +6281,7 @@ export default {
         selectable: false,
         evented: false
       })
+      // 文字组
       // eslint-disable-next-line no-undef
       let textGroup = new fabric.Group([textRect, price, postfixdom], {
         isType: 'Price-textGroup',
@@ -6239,13 +6292,28 @@ export default {
         height: height - strokeWidth,
         angle: angle,
         visible: visible
-
       })
 
+      console.log(price.width, postfixdom.width, textRect.width, textGroup.width)
+      // textGroup.item(0).set({
+      //   left: 0
+      // })
+      // 裁切
       // eslint-disable-next-line no-undef
-      textGroup.clipPath = textRect
-
-      // 边框背景颜色
+      var clipPath = new fabric.Rect({
+        // absolutePositioned: true
+        width: textRect.width,
+        height: textRect.height,
+        scaleX: 1,
+        scaleY: 1,
+        originX: 'center',
+        originY: 'center'
+      })
+      textGroup.set({
+        clipPath: clipPath,
+        dirty: true
+      })
+      // 边框颜色矩形
       // eslint-disable-next-line no-undef
       let rect = new fabric.Rect({
         width: width,
@@ -6272,6 +6340,8 @@ export default {
         originX: 'left',
         originY: 'top',
         id: id,
+        width: width + strokeWidth,
+        height: height + strokeWidth,
         left: left,
         top: top,
         angle: angle,
@@ -6322,6 +6392,7 @@ export default {
         let groupheight = (e.target.height * e.target.scaleY)
 
         const {gizp} = group.options
+        console.log('scaling', gizp)
         if (gizp) {
 
         } else {
@@ -6351,11 +6422,15 @@ export default {
             left: 0,
             top: 0
           })
+          group.item(1).set({
+            clipPath: null,
+            dirty: true
+          })
         }
       })
 
       group.on('scaled', async function (e) {
-        console.log('放大缩小', e, group)
+        console.log('放大缩小', e, group, e.target.scaleX)
         const scaleX = e.target.scaleX
         let groupwidth = (e.target.width * scaleX)
         let groupheight = (e.target.height * e.target.scaleY)
@@ -6365,6 +6440,9 @@ export default {
         e.target.set('height', groupheight)
         e.target.set('scaleX', 1)
         e.target.set('scaleY', 1)
+
+        group.textStyle.width = groupwidth
+        group.textStyle.height = groupheight
 
         // rect
         group.item(0).set({
@@ -6388,14 +6466,30 @@ export default {
           left: 0,
           top: 0
         })
-        if (groupwidth > group.item(1).width) {
-          group.item(1).clipPath = null
-        } else {
-          group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
-        }
 
         _this.setPircePosition(group, group.options)
         // group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
+
+        if (groupwidth > group.item(1).width) {
+          group.item(1).clipPath = null
+        } else {
+          // group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
+        }
+        // group.item(1).clipPath.setPositionByOrigin(group.getCenterPoint(), 'center', 'center')
+        // eslint-disable-next-line no-undef
+        // var clipPath = new fabric.Rect({
+        //   width: group.width * e.target.scaleX - strokeWidth,
+        //   height: 600,
+        //   scaleX: 1,
+        //   scaleY: 1,
+        //   originX: 'center',
+        //   originY: 'center'
+        // })
+        // console.log(group.item(1).item(1).width, group.item(1).item(1).height)
+        // group.item(1).set({
+        //   clipPath: clipPath,
+        //   dirty: true
+        // })
 
         canvas.requestRenderAll()
         canvas.renderAll()

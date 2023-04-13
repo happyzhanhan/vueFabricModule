@@ -1374,10 +1374,10 @@ export default {
 
         case 'TextRect':
           options = {
-            left: 600,
-            top: 200,
+            left: 500,
+            top: 80,
             hasRotatingPoint: true,
-            width: 600,
+            width: 300,
             height: 200,
             fontColor: '#000000',
             // fill: 'rgba(0,0,0,0)',
@@ -1416,7 +1416,7 @@ export default {
 
             angle: 0,
             stroke: '#9864FF',
-            strokeWidth: 40
+            strokeWidth: 0
             // strokeDashArray: [3, 1]
 
           }
@@ -1447,7 +1447,7 @@ export default {
             fillColor: '',
             fontSize: 14,
             fontType: '微软雅黑',
-            height: 100,
+            height: 200,
 
             horizontalAlign: 0,
             verticalAlign: 0,
@@ -1480,7 +1480,7 @@ export default {
             thousandSeparator: ',',
             type: 1,
 
-            width: 500,
+            width: 300,
 
             visible: true
           }
@@ -1648,17 +1648,17 @@ export default {
           options = {
             left: 500,
             top: 80,
-            width: 400,
+            width: 300,
             height: 200,
 
             thousandSeparator: '', // 千分位分隔符
-            text: '8888.123456', // 价格取值
+            text: '8989898989898989.12', // 价格取值
 
-            decimalDigit: 4, // 小数位数
+            decimalDigit: 8, // 小数位数
             roundingMode: 0, // 舍入模式   0：无  1：四舍五入 2：向上取整  3：向下取整
 
-            horizontalAlign: 1, // 整体横向对齐 012
-            verticalAlign: 1, // 整体竖向对齐 012
+            horizontalAlign: 0, // 整体横向对齐 012
+            verticalAlign: 0, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
             bgcolor: '#FFFF00', // 背景颜色
@@ -1668,7 +1668,7 @@ export default {
             gizp: 1, // 是否压缩 1：文字小于宽度压缩， 0：不做压缩截取
 
             stroke: '#000', // 边框颜色
-            strokeWidth: 0, // 边框粗细
+            strokeWidth: 10, // 边框粗细
 
             /**
              * 前缀

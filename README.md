@@ -667,3 +667,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.04.13
 > v0.1.8
 - 新增价格组件
+
+### 2023.04.13
+> v0.1.9
+- 按id显示隐藏
