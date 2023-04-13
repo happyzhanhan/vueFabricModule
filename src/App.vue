@@ -60,7 +60,7 @@
             <div class="ps-fenge"></div>
 
             <div class="ps-block">
-                <div class="ps-button-new" >
+                <div class="ps-button-new" @click="$refs.canvas.changeOneZoom()">
                     100%
                 </div>
                 <div class="ps-button-new" >
@@ -209,6 +209,11 @@
             <i class="ps-icon6 ps-icon"></i>
 
             <i class="line-h"></i>
+
+            <i class="ps-icon17 ps-icon"
+               title="价格"
+               @dblclick="draw('Price')"
+            ></i>
 
             <i class="ps-icon7 ps-icon"
                title="文本"
@@ -454,7 +459,7 @@
                                 </div>
                             </div>
 
-                            <div  class="ps-layer-botButton">
+                            <div  class="ps-layer-botButton" v-if="object.isType!=='Price'">
                                 <div class="color-btn">
                                     <span class="color-background"  @click="showColor = !showColor" :style="'background:'+ object.fillinColor +';'"></span>
 
@@ -491,6 +496,228 @@
                                     <div @click="setObjectDash([1, 3])" :class="{'hover':object.strokeDashArray[1] === 3 }"><i class="dotted"></i></div>
                                 </div>
                             </div>
+
+                            <div  class="ps-layer-botButton" v-if="object.isType==='Price'">
+                                <div class="color-btn">
+                                    <span class="color-background"  @click="showTextColor = !showTextColor" :style="'background:'+ object.textColor +';'"></span>
+
+                                    <photoshop-picker class="photoshop-color" v-model="textColors" v-if="showTextColor" @ok="changeTextColor" @cancel="noChangeTextColor"
+                                    head="文字颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                                </div>
+
+                                <div class="color-btn">
+                                    <span class="color-background"  @click="showBgColor = !showBgColor" :style="'background:'+ object.bgcolor +';'"><i></i></span>
+
+                                    <photoshop-picker class="photoshop-color" v-model="bgColors" v-if="showBgColor" @ok="changeBgColor" @cancel="noChangeBgColor"
+                                    head="背景颜色" acceptLabel ="确定" cancelLabel="取消" newLabel="新的" currentLabel="当前"/>
+                                </div>
+                            </div>
+
+                            <div class="pricebox"  v-if="object.isType==='Price'">
+                                <div  class="ps-params-data">
+                                 <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            文本:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.content"
+                                            @blur="changeObject('content', object.content)" />
+                                        </div>
+                                    </div>
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            位数:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.decimalDigit"
+                                            @blur="changeObject('decimalDigit', object.decimalDigit)" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            前缀:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.prefix"
+                                            @blur="changeObject('prefix', object.prefix)" />
+                                        </div>
+                                    </div>
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            后缀:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.postfix"
+                                            @blur="changeObject('postfix', object.postfix)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            千分:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.thousandSeparator"
+                                            @blur="changeObject('thousandSeparator', object.thousandSeparator)"/>
+                                        </div>
+                                    </div>
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            小数:
+                                        </div>
+                                        <div>
+                                            <input type="text"  v-model="object.decimalSeparator"
+                                            @blur="changeObject('decimalSeparator', object.decimalSeparator)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="styleTitle">定位</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-zuoduiqi" :class="{'hover': object.horizontalAlign===0}" @click="changeObject('horizontalAlign', 0)"></div>
+                                <div class="zknicon zknicon-zhongduiqi" :class="{'hover': object.horizontalAlign===1}" @click="changeObject('horizontalAlign', 1)"></div>
+                                <div class="zknicon zknicon-youduiqi" :class="{'hover': object.horizontalAlign===2}" @click="changeObject('horizontalAlign', 2)"></div>
+
+                                <div class="zknicon zknicon-dingbuduiqi" :class="{'hover': object.verticalAlign===0}" @click="changeObject('verticalAlign', 0)"></div>
+                                <div class="zknicon zknicon-zhongjianduiqi" :class="{'hover': object.verticalAlign===1}" @click="changeObject('verticalAlign', 1)"></div>
+                                <div class="zknicon zknicon-dibuduiqi1" :class="{'hover': object.verticalAlign===2}" @click="changeObject('verticalAlign', 2)"></div>
+                            </div>
+
+                            <div class="aline"></div>
+
+                            <h3 class="styleTitle">前缀</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-jiacu" :class="{'hover': object.prefixIfBold===1}" @click="changeObject('prefixIfBold', object.prefixIfBold===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-qingxie" :class="{'hover': object.prefixIfItalic===2}" @click="changeObject('prefixIfItalic', object.prefixIfItalic===2 ? 0 : 2)"></div>
+                                <div class="zknicon zknicon-shanchuxian" :class="{'hover': object.prefixIfStrikeThrough===1}" @click="changeObject('prefixIfStrikeThrough', object.prefixIfStrikeThrough===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-underline" :class="{'hover': object.prefixIfUnderline===1}" @click="changeObject('prefixIfUnderline',  object.prefixIfUnderline===1 ? 0 : 1)"></div>
+                            </div>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-shangduiqi" :class="{'hover': object.prefixPlace===0}" @click="changeObject('prefixPlace', 0)"></div>
+                                <div class="zknicon zknicon-shuipingjunfen" :class="{'hover': object.prefixPlace===1}" @click="changeObject('prefixPlace', 1)"></div>
+                                <div class="zknicon zknicon-xiaduiqi" :class="{'hover': object.prefixPlace===2}" @click="changeObject('prefixPlace', 2)"></div>
+                            </div>
+                            <div  class="ps-params-data">
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            字号
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.prefixFontSize"
+                                            @blur="changeObject('prefixFontSize', object.prefixFontSize)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="aline"></div>
+
+                            <h3 class="styleTitle">整数</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-jiacu" :class="{'hover': object.integerIfBold===1}" @click="changeObject('integerIfBold', object.integerIfBold===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-qingxie" :class="{'hover': object.integerIfItalic===2}" @click="changeObject('integerIfItalic', object.integerIfItalic===2 ? 0 : 2)"></div>
+                                <div class="zknicon zknicon-shanchuxian" :class="{'hover': object.integerIfStrikeThrough===1}" @click="changeObject('integerIfStrikeThrough', object.integerIfStrikeThrough===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-underline" :class="{'hover': object.integerIfUnderline===1}" @click="changeObject('integerIfUnderline', object.integerIfUnderline===1 ? 0 : 1)"></div>
+                            </div>
+                            <div  class="ps-params-data">
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            字号
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.integerFontSize"
+                                            @blur="changeObject('integerFontSize', object.integerFontSize)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="aline"></div>
+
+                            <h3 class="styleTitle">小数点</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-jiacu" :class="{'hover': object.dotIfBold===1}" @click="changeObject('dotIfBold', object.dotIfBold===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-qingxie" :class="{'hover': object.dotIfItalic===2}" @click="changeObject('dotIfItalic', object.dotIfItalic===2 ? 0 : 2)"></div>
+                            </div>
+                            <div  class="ps-params-data">
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            字号
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.dotFontSize"
+                                            @blur="changeObject('dotFontSize', object.dotFontSize)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="aline"></div>
+
+                            <h3 class="styleTitle">小数</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-jiacu" :class="{'hover': object.decimalIfBold===1}" @click="changeObject('decimalIfBold', object.decimalIfBold===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-qingxie" :class="{'hover': object.decimalIfItalic===2}" @click="changeObject('decimalIfItalic', object.decimalIfItalic===2 ? 0 : 2)"></div>
+                                <div class="zknicon zknicon-shanchuxian" :class="{'hover': object.decimalIfStrikeThrough===1}" @click="changeObject('decimalIfStrikeThrough', object.decimalIfStrikeThrough===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-underline" :class="{'hover': object.decimalIfUnderline===1}" @click="changeObject('decimalIfUnderline', object.decimalIfUnderline===1 ? 0 : 1)"></div>
+
+                                <div class="zknicon zknicon-xiaoshushangbiao" :class="{'hover': object.decimalPlace===0}" @click="changeObject('decimalPlace', 0)"></div>
+                                <div class="zknicon zknicon-xiaoshuxiabiao" :class="{'hover': object.decimalPlace===2}" @click="changeObject('decimalPlace', 2)"></div>
+                            </div>
+                            <div  class="ps-params-data">
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            字号
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.decimalFontSize"
+                                            @blur="changeObject('decimalFontSize', object.decimalFontSize)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="aline"></div>
+
+                             <h3 class="styleTitle">后缀</h3>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-jiacu" :class="{'hover': object.postfixIfBold===1}" @click="changeObject('postfixIfBold', object.postfixIfBold===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-qingxie" :class="{'hover': object.postfixIfItalic===2}" @click="changeObject('postfixIfItalic', object.postfixIfItalic===2 ? 0 : 2)"></div>
+                                <div class="zknicon zknicon-shanchuxian" :class="{'hover': object.postfixIfStrikeThrough===1}" @click="changeObject('postfixIfStrikeThrough', object.postfixIfStrikeThrough===1 ? 0 : 1)"></div>
+                                <div class="zknicon zknicon-underline" :class="{'hover': object.postfixIfUnderline===1}" @click="changeObject('postfixIfUnderline', object.postfixIfUnderline===1 ? 0 : 1)"></div>
+
+                            </div>
+                            <div class="styleOption">
+                                <div class="zknicon zknicon-shangduiqi" :class="{'hover': object.postfixPlace===0}" @click="changeObject('postfixPlace', 0)"></div>
+                                <div class="zknicon zknicon-shuipingjunfen" :class="{'hover': object.postfixPlace===1}" @click="changeObject('postfixPlace', 1)"></div>
+                                <div class="zknicon zknicon-xiaduiqi" :class="{'hover': object.postfixPlace===2}" @click="changeObject('postfixPlace', 2)"></div>
+                                <div class="zknicon zknicon-jiageshangfang" :class="{'hover': object.postfixPlace===3}" @click="changeObject('postfixPlace', 3)"></div>
+                                <div class="zknicon zknicon-jiagexiafang" :class="{'hover': object.postfixPlace===4}" @click="changeObject('postfixPlace', 4)"></div>
+                            </div>
+                            <div  class="ps-params-data">
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            字号
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.postfixFontSize"
+                                            @blur="changeObject('postfixFontSize', object.postfixFontSize)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -527,7 +754,7 @@ export default {
   },
   data () {
     return {
-      zoom: 1,
+      zoom: 2,
       currentLayer: [0, 1],
       currentSuo: 0,
       showlayer: false,
@@ -620,7 +847,7 @@ export default {
       suofangdirection: true,
 
       id: 1,
-      width: '2000',
+      width: '1000',
       height: '600',
       boxWidth: document.documentElement.clientWidth - 120,
       boxHeight: document.documentElement.clientHeight - 62,
@@ -654,11 +881,29 @@ export default {
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       },
+      textColors: {
+        color: '',
+        hex: '#194d33',
+        hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+        hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
+        a: 1
+      },
+      bgColors: {
+        color: '',
+        hex: '#194d33',
+        hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+        hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
+        a: 1
+      },
+      showTextColor: false,
+      showBgColor: false,
       showBorderColor: false,
-      borderstyleshow: true
+      borderstyleshow: false
     }
   },
-  mounted () {
+  created () {
     // this.draw('TextRect')
   },
   methods: {
@@ -686,6 +931,26 @@ export default {
     /* 颜色选择器 */
     noChangeBorderColor () {
       this.showBorderColor = false
+    },
+    /* 价格 颜色选择器 */
+    changeTextColor () {
+      this.$set(this.object, 'textColor', this.textColors.hex)
+      this.changeObject('textColor', this.object.textColor)
+      this.noChangeTextColor()
+    },
+    /* 价格 颜色选择器 */
+    noChangeTextColor () {
+      this.showTextColor = false
+    },
+    /* 价格背景 颜色选择器 */
+    changeBgColor () {
+      this.$set(this.object, 'bgcolor', this.bgColors.hex)
+      this.changeObject('bgcolor', this.object.bgcolor)
+      this.noChangeBgColor()
+    },
+    /* 价格背景 颜色选择器 */
+    noChangeBgColor () {
+      this.showBgColor = false
     },
     // 改变历史
     changeHistory (history) {
@@ -719,6 +984,7 @@ export default {
     },
     // 缩放回调
     changeZoomTo (zoom) {
+      console.log('画布缩放：', zoom)
       this.zoom = parseFloat(zoom.toFixed(2))
     },
     deleteidsdata (ids) {
@@ -739,6 +1005,8 @@ export default {
         if (ids.length === 1) {
           this.curobj = this.$refs.canvas.getEditObj()
           let obj = this.$refs.canvas.getEditObj()
+          console.log(obj)
+          this.$set(this.object, 'isType', obj.isType)
           this.$set(this.object, 'width', obj.width)
           this.$set(this.object, 'height', obj.height)
           this.$set(this.object, 'left', parseInt(obj.left))
@@ -748,6 +1016,50 @@ export default {
           this.$set(this.object, 'strokeWidth', obj.strokeWidth)
           this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
           this.$set(this.object, 'textAdvanceProperty', obj.isElasticSize ? obj.isElasticSize : 0)
+
+          if (obj.isType === 'Price') {
+            this.$set(this.object, 'textColor', obj.textStyle.textColor)
+            this.$set(this.object, 'bgcolor', obj.textStyle.bgcolor)
+            this.$set(this.object, 'content', obj.textStyle.text)
+            this.$set(this.object, 'decimalDigit', obj.textStyle.decimalDigit)
+            this.$set(this.object, 'prefix', obj.textStyle.prefix)
+            this.$set(this.object, 'postfix', obj.textStyle.postfix)
+            this.$set(this.object, 'thousandSeparator', obj.textStyle.thousandSeparator)
+            this.$set(this.object, 'decimalSeparator', obj.textStyle.decimalSeparator)
+            this.$set(this.object, 'horizontalAlign', obj.textStyle.horizontalAlign)
+            this.$set(this.object, 'verticalAlign', obj.textStyle.verticalAlign)
+
+            this.$set(this.object, 'prefixIfBold', obj.textStyle.prefixIfBold)
+            this.$set(this.object, 'prefixIfItalic', obj.textStyle.prefixIfItalic)
+            this.$set(this.object, 'prefixIfStrikeThrough', obj.textStyle.prefixIfStrikeThrough)
+            this.$set(this.object, 'prefixIfUnderline', obj.textStyle.prefixIfUnderline)
+            this.$set(this.object, 'prefixPlace', obj.textStyle.prefixPlace)
+            this.$set(this.object, 'prefixFontSize', obj.textStyle.prefixFontSize)
+
+            this.$set(this.object, 'integerIfBold', obj.textStyle.integerIfBold)
+            this.$set(this.object, 'integerIfItalic', obj.textStyle.integerIfItalic)
+            this.$set(this.object, 'integerIfStrikeThrough', obj.textStyle.integerIfStrikeThrough)
+            this.$set(this.object, 'integerIfUnderline', obj.textStyle.integerIfUnderline)
+            this.$set(this.object, 'integerFontSize', obj.textStyle.integerFontSize)
+
+            this.$set(this.object, 'dotIfBold', obj.textStyle.dotIfBold)
+            this.$set(this.object, 'dotIfItalic', obj.textStyle.dotIfItalic)
+            this.$set(this.object, 'dotFontSize', obj.textStyle.dotFontSize)
+
+            this.$set(this.object, 'decimalIfBold', obj.textStyle.decimalIfBold)
+            this.$set(this.object, 'decimalIfItalic', obj.textStyle.decimalIfItalic)
+            this.$set(this.object, 'decimalIfStrikeThrough', obj.textStyle.decimalIfStrikeThrough)
+            this.$set(this.object, 'decimalIfUnderline', obj.textStyle.decimalIfUnderline)
+            this.$set(this.object, 'decimalPlace', obj.textStyle.decimalPlace)
+            this.$set(this.object, 'decimalFontSize', obj.textStyle.decimalFontSize)
+
+            this.$set(this.object, 'postfixIfBold', obj.textStyle.postfixIfBold)
+            this.$set(this.object, 'postfixIfItalic', obj.textStyle.postfixIfItalic)
+            this.$set(this.object, 'postfixIfStrikeThrough', obj.textStyle.postfixIfStrikeThrough)
+            this.$set(this.object, 'postfixIfUnderline', obj.textStyle.postfixIfUnderline)
+            this.$set(this.object, 'postfixPlace', obj.textStyle.postfixPlace)
+            this.$set(this.object, 'postfixFontSize', obj.textStyle.postfixFontSize)
+          }
         } else {
           this.curobj = {}
           this.object = {}
@@ -797,11 +1109,16 @@ export default {
         case 'strokeDashArray': obj.set({'strokeDashArray': [parseInt(data[0] * this.object.strokeWidth), parseInt(data[1] * this.object.strokeWidth)]
         })
           break
-        case 'fillinColor': obj.set({'fill': data}); obj.set({'fillinColor': data})
+        case 'fillinColor':
+          obj.set({'fill': data})
+          obj.set({'fillinColor': data})
+          if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, 'bgcolor', data) }
           break
         case 'textAdvanceProperty': this.$set(this.object, 'textAdvanceProperty', data); this.$refs.canvas.exitEditing(); obj.set({'isElasticSize': data}); this.changeTextType(obj, obj.content)
           break
-        default:
+        default: this.$set(this.object, name, data)
+          if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, name, data) }
+          break
       }
       obj.setCoords()
       this.$refs.canvas.renderAll()
@@ -1073,7 +1390,7 @@ export default {
             textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 2,
+            isElasticSize: 1,
 
             maxLines: 7,
             omitStyleText: '...', // 两个汉字 4个字母
@@ -1084,10 +1401,10 @@ export default {
             textAlign: 'left',
             verticalSpace: 0,
 
-            // fontWeight: 'bold',
-            // linethrough: true,
-            // underline: true,
-            // fontStyle: 'italic'
+            fontWeight: 'bold',
+            linethrough: true,
+            underline: true,
+            fontStyle: 'italic',
 
             // xLeft: 0,
             // yTop: 0,
@@ -1327,6 +1644,84 @@ export default {
             }
           }
           break
+        case 'Price':
+          options = {
+            left: 500,
+            top: 80,
+            width: 400,
+            height: 200,
+
+            thousandSeparator: '', // 千分位分隔符
+            text: '8888.123456', // 价格取值
+
+            decimalDigit: 4, // 小数位数
+            roundingMode: 0, // 舍入模式   0：无  1：四舍五入 2：向上取整  3：向下取整
+
+            horizontalAlign: 1, // 整体横向对齐 012
+            verticalAlign: 1, // 整体竖向对齐 012
+
+            textColor: '#FF55AA', // 文本颜色
+            bgcolor: '#FFFF00', // 背景颜色
+
+            bgOpacity: 0, // 背景透明1：透明，0：取背景颜色
+            nopadding: 1, // 考虑文字顶和底部去除 1：去除边距，2：保留文字边距
+            gizp: 1, // 是否压缩 1：文字小于宽度压缩， 0：不做压缩截取
+
+            stroke: '#000', // 边框颜色
+            strokeWidth: 0, // 边框粗细
+
+            /**
+             * 前缀
+             */
+            prefix: '￥', // 前缀
+            'prefixIfBold': 0, // 前缀是否加粗(0:不加粗,1:加粗)
+            'prefixIfItalic': 0, // 前缀是否斜体(0:不斜体,2:斜体)
+            'prefixIfStrikeThrough': 0, // 前缀是否中划线(0:不中划线,1:中划线)
+            'prefixIfUnderline': 0, // 前缀是否下划线(0:不下划线,1:下划线)
+            prefixFontType: '微软雅黑', // 字体
+            prefixFontSize: 25, // 字号
+            prefixPlace: 2, // 前缀的位置  上：0  中：1  下：2
+            /**
+             * 整数
+             */
+            'integerIfBold': 0, // 整数部分是否加粗(0:不加粗,1:加粗)
+            'integerIfItalic': 0, // 整数部分是否斜体(0:不斜体,2:斜体)
+            'integerIfStrikeThrough': 0, // 整数部分是否中划线
+            'integerIfUnderline': 0, // 整数部分是否下划线
+            integerFontType: '微软雅黑', // 字体
+            integerFontSize: 50, // 字号
+            /**
+             * 小数分隔符
+             */
+            decimalSeparator: '.', // 小数分隔符
+            'dotIfBold': 0, // 小数点是否加粗(0:不加粗,1:加粗)
+            'dotIfItalic': 0, // 小数点是否斜体(0:不斜体,2:斜体)
+            dotFontType: '微软雅黑', // 字体
+            dotFontSize: 50, // 字号
+            /**
+             * 小数
+             */
+            'decimalIfBold': 0, // 小数是否加粗(0:不加粗,1:加粗)
+            'decimalIfItalic': 0, // 小数是否斜体(0:不斜体,2:斜体)
+            'decimalIfStrikeThrough': 0, // 小数是否中划线
+            'decimalIfUnderline': 0, // 小数是否下划线
+            decimalFontType: '微软雅黑', // 字体
+            decimalFontSize: 20, // 字号
+            decimalPlace: 0, // 小数在整数的位置  上：0  中：1  下：2
+            /**
+             * 后缀
+             */
+            postfix: '/斤', // 后缀suffix
+            'postfixIfBold': 0, // 后缀是否加粗(0:不加粗,1:加粗)
+            'postfixIfItalic': 0, // 后缀是否斜体(0:不斜体,2:斜体)
+            'postfixIfStrikeThrough': 0, // 后缀是否中划线
+            'postfixIfUnderline': 0, // 后缀是否下划线
+            postfixFontType: '微软雅黑', // 字体
+            postfixFontSize: 20, // 字号
+            postfixPlace: 0, // 后缀的位置  上：0  中：1  下：2       小数下：3           小数上：4
+            visible: true
+          }
+          break
         default:
           options = {
             left: 0,
@@ -1365,7 +1760,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+ @import url("../static/iconfont/iconfont.css");
 .copy-ps{
         width: 100%;
         height: 100vh;
@@ -1700,6 +2095,21 @@ export default {
             }
             &:hover{
                 background: url("../static/newps/images/ps-icon7-3.png") no-repeat;
+            }
+        }
+        i.ps-icon17{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon17.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon17-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon17-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon17-3.png") no-repeat;
             }
         }
         i.ps-icon8{
@@ -2172,8 +2582,8 @@ export default {
                     padding: 0 5px 8px 5px;
                 }
                 .ps-params-data{
-                    border-top:1px solid #707070;
-                    border-bottom:1px solid #282828;
+                    // border-top:1px solid #707070;
+                    // border-bottom:1px solid #282828;
                     padding: 10px 5px 0 5px;
                     // display: flex;
                     // flex-direction: row;
@@ -2257,7 +2667,8 @@ export default {
                         display: flex;
                         flex-direction: row;
                         .param-name{
-                            width: 20px;
+                            width: 30px;
+                            text-align: right;
                         }
                     }
 
@@ -2480,9 +2891,10 @@ export default {
 
             .borderstyle{
                 width: 100%;
-                margin: 0px 10px;
+                padding: 0px 20px;
                 display: inline-block;
                 box-sizing: border-box;
+                border-bottom: 1px solid #282828;
                 p{
                     width: 100%;
                 }
@@ -2669,6 +3081,44 @@ export default {
             }
         }
 
+    }
+
+.pricebox{
+    height: 50vh;
+    overflow-y: auto;
+}
+.aline{
+    border-top: 1px solid #707070;
+    border-bottom: 1px solid #282828;
+}
+    .styleTitle{
+        width: 100%;
+        font-size: 12px;
+        display: flex;
+        flex-direction: row;
+        padding: 3px 20px 5px;
+        font-weight: normal;
+    }
+    .styleOption{
+        margin: 5px 20px;
+        display: flex;
+        flex-direction: row;
+        .zknicon{
+            cursor: pointer;
+            font-size: 12px;
+            padding: 5px 6px;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: linear-gradient(0deg, #606060 20%, #6c6c6c 50%, #707070 70%);
+            border: 1px solid rgba(44,44,44,1);
+            user-select: none;
+
+            &:active,&.hover{
+                background: #393939;
+                border: 1px solid rgba(44,44,44,1);
+            }
+        }
     }
 </style>
 

@@ -1,7 +1,7 @@
 /* build: `node build.js modules=ALL exclude=gestures,accessors requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) base version 3.6.1 */
 
-var fabric = fabric || { version: '0.1.7' };
+var fabric = fabric || { version: '0.1.6' };
 if (typeof exports !== 'undefined') {
     exports.fabric = fabric;
 }
@@ -13748,6 +13748,10 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
 
                   textTop: this.textTop,
 
+                  textImg: this.textImg,
+                  options: this.options,
+                  textStyle: this.textStyle,
+
                 };
 
 
@@ -25164,7 +25168,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
         /**
          * @private
          */
-        _fontSizeFraction: 0.22223,   //happy change 0.222 0.2
+        _fontSizeFraction: 0.22223,   //happy change 0.222 0.2   0.22223
 
         /**
          * @private
@@ -26663,6 +26667,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
             for (var i = startIndex; i < endIndex; i++) {
                 this._extendStyles(i, styles);
             }
+            // console.error('setSelectionStyles', styles, startIndex, endIndex)
             /* not included in _extendStyles to avoid clearing cache more than once */
             this._forceClearCache = true;
             return this;
@@ -30334,12 +30339,10 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
         // 文本的旋转，位置考虑角度
         calcTextPosition: function () {
-          let leftmargin = this.textPadding + this.textOffsetLeft;
-          let topmargin = this.textPadding + this.textOffsetTop;
           const sin = Math.sin(fabric.util.degreesToRadians(this.angle))
           const cos = Math.cos(fabric.util.degreesToRadians(this.angle))
-          const newTop = sin * topmargin + cos * topmargin
-          const newLeft = cos * leftmargin - sin * leftmargin
+          const newTop = sin * this.textPadding + cos * (this.textPadding+ this.textTop)
+          const newLeft = cos * this.textPadding - sin * (this.textPadding+ this.textTop)
           const rectLeftTop = this.getPointByOrigin('left', 'top')
 
           this.text.set('left', rectLeftTop.x + newLeft)
@@ -30367,8 +30370,8 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
              const rectLeftTop = this.getPointByOrigin('left', 'top');
              const sin = Math.sin(fabric.util.degreesToRadians(this.angle));
              const cos = Math.cos(fabric.util.degreesToRadians(this.angle));
-             const newTop = sin * this.textOffsetLeft + cos * this.textOffsetTop;
-             const newLeft = cos * this.textOffsetLeft - sin * this.textOffsetTop;
+             const newTop = sin * this.textOffsetLeft + cos * (this.textOffsetTop + this.textTop);
+             const newLeft = cos * this.textOffsetLeft - sin * (this.textOffsetTop + this.textTop);
 
             if(this.text.isElasticSize!==2){
 
@@ -31317,12 +31320,12 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 //     e.canvas.getContext('2d').rect(-this.width/2,-this.height/2,this.width,this.height);
                 //   }
                 // };
-
-                this.calcTextPosition();// 文本位置考虑角度
-
                 let margin = await this.getLeftTopMargin(textOptions,this.text.scaleX,this.text.scaleY);
                 this.textTop = -margin.offset[2];
                 this.text.set('top', this.text.top - margin.offset[2]);
+                this.calcTextPosition();// 文本位置考虑角度
+
+
 
               }else{
 
@@ -31383,8 +31386,9 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
             this.on('moving', async (e) => {
               let position = this.getTextPosition() // 文本位置考虑角度
               if(this.text.isElasticSize ===2){
-                this.text.set('top', position.top + this.textTop);
-                this.text.set('left', position.left);
+                // this.text.set('top', position.top + this.textTop);
+                // this.text.set('left', position.left);
+                this.calcTextPosition();// 文本位置考虑角度
               }else{
                 this.text.set('left', position.left);
                 this.text.set('top', position.top);
@@ -31410,6 +31414,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
                 this.textTop = -margin.offset[2];
                 this.text.set('top', position.top - margin.offset[2]);
                 this.text.set('left', position.left);
+                this.calcTextPosition();// 文本位置考虑角度
               }else{
                 this.text.set('left', position.left);
                 this.text.set('top', position.top);
@@ -32199,6 +32204,286 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 
     fabric.textRectNew.fromObject = function(object, callback) {
         return fabric.Object._fromObject('textRectNew', object, callback, 'text');
+    };
+})(typeof exports !== 'undefined' ? exports : this);
+
+
+/**
+ * 价格组件复合 price 价格组件 2023.03.28
+ */
+(function(global) {
+
+    'use strict';
+
+    var fabric = global.fabric || (global.fabric = {});
+
+    fabric.Canvas.prototype.getAbsoluteCoords = function(object) {
+        return {
+            left: 0,
+            top: 0
+        };
+    };
+
+
+    fabric.Price = fabric.util.createClass(fabric.Rect, {
+        type: 'price',
+        isType: 'price',
+
+
+        thousandSeparator: ',', //千分位分隔符
+        text: '0.00', // 价格取值
+        
+        horizontalAlign: '0', // 整体横向对齐 012
+        verticalAlign: '0', // 整体竖向对齐 012
+
+        textColor: '#000', //文本颜色
+        bgColor: '', // 背景颜色
+        stroke: 0, // 边框粗细
+        strokeColor: '', //边框颜色
+        
+
+        /**
+         * 前缀
+         */
+        prefix: '￥', // 前缀  
+        prefixTextStyle: [0,1,2,3], // 前缀的加粗 斜体 下划线 中划线
+        prefixFont: '', // 字体
+        prefixFontsize: 17, // 字号
+        prefixAlign: '0', //前缀的位置  上：0  中：1  下：2
+        /**
+         * 整数
+         */
+        integer: '0',  // 整数
+        integerTextStyle: [0,1,2,3], // 整数的加粗 斜体 下划线 中划线
+        integerFont: '', // 字体
+        integerFontsize: 17, // 字号
+        /**
+         * 小数分隔符
+         */
+        decimalSeparator: '.',  //小数分隔符
+        decimalSeparatorTextStyle: [0,1,2,3], // 小数点的加粗 斜体 下划线 中划线
+        decimalSeparatorFont: '', // 字体
+        decimalSeparatorFontsize: 17, // 字号
+        /**
+         * 小数
+         */
+        decimal: '00',  //小数
+        decimalTextStyle: [0,1,2,3], // 小数的加粗 斜体 下划线 中划线
+        decimalFont: '', // 字体
+        decimalFontsize: 17, // 字号
+        decimalAlign: '0', //小数在整数的位置  上：0  中：1  下：2
+        /**
+         * 后缀
+         */
+        postfix: '/斤', // 后缀suffix
+        postfixTextStyle: [0,1,2,3], // 后缀的加粗 斜体 下划线 中划线
+        postfixFont: '', // 字体
+        postfixFontsize: 17, // 字号
+        postfixAlign: '0', //后缀的位置  上：0  中：1  下：2
+
+
+
+        // 文本的旋转，位置考虑角度
+        recalcTextPosition: function () {
+            const sin = Math.sin(fabric.util.degreesToRadians(this.angle))
+            const cos = Math.cos(fabric.util.degreesToRadians(this.angle))
+            const newTop = sin * this.textPadding + cos * this.textPadding
+            const newLeft = cos * this.textPadding - sin * this.textPadding
+            const rectLeftTop = this.getPointByOrigin('left', 'top')
+
+            this.integer.set('left', rectLeftTop.x + newLeft)
+            this.integer.set('top', rectLeftTop.y + newTop)
+          },
+
+
+        initialize: function (options) {
+
+            this.callSuper('initialize', options);
+
+
+            this.integer = new fabric.Text(option.integer, {
+                fill: '#00f',
+                fontSize: 50,
+                fontFamily: '宋体',
+                originX: 'left',
+                originY: 'top',
+                left: options.left,
+                top: options.top,
+                scaleX: 1,
+                scaleY: 1,
+                visible: 1,
+                isType: 'price-text',
+                visible: true,
+                splitByGrapheme:  false,
+                flipX: false,
+                flipY: false,
+                selectable: false,
+                evented: false,
+            });
+
+            this.textPadding = options.textPadding?options.textPadding:(options.strokeWidth?options.strokeWidth:0);
+
+            // var group = new fabric.Group([this.integer, canvasImage], {
+            //     isType: 'equalImage',
+            //     component: 'component',
+            //     left: options.left,
+            //     top: options.top,
+            //     width: options.width,
+            //     height: options.height,
+            //     originX: 'left',
+            //     originY: 'top',
+            //     padding: 0,
+            //     id: options.id,
+            //     url: options.url,
+            //     src: options.url,
+    
+            //     hasRotatingPoint: true,
+            //     lockScalingFlip: true,
+            //     minScaleLimit: 0.2,
+    
+            //     eyeshow: options.eyeshow,
+            //     screenIndex: options.screenIndex
+            //   })
+
+            // this.clipPath = new fabric.Rect({
+            //     originX:'left',
+            //     originY:'top',
+            //     left:-(this.width*this.scaleX + this.strokeWidth)/2,
+            //     top:-(this.height*this.scaleY + this.strokeWidth)/2,
+            //     width:this.width*this.scaleX + this.strokeWidth ,
+            //     height:this.height*this.scaleY + this.strokeWidth
+            // });
+
+
+            this.on('added', async () => {
+
+                this.set('fill', options.bgColor); // 矩形背景颜色填充
+
+                this.integer.set('selected', false);
+                this.integer.set('evented', false);
+
+                this.canvas.add(this.integer);
+
+            });
+            this.on('moving', async (e) => {
+
+                this.recalcTextPosition() // 文本位置考虑角度
+
+            });
+            // this.on('scaling', async (e) => {
+                
+            //     this.text.clipTo = function(e) {
+            //         if (e) {
+            //           e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
+            //         }
+            //       };
+
+            // });
+            // this.on('scaled', async (e) => {
+            //     this.set('width', parseInt(this.width*this.scaleX ));
+            //     this.set('height', parseInt(this.height*this.scaleY ));
+            //     this.set('scaleX',1);
+            //     this.set('scaleY',1);
+                
+            // });
+
+            // this.on('rotating', () => {
+
+            //     this.text.rotate(this.angle );
+            //     this.recalcTextPosition(); // 文本位置考虑角度
+
+            // });
+
+            // this.on('mousedown:before', () => {
+
+            //     this._prevObjectStacking = this.canvas.preserveObjectStacking;
+            //     this.canvas.preserveObjectStacking = true;
+
+            //     this.text.evented = false;
+            //     this.text.selectable = false;
+            // });
+
+            // this.on('mousedblclick', () => {
+
+            //     this.text.selectable = true;
+            //     this.text.evented = true;
+            //     this.text.set('text',this.text.textdemo); //文本重新赋值
+            //     this.text.set('scaleX',1); //文本取消变形
+            //     this.text.set('scaleY',1); //文本取消变形
+
+            //     this.text.set('splitByGrapheme',true); //允许换行
+
+            //     this.canvas.setActiveObject(this.text);
+            //     this.text.enterEditing();
+
+            //     this.selectable = false;
+
+            // });
+            // this.on('deselected', async (e) => {
+            //     this.canvas.preserveObjectStacking =  true;
+            // });
+
+            // this.on('removed', () => {
+            //     this.canvas.remove(this.text);
+            // });
+
+            // this.text.on('added',async () =>{
+
+            //     this.text.clipTo = function(e) {
+            //         if (e) {
+            //           e.canvas.getContext('2d').rect(-this.width / 2, -this.height / 2, this.width, this.height);
+            //         }
+            //       };
+
+            // });
+
+            // this.text.on('editing:entered',(e)=>{
+
+            //     this.text.bringForward(true);//文本拉到上面
+            //     //编辑文本时背景颜色
+            //     this.set('width',this.width*this.scaleX);
+            //     this.set('scaleX',1);
+            //     this.set('fill','#fffdcaf2');
+
+
+            //     this.text.set('hasBorders',false);
+
+            //     //文本编辑光标
+            //     this.text.enterEditing();
+            //     this.text.setSelectionStart(0); //设置光标位置
+            //     this.text.setSelectionEnd(this.text._text.length); //设置光标位置
+            //     this.text.hiddenTextarea.focus();
+            //     // this.text.hiddenTextarea.style.overflowY = 'auto';
+
+            //     //文本宽高大小
+            //     this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+            //     this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
+
+
+            // });
+            // this.text.on('changed',(e)=>{
+
+            //     //文本宽高大小
+            //     this.text.set('width', parseInt(this.width*this.scaleX - this.textPadding));
+            //     this.text.set('height', parseInt(this.height*this.scaleY - this.textPadding));
+
+            // });
+            // this.text.on('editing:exited', async () => {
+
+            //     this.text.evented = false;
+            //     this.text.selectable = false;
+            //     this.selectable = true;
+
+            //     this.canvas.renderAll();
+            //     this.setCoords();
+
+
+            // })
+        }
+    })
+
+    fabric.Price.fromObject = function(object, callback) {
+        return fabric.Object._fromObject('Price', object, callback, 'Price');
     };
 })(typeof exports !== 'undefined' ? exports : this);
 
