@@ -1652,16 +1652,16 @@ export default {
             height: 200,
 
             thousandSeparator: '', // 千分位分隔符
-            text: '8989898989898989.12', // 价格取值
+            text: '8989.12', // 价格取值
 
-            decimalDigit: 8, // 小数位数
+            decimalDigit: 0, // 小数位数
             roundingMode: 0, // 舍入模式   0：无  1：四舍五入 2：向上取整  3：向下取整
 
             horizontalAlign: 0, // 整体横向对齐 012
             verticalAlign: 0, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
-            bgcolor: '#FFFF00', // 背景颜色
+            bgcolor: '', // 背景颜色
 
             bgOpacity: 0, // 背景透明1：透明，0：取背景颜色
             nopadding: 1, // 考虑文字顶和底部去除 1：去除边距，2：保留文字边距

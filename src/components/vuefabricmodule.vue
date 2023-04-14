@@ -2202,7 +2202,7 @@ export default {
           textPadding: options.textPadding ? options.textPadding : 0, // 文本复合组件的内边距
 
           tabledata: options.tabledata ? options.tabledata : initable, // 表格新增字段
-          bgcolor: options.bgcolor ? options.bgcolor : '#fff' // 新增二维码和条码背景色
+          bgcolor: options.bgcolor ? options.bgcolor : '' // 新增二维码和条码背景色
 
         }
 
@@ -5189,7 +5189,7 @@ export default {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve(price.width)
-        }, 10)
+        }, 100)
       })
     },
     // 计算文本位置
@@ -5425,7 +5425,7 @@ export default {
     },
     // 修改价格组件
     async setPrice (group, name, value) {
-      console.error(group, name, value)
+      // console.error(group, name, value)
       const {prefix, integer, decimalSeparator, decimal, decimalPlace, decimalFontSize, decimalFontType, decimalIfBold, decimalIfItalic, decimalIfUnderline, decimalIfStrikeThrough,
         prefixIfBold,
         prefixIfItalic,
@@ -5582,6 +5582,12 @@ export default {
             IfStrikeThrough: prefixIfStrikeThrough
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
+          // 9象限位置调整
+          await this.setPircePosition(group, {
+            ...group.textStyle,
+            'horizontalAlign': group.textStyle.horizontalAlign,
+            'verticalAlign': group.textStyle.verticalAlign
+          })
           break
         case 'prefixPlace':
           group.textStyle[name] = Number(value)
@@ -5667,58 +5673,59 @@ export default {
         case 'integerFontSize':
           group.textStyle[name] = Number(value)
           group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: Number(value),
-            FontType: integerFontType,
-            IfBold: integerIfBold,
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline
-          }, group.textImg.fontTrueheight)
-          // 文字高度校准
-          group.textImg = await this.todrawInterger({
-            integer: integer,
-            width: group.item(1).item(1).width,
-            height: group.item(1).item(1).height,
-            FontSize: Number(value),
-            FontType: integerFontType,
-            IfBold: integerIfBold,
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline
-          })
-          // 前缀位置校准
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
-          }, group.textImg.fontTrueheight)
-          // 小数位置校准
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
-          }, group.textImg.fontTrueheight)
-          // 后缀高度校准
-          group.item(1).item(1).set({
-            fontSize: Number(value)
-          })
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          // 9象限位置调整
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
+          await this.changePrice(group, {'integerFontSize': Number(value)})
+          // await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
+          //   Place: 2,
+          //   FontSize: Number(value),
+          //   FontType: integerFontType,
+          //   IfBold: integerIfBold,
+          //   IfItalic: integerIfItalic,
+          //   IfStrikeThrough: integerIfStrikeThrough,
+          //   IfUnderline: integerIfUnderline
+          // }, group.textImg.fontTrueheight)
+          // // 文字高度校准
+          // group.textImg = await this.todrawInterger({
+          //   integer: integer,
+          //   width: group.item(1).item(1).width,
+          //   height: group.item(1).item(1).height,
+          //   FontSize: Number(value),
+          //   FontType: integerFontType,
+          //   IfBold: integerIfBold,
+          //   IfItalic: integerIfItalic,
+          //   IfStrikeThrough: integerIfStrikeThrough,
+          //   IfUnderline: integerIfUnderline
+          // })
+          // // 前缀位置校准
+          // await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
+          //   Place: prefixPlace,
+          //   FontSize: prefixFontSize,
+          //   FontType: prefixFontType,
+          //   IfBold: prefixIfBold,
+          //   IfItalic: prefixIfItalic,
+          //   IfUnderline: prefixIfUnderline,
+          //   IfStrikeThrough: prefixIfStrikeThrough
+          // }, group.textImg.fontTrueheight)
+          // // 小数位置校准
+          // await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
+          //   Place: decimalPlace,
+          //   FontSize: decimalFontSize,
+          //   FontType: decimalFontType,
+          //   IfBold: decimalIfBold,
+          //   IfItalic: decimalIfItalic,
+          //   IfUnderline: decimalIfUnderline,
+          //   IfStrikeThrough: decimalIfStrikeThrough
+          // }, group.textImg.fontTrueheight)
+          // // 后缀高度校准
+          // group.item(1).item(1).set({
+          //   fontSize: Number(value)
+          // })
+          // this.changePosfix(group, group.textStyle) // 后缀位置调整
+          // // 9象限位置调整
+          // await this.setPircePosition(group, {
+          //   ...group.textStyle,
+          //   'horizontalAlign': group.textStyle.horizontalAlign,
+          //   'verticalAlign': group.textStyle.verticalAlign
+          // })
           break
 
         case 'dotIfBold':
@@ -5731,6 +5738,7 @@ export default {
             IfBold: Number(value),
             IfItalic: dotIfItalic
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'dotIfItalic':
           group.textStyle[name] = Number(value)
@@ -5765,6 +5773,12 @@ export default {
             IfItalic: dotIfItalic
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
+          // 9象限位置调整
+          await this.setPircePosition(group, {
+            ...group.textStyle,
+            'horizontalAlign': group.textStyle.horizontalAlign,
+            'verticalAlign': group.textStyle.verticalAlign
+          })
           break
 
         case 'decimalPlace':
@@ -5859,6 +5873,12 @@ export default {
             IfStrikeThrough: decimalIfStrikeThrough
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
+          // 9象限位置调整
+          await this.setPircePosition(group, {
+            ...group.textStyle,
+            'horizontalAlign': group.textStyle.horizontalAlign,
+            'verticalAlign': group.textStyle.verticalAlign
+          })
           break
 
         case 'postfixIfBold':
@@ -5938,6 +5958,12 @@ export default {
             IfUnderline: postfixIfUnderline,
             IfStrikeThrough: postfixIfStrikeThrough
           }, group.textImg.fontTrueheight)
+          // 9象限位置调整
+          await this.setPircePosition(group, {
+            ...group.textStyle,
+            'horizontalAlign': group.textStyle.horizontalAlign,
+            'verticalAlign': group.textStyle.verticalAlign
+          })
           break
         case 'postfixPlace':
           group.textStyle[name] = Number(value)
@@ -6063,6 +6089,7 @@ export default {
       let canvas = this.canvas
       const {
         id,
+        layer,
         left,
         top,
         width,
@@ -6240,7 +6267,7 @@ export default {
       let postfixdom = new fabric.IText(postfix + ' ', {
         fill: textColor,
         // textBackgroundColor: '#ddd',
-        fontSize: integerFontSize,
+        fontSize: 10,
         fontFamily: postfixFontType,
         originX: 'left',
         originY: 'top',
@@ -6250,7 +6277,6 @@ export default {
         top: 0,
         scaleX: 1,
         scaleY: 1,
-        visible: 1,
         isType: 'Price-postfix',
         styles: postfixStyle,
         prefix: prefix,
@@ -6261,14 +6287,25 @@ export default {
         flipX: false,
         flipY: false,
         selectable: false,
+        visible: false,
         evented: false
       })
+      // 后缀空格
+      postfixdom.setSelectionStyles({
+        deltaY: 0,
+        fontSize: integerFontSize,
+        fontFamily: postfixFontType,
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        underline: false,
+        linethrough: false
+      }, postfix.length, postfix.length + 1)
       // 背景颜色矩形
       // eslint-disable-next-line no-undef
       let textRect = new fabric.Rect({
         width: width - strokeWidth,
         height: height - strokeWidth,
-        fill: bgOpacity ? '' : bgcolor,
+        fill: bgcolor,
         scaleX: 1,
         scaleY: 1,
         isType: 'Price-textRect',
@@ -6318,7 +6355,7 @@ export default {
       let rect = new fabric.Rect({
         width: width,
         height: height,
-        fill: bgOpacity ? '' : '#FFFFFF', // bgOpacity ? '' : bgcolor
+        fill: bgOpacity ? 'rgba(0,0,0,0)' : '', // bgOpacity ? '' : bgcolor
         stroke: stroke,
         strokeWidth: strokeWidth,
         scaleX: 1,
@@ -6340,6 +6377,8 @@ export default {
         originX: 'left',
         originY: 'top',
         id: id,
+        layer: layer,
+        zIndex: layer,
         width: width + strokeWidth,
         height: height + strokeWidth,
         left: left,
@@ -6348,7 +6387,7 @@ export default {
         textImg: res,
         options: options,
         textStyle: options,
-        visible: visible
+        visible: true
 
       })
 
@@ -6364,7 +6403,7 @@ export default {
           top: newtop
         })
         canvas.requestRenderAll()
-
+        pricew = await _this.retrunText(price)
         // 后缀相对价格组件的位置
         let postfixLeft = ({
           0: () => { return textGroup.item(1).left + pricew },
@@ -6376,10 +6415,15 @@ export default {
         // console.log(textGroup.item(1).left, postfixLeft)
         // 后缀重新定位
         textGroup.item(2).set({
+          visible: true,
           originX: 'left',
           originY: 'top',
           left: postfixLeft,
           top: textGroup.item(1).top
+        })
+        // 后缀跟随后再隐藏，防止定位错误
+        group.set({
+          visible: visible
         })
 
         canvas.requestRenderAll()

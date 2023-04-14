@@ -671,3 +671,8 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.04.13
 > v0.1.9
 - 按id显示隐藏
+
+### 2023.04.13
+> v0.1.10
+- 数字组件的细节优化
+- 透明背景支持
