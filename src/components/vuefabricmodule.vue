@@ -250,6 +250,9 @@ export default {
       if (keyCode === 46) { // Delete
         that.removeActiveObject()
       }
+      if (event.shiftKey && keyCode === 68) { // Shift + D
+        that.copypaste()
+      }
       if (keyCode === 37) { // ←
         e.preventDefault()
         e.stopPropagation()
@@ -5379,18 +5382,18 @@ export default {
      * thousandSeparator， 千分位分隔符
      */
     async priceformat (text, roundingMode, decimalDigit, decimalSeparator, thousandSeparator) {
-      if (!/^[0-9]+.?[0-9]*$/.test(text)) { // 判断是否是浮点数
-        return null
-      }
+      // if (!/^[0-9]+.?[0-9]*$/.test(text)) { // 判断是否是浮点数
+      //   return null
+      // }
+      // console.log(text, roundingMode, decimalDigit, decimalSeparator, '千分位', thousandSeparator)
       let priceText = text
       let dotIndex = text.indexOf('.')
       // 如果是整数/保留小数位数等于超过当前小数长度，则直接用toFixed返回补0
       if (dotIndex === -1 || (text.length - (dotIndex + 1) <= decimalDigit)) {
         priceText = Number(text).toFixed(decimalDigit)
       }
-
       // 实际位数 > 小数位数需要位数时处理
-      if (text.length - (dotIndex + 1) > decimalDigit) {
+      if (dotIndex > -1 && text.length - (dotIndex + 1) > decimalDigit) {
         priceText = ({
           7: () => { return text.substr(0, dotIndex + 1 + decimalDigit) }, // 直接截取
           4: () => { return Number(text).toFixed(decimalDigit) }, // 四舍五入 this.toFixed(priceText, decimalDigit)
@@ -5490,6 +5493,12 @@ export default {
             ...group.textStyle,
             'verticalAlign': Number(value)
           })
+          break
+        case 'width':
+          await this.changePrice(group, {'width': Number(value)})
+          break
+        case 'height':
+          await this.changePrice(group, {'height': Number(value)})
           break
         case 'prefix':
           await this.changePrice(group, {'prefix': value})
@@ -6152,6 +6161,7 @@ export default {
         integer,
         decimal
       }
+      console.log(priceText, integer, decimal)
       // if (!priceText) return // 不是价格数据返回
       // console.log('价格', priceText, integer, decimal)
       // eslint-disable-next-line no-undef

@@ -37,8 +37,8 @@
         <div class="psh-button" >
             <b>截屏(C)</b>
         </div>
-        <div class="psh-button" >
-            <b>生成条码(s)</b>
+        <div class="psh-button" @click="$refs.canvas.copypaste()">
+            <b>复制(D)</b>
         </div>
     </div>
 
@@ -1094,9 +1094,11 @@ export default {
       let obj = this.$refs.canvas.getEditObj()
       console.log(obj)
       switch (name) {
-        case 'width': obj.set({'width': parseInt(data)})
+        case 'width':
+          if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, name, data) } else { obj.set({'width': parseInt(data)}) }
           break
-        case 'height': obj.set({'height': parseInt(data)})
+        case 'height':
+          if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, name, data) } else { obj.set({'height': parseInt(data)}) }
           break
         case 'left': obj.set({'left': parseInt(data)})
           break
@@ -1661,14 +1663,14 @@ export default {
             verticalAlign: 0, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
-            bgcolor: '', // 背景颜色
+            bgcolor: '#FFFF00', // 背景颜色
 
             bgOpacity: 0, // 背景透明1：透明，0：取背景颜色
             nopadding: 1, // 考虑文字顶和底部去除 1：去除边距，2：保留文字边距
             gizp: 1, // 是否压缩 1：文字小于宽度压缩， 0：不做压缩截取
 
             stroke: '#000', // 边框颜色
-            strokeWidth: 10, // 边框粗细
+            strokeWidth: 0, // 边框粗细
 
             /**
              * 前缀

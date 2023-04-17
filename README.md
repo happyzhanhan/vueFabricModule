@@ -676,3 +676,8 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.10
 - 数字组件的细节优化
 - 透明背景支持
+
+### 2023.04.17
+> v0.1.11
+- 复制粘贴新增快捷方式
+- 整数错误处理
