@@ -686,3 +686,6 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.12
 - 修复全局左右上下移动和input框中事件冲突
 - 修复数字组件的文字重影
+
+> v0.1.13
+- 微调缩放效果

@@ -6426,15 +6426,15 @@ export default {
       }
 
       group.item(1).item(0).set({
-        width: group.width - strokeWidth,
+        width: group.width - strokeWidth * 2,
         left: 0
       })
       // 裁切
       // eslint-disable-next-line no-undef
       var clipPath = new fabric.Rect({
         // absolutePositioned: true
-        width: group.width,
-        height: group.height,
+        width: group.item(1).item(0).width,
+        height: group.item(1).item(0).height,
         scaleX: 1,
         scaleY: 1,
         originX: 'center',
@@ -6490,54 +6490,54 @@ export default {
       })
 
       group.on('scaling', async function (e) {
-        const scaleX = e.target.scaleX
-        let groupwidth = (e.target.width * scaleX)
-        let groupheight = (e.target.height * e.target.scaleY)
+        // const scaleX = e.target.scaleX
+        // let groupwidth = (e.target.width * scaleX)
+        // let groupheight = (e.target.height * e.target.scaleY)
 
         const {gizp} = group.options
         console.log('scaling', gizp)
-        if (gizp) {
+        // if (gizp) {
 
-        } else {
-          group.set('width', groupwidth)
-          group.set('height', groupheight)
-          group.set('scaleX', 1)
-          group.set('scaleY', 1)
-          // rect
-          group.item(0).set({
-            scaleX: 1,
-            scaleY: 1,
-            width: groupwidth - strokeWidth,
-            height: groupheight - strokeWidth,
-            originX: 'center',
-            originY: 'center',
-            left: 0,
-            top: 0
-          })
-          // textRect
-          group.item(1).set({
-            scaleX: 1,
-            scaleY: 1,
-            width: groupwidth - strokeWidth,
-            height: groupheight - strokeWidth,
-            originX: 'center',
-            originY: 'center'
-          })
-          group.item(1).item(0).set({
-            scaleX: 1,
-            scaleY: 1,
-            width: groupwidth - strokeWidth,
-            height: groupwidth - strokeWidth,
-            originX: 'center',
-            originY: 'center',
-            left: 0,
-            top: 0
-          })
-          group.item(1).set({
-            clipPath: null,
-            dirty: false
-          })
-        }
+        // } else {
+        //   group.set('width', groupwidth)
+        //   group.set('height', groupheight)
+        //   group.set('scaleX', 1)
+        //   group.set('scaleY', 1)
+        //   // rect
+        //   group.item(0).set({
+        //     scaleX: 1,
+        //     scaleY: 1,
+        //     width: groupwidth - strokeWidth,
+        //     height: groupheight - strokeWidth,
+        //     originX: 'center',
+        //     originY: 'center',
+        //     left: 0,
+        //     top: 0
+        //   })
+        //   // textRect
+        //   group.item(1).set({
+        //     scaleX: 1,
+        //     scaleY: 1,
+        //     width: groupwidth - strokeWidth,
+        //     height: groupheight - strokeWidth,
+        //     originX: 'center',
+        //     originY: 'center'
+        //   })
+        //   group.item(1).item(0).set({
+        //     scaleX: 1,
+        //     scaleY: 1,
+        //     width: groupwidth - strokeWidth,
+        //     height: groupwidth - strokeWidth,
+        //     originX: 'center',
+        //     originY: 'center',
+        //     left: 0,
+        //     top: 0
+        //   })
+        //   group.item(1).set({
+        //     clipPath: null,
+        //     dirty: false
+        //   })
+        // }
 
         group.item(1).item(1).set({
           visible: false
@@ -6585,8 +6585,8 @@ export default {
         group.item(1).item(0).set({
           scaleX: 1,
           scaleY: 1,
-          width: groupwidth - strokeWidth,
-          height: groupheight - strokeWidth,
+          width: groupwidth - strokeWidth * 2,
+          height: groupheight - strokeWidth * 2,
           originX: 'center',
           originY: 'center',
           left: 0,
@@ -6602,8 +6602,8 @@ export default {
         } else {
           // eslint-disable-next-line no-undef
           group.item(1).clipPath = new fabric.Rect({
-            width: group.width,
-            height: group.height,
+            width: group.item(1).item(0).width,
+            height: group.item(1).item(0).height,
             scaleX: 1,
             scaleY: 1,
             originX: 'center',
@@ -6611,7 +6611,7 @@ export default {
           })
           // console.log(group.width, group.height)
           group.item(1).set({
-            dirty: false
+            dirty: true
           })
         }
 
