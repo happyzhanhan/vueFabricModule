@@ -692,3 +692,6 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.14
 - 重绘后方位重调
+
+> v0.1.15
+- 修改小数点字体bug

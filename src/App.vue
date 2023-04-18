@@ -1698,7 +1698,7 @@ export default {
             decimalSeparator: '.', // 小数分隔符
             'dotIfBold': 0, // 小数点是否加粗(0:不加粗,1:加粗)
             'dotIfItalic': 0, // 小数点是否斜体(0:不斜体,2:斜体)
-            dotFontType: '微软雅黑', // 字体
+            dotFontType: '宋体', // 字体
             dotFontSize: 50, // 字号
             /**
              * 小数

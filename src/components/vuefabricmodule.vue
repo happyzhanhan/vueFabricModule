@@ -5767,8 +5767,8 @@ export default {
           }, group.textImg.fontTrueheight)
           break
         case 'dotFontType':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
+          group.textStyle[name] = value
+          group.options[name] = value
           await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length, {
             Place: 2,
             FontSize: dotFontSize,
