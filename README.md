@@ -689,3 +689,6 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.13
 - 微调缩放效果
+
+> v0.1.14
+- 重绘后方位重调

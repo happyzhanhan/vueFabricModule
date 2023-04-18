@@ -1650,7 +1650,7 @@ export default {
           options = {
             left: 500,
             top: 80,
-            width: 50,
+            width: 300,
             height: 200,
 
             thousandSeparator: ',', // 千分位分隔符

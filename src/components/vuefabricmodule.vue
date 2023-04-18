@@ -6020,12 +6020,21 @@ export default {
 
       let canvas = this.canvas
       canvas.remove(target)
-      console.log(newtextdata)
+      // console.log('数字组件样式：', newtextdata)
       let that = this
       let canvasObject = await that.createPrice(newtextdata)
       canvasObject.setCoords()
       this.setActiveObject(canvasObject)
       canvas.add(canvasObject)
+
+      // 9象限位置调整
+      setTimeout(async () => {
+        await this.setPircePosition(canvasObject, {
+          ...canvasObject.textStyle,
+          'horizontalAlign': canvasObject.textStyle.horizontalAlign,
+          'verticalAlign': canvasObject.textStyle.verticalAlign
+        })
+      }, 10)
 
       await that.objectSetZindex() // 元素顺序
       // console.log('元素顺序OK')
@@ -6449,6 +6458,7 @@ export default {
       group.on('added', async function (e) {
         price.measureLine(0)
         let pricew = await _this.retrunText(price)
+        // console.log('计算方位', options.horizontalAlign, options.verticalAlign)
         const {newleft, newtop} = await _this.countTextposition(group, options) // 9象限定位
         textGroup.item(1).set({
           originX: 'left',
