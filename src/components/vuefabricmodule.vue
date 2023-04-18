@@ -5198,7 +5198,7 @@ export default {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve(price.width)
-        }, 100)
+        }, 200)
       })
     },
     // 计算文本位置
@@ -5239,7 +5239,7 @@ export default {
     },
     // 设置文本位置和后缀跟随
     async setPircePosition (group, options) {
-      // console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
+      console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
       const { postfixPlace, prefix, integer, decimalSeparator } = options
       let pricew = await this.retrunText(group.item(1).item(1))
       let textGroup = group.item(1)
@@ -5248,10 +5248,12 @@ export default {
       textGroup.item(1).set({
         originX: 'left',
         originY: 'top',
+        visible: true,
         left: newleft,
         top: newtop
       })
       this.canvas.requestRenderAll()
+      console.warn('整数的坐标', newleft, newtop)
 
       // 后缀相对价格组件的位置
       let postfixLeft = ({
@@ -5266,6 +5268,7 @@ export default {
       textGroup.item(2).set({
         originX: 'left',
         originY: 'top',
+        visible: true,
         left: postfixLeft,
         top: textGroup.item(1).top
       })
@@ -5644,6 +5647,7 @@ export default {
             IfStrikeThrough: integerIfStrikeThrough,
             IfUnderline: integerIfUnderline
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'integerIfStrikeThrough':
           group.textStyle[name] = Number(value)
@@ -5674,16 +5678,7 @@ export default {
         case 'integerFontType':
           group.textStyle[name] = value
           group.options[name] = value
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: integerFontSize,
-            FontType: value,
-            IfBold: integerIfBold,
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
+          await this.changePrice(group, {'integerFontType': value})
           break
         case 'integerFontSize':
           group.textStyle[name] = Number(value)
@@ -6382,7 +6377,7 @@ export default {
         width: width - strokeWidth,
         height: height - strokeWidth,
         angle: angle,
-        visible: visible
+        visible: true
       })
       canvas.requestRenderAll()
       canvas.renderAll()
@@ -6467,7 +6462,7 @@ export default {
           screenY: 1,
           left: newleft,
           top: newtop,
-          visible: visible
+          visible: true
         })
         canvas.requestRenderAll()
         pricew = await _this.retrunText(price)
@@ -6479,10 +6474,9 @@ export default {
           3: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
           4: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
         })[ postfixPlace || 0 ]()
-        // console.log(textGroup.item(1).left, postfixLeft)
         // 后缀重新定位
         textGroup.item(2).set({
-          visible: visible,
+          visible: true,
           originX: 'left',
           originY: 'top',
           scaleX: 1,
@@ -6497,6 +6491,16 @@ export default {
 
         canvas.requestRenderAll()
         canvas.renderAll()
+      })
+
+      group.on('selected', function (e) {
+        setTimeout(async () => {
+          await _this.setPircePosition(group, {
+            ...group.textStyle,
+            'horizontalAlign': group.textStyle.horizontalAlign,
+            'verticalAlign': group.textStyle.verticalAlign
+          })
+        }, 10)
       })
 
       group.on('scaling', async function (e) {

@@ -695,3 +695,7 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.15
 - 修改小数点字体bug
+
+> v0.1.16
+- 字体改变重绘
+- 数字组件的选择坐标定位

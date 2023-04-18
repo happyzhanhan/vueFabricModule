@@ -498,6 +498,12 @@
                             </div>
 
                             <div  class="ps-layer-botButton" v-if="object.isType==='Price'">
+                               <div class="ps-params-data">
+                                    <div class="ps-switch" :class="object.visible?'':'hover'"><span>
+                                        <b @click="changeObject('visible', true)">显示</b>
+                                        <b @click="changeObject('visible', false)">隐藏</b>
+                                    </span><i></i></div>
+                                </div>
                                 <div class="color-btn">
                                     <span class="color-background"  @click="showTextColor = !showTextColor" :style="'background:'+ object.textColor +';'"></span>
 
@@ -1016,6 +1022,7 @@ export default {
           this.$set(this.object, 'strokeWidth', obj.strokeWidth)
           this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
           this.$set(this.object, 'textAdvanceProperty', obj.isElasticSize ? obj.isElasticSize : 0)
+          this.$set(this.object, 'visible', obj.visible)
 
           if (obj.isType === 'Price') {
             this.$set(this.object, 'textColor', obj.textStyle.textColor)
@@ -1117,6 +1124,9 @@ export default {
           if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, 'bgcolor', data) }
           break
         case 'textAdvanceProperty': this.$set(this.object, 'textAdvanceProperty', data); this.$refs.canvas.exitEditing(); obj.set({'isElasticSize': data}); this.changeTextType(obj, obj.content)
+          break
+        case 'visible': obj.set({'visible': data})
+          this.$set(this.object, 'visible', data)
           break
         default: this.$set(this.object, name, data)
           if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, name, data) }
@@ -1654,13 +1664,13 @@ export default {
             height: 200,
 
             thousandSeparator: ',', // 千分位分隔符
-            text: '8989.12', // 价格取值
+            text: '123456789.123456789', // 价格取值
 
             decimalDigit: 2, // 小数位数
             roundingMode: 7, // 舍入模式   7：无  4：四舍五入 0：向上取整  1：向下取整
 
-            horizontalAlign: 0, // 整体横向对齐 012
-            verticalAlign: 0, // 整体竖向对齐 012
+            horizontalAlign: 2, // 整体横向对齐 012
+            verticalAlign: 2, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
             bgcolor: '#FFFF00', // 背景颜色
@@ -1690,7 +1700,7 @@ export default {
             'integerIfItalic': 0, // 整数部分是否斜体(0:不斜体,2:斜体)
             'integerIfStrikeThrough': 0, // 整数部分是否中划线
             'integerIfUnderline': 0, // 整数部分是否下划线
-            integerFontType: '微软雅黑', // 字体
+            integerFontType: 'ZKONG', // 字体
             integerFontSize: 50, // 字号
             /**
              * 小数分隔符
