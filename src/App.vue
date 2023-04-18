@@ -1650,14 +1650,14 @@ export default {
           options = {
             left: 500,
             top: 80,
-            width: 300,
+            width: 50,
             height: 200,
 
-            thousandSeparator: '', // 千分位分隔符
+            thousandSeparator: ',', // 千分位分隔符
             text: '8989.12', // 价格取值
 
-            decimalDigit: 0, // 小数位数
-            roundingMode: 0, // 舍入模式   0：无  1：四舍五入 2：向上取整  3：向下取整
+            decimalDigit: 2, // 小数位数
+            roundingMode: 7, // 舍入模式   7：无  4：四舍五入 0：向上取整  1：向下取整
 
             horizontalAlign: 0, // 整体横向对齐 012
             verticalAlign: 0, // 整体竖向对齐 012
@@ -1669,7 +1669,7 @@ export default {
             nopadding: 1, // 考虑文字顶和底部去除 1：去除边距，2：保留文字边距
             gizp: 1, // 是否压缩 1：文字小于宽度压缩， 0：不做压缩截取
 
-            stroke: '#000', // 边框颜色
+            stroke: '#000000', // 边框颜色
             strokeWidth: 0, // 边框粗细
 
             /**

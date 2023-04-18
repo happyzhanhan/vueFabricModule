@@ -248,12 +248,15 @@ export default {
     document.onkeydown = function (e) {
       let keyCode = window.event.keyCode
       if (keyCode === 46) { // Delete
+        if (document.activeElement.tagName === 'INPUT') { return }
         that.removeActiveObject()
       }
       if (event.shiftKey && keyCode === 68) { // Shift + D
         that.copypaste()
       }
       if (keyCode === 37) { // ←
+        // console.warn(document.activeElement.tagName)
+        if (document.activeElement.tagName === 'INPUT') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().left = parseInt(that.getEditObj().left - 1)
@@ -270,6 +273,7 @@ export default {
         that.canvas.renderAll()
       }
       if (keyCode === 38) { // ↑
+        if (document.activeElement.tagName === 'INPUT') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().top = parseInt(that.getEditObj().top - 1)
@@ -286,6 +290,7 @@ export default {
         that.canvas.renderAll()
       }
       if (keyCode === 39) { // →
+        if (document.activeElement.tagName === 'INPUT') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().left = parseInt(that.getEditObj().left + 1)
@@ -302,6 +307,7 @@ export default {
         that.canvas.renderAll()
       }
       if (keyCode === 40) { // ↓
+        if (document.activeElement.tagName === 'INPUT') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().top = parseInt(that.getEditObj().top + 1)
@@ -5078,7 +5084,7 @@ export default {
 
     // 测量文字真实宽度
     getTextOffset (text, options) {
-      console.log(options)
+      // console.log(options)
       let result = new Promise(function (resolve, reject) {
         // eslint-disable-next-line no-undef
         let ncanvas = new fabric.Canvas('fontcanvas', { preserveObjectStacking: true })
@@ -6161,7 +6167,7 @@ export default {
         integer,
         decimal
       }
-      console.log(priceText, integer, decimal)
+      // console.log(priceText, integer, decimal)
       // if (!priceText) return // 不是价格数据返回
       // console.log('价格', priceText, integer, decimal)
       // eslint-disable-next-line no-undef
@@ -6186,13 +6192,13 @@ export default {
         isType: 'Price-integer',
         originX: 'left',
         originY: 'top',
-        visible: 1,
         scaleX: 1,
         scaleY: 1,
         splitByGrapheme: false,
         flipX: false,
         flipY: false,
         selectable: false,
+        visible: false,
         evented: true
       })
       // 计算整数部分的文字高度
@@ -6328,6 +6334,35 @@ export default {
         selectable: false,
         evented: false
       })
+      // console.log('边框', strokeWidth, (width - strokeWidth))
+      const pricwidth = price.width
+      const priceheight = price.height
+      if (pricwidth > width - strokeWidth) {
+        price.set({
+          scaleX: (width - strokeWidth) / pricwidth,
+          visible: false
+        })
+      }
+      if (priceheight > height - strokeWidth) {
+        price.set({
+          scaleY: (height - strokeWidth) / priceheight,
+          visible: false
+        })
+      }
+      const postwidth = postfixdom.width
+      const postheight = postfixdom.height
+      if (postwidth > width - strokeWidth) {
+        postfixdom.set({
+          scaleX: (width - strokeWidth) / postwidth,
+          visible: false
+        })
+      }
+      if (postheight > height - strokeWidth) {
+        postfixdom.set({
+          scaleY: (height - strokeWidth) / postheight,
+          visible: false
+        })
+      }
       // 文字组
       // eslint-disable-next-line no-undef
       let textGroup = new fabric.Group([textRect, price, postfixdom], {
@@ -6340,26 +6375,9 @@ export default {
         angle: angle,
         visible: visible
       })
+      canvas.requestRenderAll()
+      canvas.renderAll()
 
-      console.log(price.width, postfixdom.width, textRect.width, textGroup.width)
-      // textGroup.item(0).set({
-      //   left: 0
-      // })
-      // 裁切
-      // eslint-disable-next-line no-undef
-      var clipPath = new fabric.Rect({
-        // absolutePositioned: true
-        width: textRect.width,
-        height: textRect.height,
-        scaleX: 1,
-        scaleY: 1,
-        originX: 'center',
-        originY: 'center'
-      })
-      textGroup.set({
-        clipPath: clipPath,
-        dirty: true
-      })
       // 边框颜色矩形
       // eslint-disable-next-line no-undef
       let rect = new fabric.Rect({
@@ -6400,6 +6418,32 @@ export default {
         visible: true
 
       })
+      // 背景颜色偏移补偿
+      if (width < 55) {
+        group.item(1).set({
+          left: group.item(1).left - 2
+        })
+      }
+
+      group.item(1).item(0).set({
+        width: group.width - strokeWidth,
+        left: 0
+      })
+      // 裁切
+      // eslint-disable-next-line no-undef
+      var clipPath = new fabric.Rect({
+        // absolutePositioned: true
+        width: group.width,
+        height: group.height,
+        scaleX: 1,
+        scaleY: 1,
+        originX: 'center',
+        originY: 'center'
+      })
+      textGroup.set({
+        clipPath: clipPath,
+        dirty: true
+      })
 
       let _this = this
       group.on('added', async function (e) {
@@ -6409,8 +6453,11 @@ export default {
         textGroup.item(1).set({
           originX: 'left',
           originY: 'top',
+          scaleX: 1,
+          screenY: 1,
           left: newleft,
-          top: newtop
+          top: newtop,
+          visible: visible
         })
         canvas.requestRenderAll()
         pricew = await _this.retrunText(price)
@@ -6425,9 +6472,11 @@ export default {
         // console.log(textGroup.item(1).left, postfixLeft)
         // 后缀重新定位
         textGroup.item(2).set({
-          visible: true,
+          visible: visible,
           originX: 'left',
           originY: 'top',
+          scaleX: 1,
+          screenY: 1,
           left: postfixLeft,
           top: textGroup.item(1).top
         })
@@ -6450,10 +6499,10 @@ export default {
         if (gizp) {
 
         } else {
-          e.target.set('width', groupwidth)
-          e.target.set('height', groupheight)
-          e.target.set('scaleX', 1)
-          e.target.set('scaleY', 1)
+          group.set('width', groupwidth)
+          group.set('height', groupheight)
+          group.set('scaleX', 1)
+          group.set('scaleY', 1)
           // rect
           group.item(0).set({
             scaleX: 1,
@@ -6466,11 +6515,19 @@ export default {
             top: 0
           })
           // textRect
+          group.item(1).set({
+            scaleX: 1,
+            scaleY: 1,
+            width: groupwidth - strokeWidth,
+            height: groupheight - strokeWidth,
+            originX: 'center',
+            originY: 'center'
+          })
           group.item(1).item(0).set({
             scaleX: 1,
             scaleY: 1,
-            width: group.item(0).width - strokeWidth,
-            height: group.item(0).height - strokeWidth,
+            width: groupwidth - strokeWidth,
+            height: groupwidth - strokeWidth,
             originX: 'center',
             originY: 'center',
             left: 0,
@@ -6478,22 +6535,29 @@ export default {
           })
           group.item(1).set({
             clipPath: null,
-            dirty: true
+            dirty: false
           })
         }
+
+        group.item(1).item(1).set({
+          visible: false
+        })
+        group.item(1).item(2).set({
+          visible: false
+        })
       })
 
       group.on('scaled', async function (e) {
-        console.log('放大缩小', e, group, e.target.scaleX)
+        // console.log('放大缩小', e, group, e.target.scaleX)
         const scaleX = e.target.scaleX
         let groupwidth = (e.target.width * scaleX)
         let groupheight = (e.target.height * e.target.scaleY)
         const strokeWidth = e.target.textStyle.strokeWidth
         // let options = e.target.textStyle
-        e.target.set('width', groupwidth)
-        e.target.set('height', groupheight)
-        e.target.set('scaleX', 1)
-        e.target.set('scaleY', 1)
+        group.set('width', groupwidth)
+        group.set('height', groupheight)
+        group.set('scaleX', 1)
+        group.set('scaleY', 1)
 
         group.textStyle.width = groupwidth
         group.textStyle.height = groupheight
@@ -6510,11 +6574,19 @@ export default {
           top: 0
         })
         // textRect
+        group.item(1).set({
+          scaleX: 1,
+          scaleY: 1,
+          width: groupwidth - strokeWidth,
+          height: groupheight - strokeWidth,
+          originX: 'center',
+          originY: 'center'
+        })
         group.item(1).item(0).set({
           scaleX: 1,
           scaleY: 1,
-          width: group.item(0).width - strokeWidth,
-          height: group.item(0).height - strokeWidth,
+          width: groupwidth - strokeWidth,
+          height: groupheight - strokeWidth,
           originX: 'center',
           originY: 'center',
           left: 0,
@@ -6524,29 +6596,37 @@ export default {
         _this.setPircePosition(group, group.options)
         // group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
 
-        if (groupwidth > group.item(1).width) {
+        // group.item(1).clipPath.setPositionByOrigin(group.getCenterPoint(), 'center', 'center')
+        if (group.width > group.textStyle.width || group.height > group.textStyle.height) {
           group.item(1).clipPath = null
         } else {
-          // group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
+          // eslint-disable-next-line no-undef
+          group.item(1).clipPath = new fabric.Rect({
+            width: group.width,
+            height: group.height,
+            scaleX: 1,
+            scaleY: 1,
+            originX: 'center',
+            originY: 'center'
+          })
+          // console.log(group.width, group.height)
+          group.item(1).set({
+            dirty: false
+          })
         }
-        // group.item(1).clipPath.setPositionByOrigin(group.getCenterPoint(), 'center', 'center')
-        // eslint-disable-next-line no-undef
-        // var clipPath = new fabric.Rect({
-        //   width: group.width * e.target.scaleX - strokeWidth,
-        //   height: 600,
-        //   scaleX: 1,
-        //   scaleY: 1,
-        //   originX: 'center',
-        //   originY: 'center'
-        // })
-        // console.log(group.item(1).item(1).width, group.item(1).item(1).height)
-        // group.item(1).set({
-        //   clipPath: clipPath,
-        //   dirty: true
-        // })
 
-        canvas.requestRenderAll()
-        canvas.renderAll()
+        setTimeout(() => {
+          group.item(1).item(1).set({
+            visible: true
+          })
+          group.item(1).item(2).set({
+            visible: true
+          })
+          group.textStyle.width = groupwidth
+          group.textStyle.height = groupheight
+          canvas.requestRenderAll()
+          canvas.renderAll()
+        }, 100)
       })
       group.setControlsVisibility({
         bl: true,
