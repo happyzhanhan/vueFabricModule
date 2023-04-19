@@ -5239,7 +5239,7 @@ export default {
     },
     // 设置文本位置和后缀跟随
     async setPircePosition (group, options) {
-      console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
+      // console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
       const { postfixPlace, prefix, integer, decimalSeparator } = options
       let pricew = await this.retrunText(group.item(1).item(1))
       let textGroup = group.item(1)
@@ -5253,7 +5253,7 @@ export default {
         top: newtop
       })
       this.canvas.requestRenderAll()
-      console.warn('整数的坐标', newleft, newtop)
+      // console.warn('整数的坐标', newleft, newtop)
 
       // 后缀相对价格组件的位置
       let postfixLeft = ({
@@ -5410,13 +5410,13 @@ export default {
             if (Number(text.substr(dotIndex + 1, 1)) > 0) {
               let zero = 0
               let newadd = `${zero.toFixed(decimalDigit > 1 ? decimalDigit - 1 : 0)}1`
-              return this.add(Number(text.substr(0, dotIndex + 1 + decimalDigit)), Number(newadd))
+              return this.add(Number(text.substr(0, dotIndex + 1 + decimalDigit)), Number(newadd)).toFixed(decimalDigit)
             } else {
               return text.substr(0, dotIndex + 1 + decimalDigit)
             }
           }, // 向上取整
           1: () => { return text.substr(0, dotIndex + 1 + decimalDigit) } // 向下取整
-        })[ roundingMode || 7 ]()
+        })[ roundingMode ]()
       }
 
       priceText = String(priceText)
@@ -5508,6 +5508,9 @@ export default {
           break
         case 'height':
           await this.changePrice(group, {'height': Number(value)})
+          break
+        case 'angle':
+          await this.changePrice(group, {'angle': Number(value)})
           break
         case 'prefix':
           await this.changePrice(group, {'prefix': value})
@@ -6376,7 +6379,6 @@ export default {
         id: id,
         width: width - strokeWidth,
         height: height - strokeWidth,
-        angle: angle,
         visible: true
       })
       canvas.requestRenderAll()
@@ -6415,7 +6417,6 @@ export default {
         height: height + strokeWidth,
         left: left,
         top: top,
-        angle: angle,
         textImg: res,
         options: options,
         textStyle: options,
@@ -6453,7 +6454,6 @@ export default {
       group.on('added', async function (e) {
         price.measureLine(0)
         let pricew = await _this.retrunText(price)
-        // console.log('计算方位', options.horizontalAlign, options.verticalAlign)
         const {newleft, newtop} = await _this.countTextposition(group, options) // 9象限定位
         textGroup.item(1).set({
           originX: 'left',
@@ -6466,7 +6466,7 @@ export default {
         })
         canvas.requestRenderAll()
         pricew = await _this.retrunText(price)
-        // 后缀相对价格组件的位置
+        // // 后缀相对价格组件的位置
         let postfixLeft = ({
           0: () => { return textGroup.item(1).left + pricew },
           1: () => { return textGroup.item(1).left + pricew },
@@ -6486,21 +6486,29 @@ export default {
         })
         // 后缀跟随后再隐藏，防止定位错误
         group.set({
+          angle: angle,
           visible: visible
         })
-
-        canvas.requestRenderAll()
-        canvas.renderAll()
-      })
-
-      group.on('selected', function (e) {
+        group.setCoords()
         setTimeout(async () => {
           await _this.setPircePosition(group, {
             ...group.textStyle,
             'horizontalAlign': group.textStyle.horizontalAlign,
             'verticalAlign': group.textStyle.verticalAlign
           })
-        }, 10)
+          group.set({
+            angle: angle,
+            visible: visible
+          })
+          group.setCoords()
+        }, 5)
+
+        canvas.requestRenderAll()
+        canvas.renderAll()
+      })
+
+      group.on('selected', function (e) {
+
       })
 
       group.on('scaling', async function (e) {

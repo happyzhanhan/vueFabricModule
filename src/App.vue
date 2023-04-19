@@ -457,6 +457,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="ps-param-line">
+                                    <div class="oneparam">
+                                        <div class="param-name">
+                                            角度:
+                                        </div>
+                                        <div>
+                                            <input type="text" v-model="object.angle"
+                                            @blur="changeObject('angle', object.angle)"/>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div  class="ps-layer-botButton" v-if="object.isType!=='Price'">
@@ -504,6 +515,9 @@
                                         <b @click="changeObject('visible', false)">隐藏</b>
                                     </span><i></i></div>
                                 </div>
+                            </div>
+
+                            <div  class="ps-layer-botButton" v-if="object.isType==='Price'">
                                 <div class="color-btn">
                                     <span class="color-background"  @click="showTextColor = !showTextColor" :style="'background:'+ object.textColor +';'"></span>
 
@@ -1011,7 +1025,7 @@ export default {
         if (ids.length === 1) {
           this.curobj = this.$refs.canvas.getEditObj()
           let obj = this.$refs.canvas.getEditObj()
-          console.log(obj)
+          console.log('当前元素：', obj)
           this.$set(this.object, 'isType', obj.isType)
           this.$set(this.object, 'width', obj.width)
           this.$set(this.object, 'height', obj.height)
@@ -1023,6 +1037,7 @@ export default {
           this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
           this.$set(this.object, 'textAdvanceProperty', obj.isElasticSize ? obj.isElasticSize : 0)
           this.$set(this.object, 'visible', obj.visible)
+          this.$set(this.object, 'angle', obj.angle)
 
           if (obj.isType === 'Price') {
             this.$set(this.object, 'textColor', obj.textStyle.textColor)
@@ -1108,6 +1123,8 @@ export default {
           if (obj.isType === 'Price') { this.$refs.canvas.setPrice(obj, name, data) } else { obj.set({'height': parseInt(data)}) }
           break
         case 'left': obj.set({'left': parseInt(data)})
+          break
+        case 'angle': obj.set({'angle': parseInt(data)})
           break
         case 'top': obj.set({'top': parseInt(data)})
           break
@@ -1659,18 +1676,19 @@ export default {
         case 'Price':
           options = {
             left: 500,
-            top: 80,
-            width: 300,
+            top: 300,
+            width: 400,
             height: 200,
+            angle: 45,
 
             thousandSeparator: ',', // 千分位分隔符
-            text: '123456789.123456789', // 价格取值
+            text: '99.996', // 价格取值
 
             decimalDigit: 2, // 小数位数
-            roundingMode: 7, // 舍入模式   7：无  4：四舍五入 0：向上取整  1：向下取整
+            roundingMode: 4, // 舍入模式   7：无  4：四舍五入 0：向上取整  1：向下取整
 
-            horizontalAlign: 2, // 整体横向对齐 012
-            verticalAlign: 2, // 整体竖向对齐 012
+            horizontalAlign: 1, // 整体横向对齐 012
+            verticalAlign: 1, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
             bgcolor: '#FFFF00', // 背景颜色
