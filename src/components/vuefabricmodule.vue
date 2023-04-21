@@ -5043,6 +5043,25 @@ export default {
       this.setActiveById(id) // 文本选择
       this.renderCanvas() // 渲染一下
     },
+    // 设置锁定
+    setSuo (id) {
+      //   console.log('setShow',id);
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id) {
+          this.canvas.lockOption(objects[i])
+
+          if (objects[i]._objects) { // 条码显示隐藏
+            // console.log('条码----------------',objects[i]);
+            objects[i]._objects.forEach((obj) => {
+              this.canvas.lockOption(obj)
+            })
+          }
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+    },
     // 模板设置显示
     setShow (id) {
       //   console.log('setShow',id);
@@ -5535,7 +5554,8 @@ export default {
             IfBold: Number(value),
             IfItalic: prefixIfItalic,
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'prefixIfItalic':
@@ -5548,7 +5568,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: Number(value),
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'prefixIfStrikeThrough':
@@ -5561,7 +5582,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: prefixIfItalic,
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: Number(value)
+            IfStrikeThrough: Number(value),
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'prefixIfUnderline':
@@ -5574,7 +5596,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: prefixIfItalic,
             IfUnderline: Number(value),
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'prefixFontType':
@@ -5587,7 +5610,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: prefixIfItalic,
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'prefixFontSize':
@@ -5600,7 +5624,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: prefixIfItalic,
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           // 9象限位置调整
@@ -5620,7 +5645,8 @@ export default {
             IfBold: prefixIfBold,
             IfItalic: prefixIfItalic,
             IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
 
@@ -5634,7 +5660,8 @@ export default {
             IfBold: Number(value),
             IfItalic: integerIfItalic,
             IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline
+            IfUnderline: integerIfUnderline,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
@@ -5648,7 +5675,8 @@ export default {
             IfBold: integerIfBold,
             IfItalic: Number(value),
             IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline
+            IfUnderline: integerIfUnderline,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
@@ -5662,7 +5690,8 @@ export default {
             IfBold: integerIfBold,
             IfItalic: integerIfItalic,
             IfStrikeThrough: Number(value),
-            IfUnderline: integerIfUnderline
+            IfUnderline: integerIfUnderline,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'integerIfUnderline':
@@ -5675,7 +5704,8 @@ export default {
             IfBold: integerIfBold,
             IfItalic: integerIfItalic,
             IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: Number(value)
+            IfUnderline: Number(value),
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'integerFontType':
@@ -5749,7 +5779,8 @@ export default {
             FontSize: dotFontSize,
             FontType: dotFontType,
             IfBold: Number(value),
-            IfItalic: dotIfItalic
+            IfItalic: dotIfItalic,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
@@ -5761,7 +5792,8 @@ export default {
             FontSize: dotFontSize,
             FontType: dotFontType,
             IfBold: dotIfBold,
-            IfItalic: Number(value)
+            IfItalic: Number(value),
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'dotFontType':
@@ -5772,7 +5804,8 @@ export default {
             FontSize: dotFontSize,
             FontType: value,
             IfBold: dotIfBold,
-            IfItalic: dotIfItalic
+            IfItalic: dotIfItalic,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'dotFontSize':
@@ -5783,7 +5816,8 @@ export default {
             FontSize: value,
             FontType: dotFontType,
             IfBold: dotIfBold,
-            IfItalic: dotIfItalic
+            IfItalic: dotIfItalic,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           // 9象限位置调整
@@ -5804,7 +5838,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: decimalIfItalic,
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'decimalIfBold':
@@ -5817,7 +5852,8 @@ export default {
             IfBold: Number(value),
             IfItalic: decimalIfItalic,
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
@@ -5831,7 +5867,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: Number(value),
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'decimalIfUnderline':
@@ -5844,7 +5881,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: decimalIfItalic,
             IfUnderline: Number(value),
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'decimalIfStrikeThrough':
@@ -5857,7 +5895,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: decimalIfItalic,
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: Number(value)
+            IfStrikeThrough: Number(value),
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'decimalFontType':
@@ -5870,7 +5909,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: decimalIfItalic,
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'decimalFontSize':
@@ -5883,7 +5923,8 @@ export default {
             IfBold: decimalIfBold,
             IfItalic: decimalIfItalic,
             IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough
+            IfStrikeThrough: decimalIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           // 9象限位置调整
@@ -5904,7 +5945,8 @@ export default {
             IfBold: Number(value),
             IfItalic: postfixIfItalic,
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'postfixIfItalic':
@@ -5917,7 +5959,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: Number(value),
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'postfixIfStrikeThrough':
@@ -5930,7 +5973,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: postfixIfItalic,
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: Number(value)
+            IfStrikeThrough: Number(value),
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'postfixIfUnderline':
@@ -5943,7 +5987,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: postfixIfItalic,
             IfUnderline: Number(value),
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'postfixFontType':
@@ -5956,7 +6001,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: postfixIfItalic,
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           break
         case 'postfixFontSize':
@@ -5969,7 +6015,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: postfixIfItalic,
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           // 9象限位置调整
           await this.setPircePosition(group, {
@@ -5988,7 +6035,8 @@ export default {
             IfBold: postfixIfBold,
             IfItalic: postfixIfItalic,
             IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
           this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
@@ -6040,10 +6088,10 @@ export default {
       canvas.requestRenderAll()
       canvas.renderAll()
     },
-    // 价格组件文字改变样式
+    // 价格组件文字改变样式 (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) < 0 ? (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) : 0
     async setTextStyle (group, index = 0, lastindex, options, fontTrueheight) {
-      const {Place, FontSize, FontType, IfBold, IfItalic, IfUnderline, IfStrikeThrough} = options
-      let deltay = Place === 2 || Place === 4 ? 0 : (Place === 1 ? (FontSize - fontTrueheight) / 2 : FontSize - fontTrueheight)
+      const {Place, FontSize, FontType, IfBold, IfItalic, IfUnderline, IfStrikeThrough, integerFontSize} = options
+      let deltay = (Place === 2 || Place === 4 ? 0 : (Place === 1 ? (FontSize - fontTrueheight) / 2 : FontSize - fontTrueheight)) < 0 ? (Place === 2 || Place === 4 ? 0 : (Place === 1 ? (FontSize - fontTrueheight) / 2 : FontSize * (fontTrueheight / integerFontSize) - fontTrueheight)) : 0
       let styleOptions = {
         deltaY: deltay,
         fontSize: FontSize,
@@ -6224,7 +6272,7 @@ export default {
 
       // 前缀
       price.setSelectionStyles({
-        deltaY: prefixPlace === 2 ? 0 : (prefixPlace === 1 ? (prefixFontSize - res.fontTrueheight) / 2 : prefixFontSize - res.fontTrueheight),
+        deltaY: prefixPlace === 2 ? 0 : (prefixPlace === 1 ? (prefixFontSize - res.fontTrueheight) / 2 : prefixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight),
         fontSize: prefixFontSize,
         fontFamily: prefixFontType,
         fontWeight: prefixIfBold === 1 ? 'bold' : 'normal' || 'normal',
@@ -6255,7 +6303,7 @@ export default {
         }, prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length)
         // 小数
         price.setSelectionStyles({
-          deltaY: decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight),
+          deltaY: (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) < 0 ? (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight)) : 0,
           fontSize: decimalFontSize,
           fontFamily: decimalFontType,
           fontWeight: decimalIfBold === 1 ? 'bold' : 'normal' || 'normal',
@@ -6268,10 +6316,10 @@ export default {
       let postfixStyle = {0: {}}
       // 后缀的位置  上：0  中：1  下：2 小数上：3 小数下：4
       let deltaY = ({
-        0: () => { return postfixFontSize - res.fontTrueheight },
-        1: () => { return (postfixFontSize - res.fontTrueheight) / 2 },
+        0: () => { return postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight },
+        1: () => { return (postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight) / 2 },
         2: () => { return 0 },
-        3: () => { return postfixFontSize - res.fontTrueheight },
+        3: () => { return postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight },
         4: () => { return 0 }
       })[ postfixPlace || 0 ]()
       for (let i = 0; i < postfix.length; i++) {

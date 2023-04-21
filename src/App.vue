@@ -51,9 +51,9 @@
                 <i class="currentMenuIcon" :class="currentMenu"></i>
             </div>
             <div class="ps-block">
-                <div class="ps-fangda" :class="suofangdirection?'hover':''"  >
+                <div class="ps-fangda" @click="suofangdirection=true; $refs.canvas.setZoom(zoom+0.1)" :class="suofangdirection?'hover':''"  >
                 </div>
-                <div class="ps-suoxiao" :class="!suofangdirection?'hover':''"   >
+                <div class="ps-suoxiao" @click="suofangdirection=false; $refs.canvas.setZoom(zoom-0.1)" :class="!suofangdirection?'hover':''"   >
                 </div>
             </div>
 
@@ -61,21 +61,15 @@
 
             <div class="ps-block">
                 <div class="ps-button-new" @click="$refs.canvas.changeOneZoom()">
-                    100%
+                    按1:1居中
                 </div>
-                <div class="ps-button-new" >
-                    适应屏幕
-                </div>
-                <div class="ps-button-new" >
-                    按当前缩放比例居中
-                </div>
-                <div class="ps-button-new" >
-                    切换横纵
+                <div class="ps-button-new" @click="$refs.canvas.changeBigZoom()">
+                    按最大比例居中
                 </div>
             </div>
         </div>
 
-        <div class="duoxuan" v-if="currentMenu==='tuozhuai'">
+        <div class="duoxuan" v-if="currentMenu==='tuozhuai' && hover9index === 0">
             <div class="psh-cur">
                 <i style="margin-top:4px; margin-left:5px;margin-right:5px;"><img src="../static/images/photoshop_06.jpg" alt=""></i>
 
@@ -88,40 +82,18 @@
            <!-- <div class="ps-fenge"></div>-->
 
             <div class="ps-block">
-                <div class="ps-button-new" >
-                    按当前缩放比例居中
+                <div class="ps-button-new" @click="$refs.canvas.changeOneZoom()">
+                    按1:1居中
                 </div>
-                <div class="ps-button-new" >
-                    ↖
-                </div>
-
-                <div class="ps-button-new" >
-                    ↑
-                </div>
-                <div class="ps-button-new"  >
-                    ↗
-                </div>
-                <div class="ps-button-new"  >
-                    ←
-                </div>
-                <div class="ps-button-new"  >
-                    →
-                </div>
-                <div class="ps-button-new"  >
-                    ↙
-                </div>
-                <div class="ps-button-new"  >
-                    ↓
-                </div>
-                <div class="ps-button-new" >
-                    ↘
+                <div class="ps-button-new" @click="$refs.canvas.changeBigZoom()">
+                    按最大比例居中
                 </div>
 
             </div>
 
         </div>
 
-        <div class="duoxuan" >
+        <div class="duoxuan"  v-if="currentMenu==='tuozhuai' && hover9index === 1">
             <div class="psh-cur">
                 <i style="margin-top:4px; margin-left:5px;margin-right:5px;"><img src="../static/images/photoshop_06.jpg" alt=""></i>
 
@@ -134,50 +106,33 @@
             <!-- <div class="ps-fenge"></div>-->
 
             <div class="ps-block">
-                <div class="ps-button-new" >
-                    <img src="../static/images/ps-button-01.jpg" alt="">
-                </div>
-                <div class="ps-button-new"  >
-                    <img src="../static/images/ps-button-02.jpg" alt="">
-                </div>
-                <div class="ps-button-new"  >
-                    <img src="../static/images/ps-button-03.jpg" alt="">
-                </div>
-                <div class="ps-button-new" >
-                    <img src="../static/images/ps-button-04.jpg" alt="">
-                </div>
-                <div class="ps-button-new" >
-                    <img src="../static/images/ps-button-05.jpg" alt="">
-                </div>
-                <div class="ps-button-new"  >
-                    <img src="../static/images/ps-button-06.jpg" alt="">
-                </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-zuoduiqi1"></i>
+              </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-chuizhijunfen"></i>
+              </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-youduiqi1"></i>
+              </div>
 
-                <div class="ps-button-new"  >
-                    水平居中分布
-                </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-shangduiqi"></i>
+              </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-shuipingjuzhongduiqi"></i>
+              </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-xiaduiqi"></i>
+              </div>
 
-                <div class="ps-button-new"  >
-                    垂直居中分布
-                </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-chuizhijunfen"></i>
+              </div>
 
-                <div  class="ps-button-new"  >
-                    复制粘贴
-                </div>
-
-                <div class="ps-button-new"  >
-                    显示
-                </div>
-                <div class="ps-button-new"  >
-                    隐藏
-                </div>
-
-                <div class="ps-button-new"  @click="textIsUsually">
-                    改变自适应
-                </div>
-                <div class="ps-button-new"  @click="exitEditing">
-                退出编辑exitEditing
-                </div>
+              <div class="ps-button-new">
+                <i class="zknicon zknicon-shuipingjunfen"></i>
+              </div>
 
             </div>
 
@@ -248,45 +203,44 @@
             <i class="line-h"></i>
 
             <!--二维码-->
-            <i class="ps-icon83 ps-icon"
+            <i class="ps-icon23 ps-icon"
             title="二维码"
                @dblclick="draw('Qrcode')"
             ></i>
 
             <!--条码-->
-            <i class="ps-icon83 ps-icon"
+            <i class="ps-icon24 ps-icon"
             title="条码"
                @dblclick="draw('Barcode')"
             ></i>
 
-            <i class="ps-icon82 ps-icon"
+            <i class="ps-icon25 ps-icon"
             title="图片"
                @dblclick="draw('Image')"
             ></i>
 
-             <i class="ps-icon82 ps-icon"
+             <i class="ps-icon26 ps-icon"
             title="html"
                @dblclick="draw('Html')"
             ></i>
 
-             <i class="ps-icon82 ps-icon"
+             <i class="ps-icon27 ps-icon"
             title="表格"
                @dblclick="draw('tableList')"
             ></i>
 
             <i class="line-h"></i>
 
-            <!-- <i class="ps-icon9 ps-icon"  :class="hover9index=='1'? (currentMenu==='tuozhuai'?'ps-icon92 hover':'ps-icon92'):(currentMenu==='tuozhuai'?'hover':'')"
-
-               @click="changeTuozhuai"
-                @dblclick = changeBigZoom>
-                <ul :class=" currentMenu==='tuozhuai' &&open9 ?'hover':''">
-                    <li :class="hover9index===0?'hover':''" @click="selectLi(0)"> <i class="icon9i"></i> <b>画布可移动</b></li>
-                    <li :class="hover9index===1?'hover':''" @click="selectLi(1)"> <i class="icon9i2"></i> <b>画布不可移动</b></li>
+            <i class="ps-icon9 ps-icon ps-more"  :class="hover9index=='1'? (currentMenu==='tuozhuai'?'ps-icon92 hover':'ps-icon92'):(currentMenu==='tuozhuai'?'hover':'')"
+                @click = "changeTuozhuai"
+                @dblclick = "changeBigZoom" >
+                <ul :class=" currentMenu==='tuozhuai' && open9 ?'hover':'' ">
+                    <li :class="hover9index===0?'hover':''" @click.stop="selectLi(0)"> <i class="icon9i"></i> <b>画布可移动</b></li>
+                    <li :class="hover9index===1?'hover':''" @click.stop="selectLi(1)"> <i class="icon9i2"></i> <b>画布不可移动</b></li>
                 </ul>
-            </i> -->
+            </i>
 
-            <i class="ps-icon10 ps-icon" ></i>
+            <i class="ps-icon10 ps-icon" :class="{'hover': currentMenu==='suofang' }" @click="currentMenu='suofang'" ></i>
            <!-- <i class="ps-icon11 "></i>
             <i class="ps-icon12 "></i>-->
 
@@ -355,15 +309,15 @@
                     <div  class="ps-layer-button">
                         锁定：
                         <i class="psicon-suo" :class="currentSuo===1?'hover':''" @click="suoAllLine(currentSuo)" ></i>
-                        <i class="psicon-shan"></i>
+                        <i class="psicon-shan" @click="deleteAll"></i>
                     </div>
                     <div  class="ps-layer-data">
-                        <p v-for="layer in layerlist" :key="layer">
-                            <span class="icon-show" @click="layer.isShow===1?layer.isShow=0:layer.isShow=1">
-                                <i v-if="layer.isShow===0">
+                        <p v-for="layer in layerlist" :key="layer.id">
+                            <span class="icon-show" @click="changeVisble(layer)">
+                                <i v-if="!layer.visible">
                                     <img src="../static/newps/images/icon-pseye.png" alt="" >
                                 </i>
-                                <i v-if="layer.isShow===1">
+                                <i v-if="layer.visible">
                                     <img src="../static/newps/images/icon-pseye-2.png" alt="">
                                 </i>
                             </span>
@@ -863,7 +817,7 @@ export default {
       currentHistory: 1,
       showhistory: false,
 
-      currentMenu: 'suofang',
+      currentMenu: 'tuozhuai',
       suofangdirection: true,
 
       id: 1,
@@ -920,7 +874,9 @@ export default {
       showTextColor: false,
       showBgColor: false,
       showBorderColor: false,
-      borderstyleshow: false
+      borderstyleshow: false,
+      hover9index: 1,
+      open9: false
     }
   },
   created () {
@@ -985,9 +941,9 @@ export default {
       } else {
         this.currentLayer.push(layer.id)
       }
-      setTimeout(() => {
-        this.currentSuo = this.returnFirstSuo()
-      }, 10)
+      // setTimeout(() => {
+      //   this.currentSuo = this.returnFirstSuo()
+      // }, 10)
     },
     // 批量锁定
     suoAllLine (Bol) {
@@ -1002,6 +958,27 @@ export default {
         this.currentSuo === 1 ? this.currentSuo = 0 : this.currentSuo = 1
       }
     },
+    // 批量删除
+    deleteAll () {
+      this.currentLayer.forEach((one, i) => {
+        this.$refs.canvas.deleteObjById(one)
+      })
+      setTimeout(() => {
+        this.changeAllObjects() // 图层
+      }, 1000)
+    },
+    // 隐藏显示
+    changeVisble (layer) {
+      console.log(layer)
+      if (layer.visible) {
+        this.$refs.canvas.setHidden(layer.id)
+      } else {
+        this.$refs.canvas.setShow(layer.id)
+      }
+      setTimeout(() => {
+        this.changeAllObjects() // 图层
+      }, 1000)
+    },
     // 缩放回调
     changeZoomTo (zoom) {
       console.log('画布缩放：', zoom)
@@ -1009,6 +986,7 @@ export default {
     },
     deleteidsdata (ids) {
       console.log('删除的id', ids)
+      this.changeAllObjects()
     },
     // 新增回调
     idAdd (id) {
@@ -1017,6 +995,7 @@ export default {
     // 删除回调
     deleteId (ids) {
       console.log('删除id:', ids)
+      this.changeAllObjects()
     },
     // 选择回调
     async selectId (ids) {
@@ -1092,15 +1071,17 @@ export default {
     changeAllObjects () {
       this.layerlist = []
       let allobjects = this.$refs.canvas.getObjectsNew()
+      console.log('changeAllObjects', allobjects)
       allobjects.forEach(one => {
         if (one.isType !== 'TextRect-text') {
-          this.layerlist.push({
-            id: one.id,
-            type: one.isType,
-            name: one.isType,
-            isShow: one.visible ? 1 : 0,
-            isSuo: 0
-          })
+          // this.layerlist.push({
+          //   id: one.id,
+          //   type: one.isType,
+          //   name: one.isType,
+          //   isShow: one.visible ? 1 : 0,
+          //   isSuo: 0
+          // })
+          this.layerlist.push(one)
         }
       })
     },
@@ -1295,16 +1276,16 @@ export default {
         case 'Barcode':
           options = {
             left: 60,
-            top: 0,
-            width: 500,
-            height: 100,
+            top: 30,
+            width: 150,
+            height: 50,
             hasRotatingPoint: false,
             imgText: '69012345679',
             color: '#000',
-            bgcolor: '#999',
+            bgcolor: '#FFFFFF',
             visible: true,
             stroke: '#ff0000',
-            strokeWidth: 2,
+            strokeWidth: 0,
             angle: 0
 
           }
@@ -1313,14 +1294,14 @@ export default {
         case 'Qrcode':
           options = {
             left: 200,
-            top: 0,
-            width: 500,
-            height: 500,
+            top: 100,
+            width: 50,
+            height: 50,
             barcodeType: 0, // 0:原二维码 1:datamaxtri
             hasRotatingPoint: false,
             imgText: '69012345679',
-            lineColor: '#ff0',
-            bgcolor: '#f00',
+            lineColor: '#FF0000',
+            bgcolor: '#FFFFFF',
             stroke: '#ff0000',
             strokeWidth: 2,
             visible: true
@@ -1523,7 +1504,7 @@ export default {
             fontSize: 16,
             content: '',
             stroke: '#ff0000',
-            strokeWidth: 2,
+            strokeWidth: 0,
             visible: true
           }
           break
@@ -1679,7 +1660,7 @@ export default {
             top: 300,
             width: 400,
             height: 200,
-            angle: 45,
+            angle: 0,
 
             thousandSeparator: ',', // 千分位分隔符
             text: '99.996', // 价格取值
@@ -1710,7 +1691,7 @@ export default {
             'prefixIfUnderline': 0, // 前缀是否下划线(0:不下划线,1:下划线)
             prefixFontType: '微软雅黑', // 字体
             prefixFontSize: 25, // 字号
-            prefixPlace: 2, // 前缀的位置  上：0  中：1  下：2
+            prefixPlace: 0, // 前缀的位置  上：0  中：1  下：2
             /**
              * 整数
              */
@@ -1718,7 +1699,7 @@ export default {
             'integerIfItalic': 0, // 整数部分是否斜体(0:不斜体,2:斜体)
             'integerIfStrikeThrough': 0, // 整数部分是否中划线
             'integerIfUnderline': 0, // 整数部分是否下划线
-            integerFontType: 'ZKONG', // 字体
+            integerFontType: '微软雅黑', // 字体
             integerFontSize: 50, // 字号
             /**
              * 小数分隔符
@@ -1736,7 +1717,7 @@ export default {
             'decimalIfStrikeThrough': 0, // 小数是否中划线
             'decimalIfUnderline': 0, // 小数是否下划线
             decimalFontType: '微软雅黑', // 字体
-            decimalFontSize: 20, // 字号
+            decimalFontSize: 30, // 字号
             decimalPlace: 0, // 小数在整数的位置  上：0  中：1  下：2
             /**
              * 后缀
@@ -1784,6 +1765,22 @@ export default {
     // 退出编辑
     exitEditing () {
       this.$refs.canvas.exitEditing() // 退出编辑
+    },
+    // 修改默认按钮
+    changeTuozhuai () {
+      this.currentMenu = 'tuozhuai'
+      this.open9 = !this.open9
+    },
+    // 缩放比例
+    changeBigZoom () {
+
+    },
+    // 切换手和选择
+    selectLi (no) {
+      // console.log(no)
+      this.$refs.canvas.changemoveing(no === 0)
+      this.hover9index = no
+      this.open9 = false
     }
   }
 }
@@ -1890,6 +1887,7 @@ export default {
         }
 
         .ps-button-new{
+            cursor: pointer;
             font-size: 12px;
             color:#fff;
             padding: 1px 10px;
@@ -2187,6 +2185,81 @@ export default {
                 background: url("../static/newps/images/ps-icon83-3.png") no-repeat;
             }
         }
+        i.ps-icon23{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon23.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon23-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon23-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon23-3.png") no-repeat;
+            }
+        }
+        i.ps-icon24{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon24.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon24-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon24-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon24-3.png") no-repeat;
+            }
+        }
+        i.ps-icon25{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon25.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon25-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon25-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon25-3.png") no-repeat;
+            }
+        }
+        i.ps-icon26{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon26.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon26-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon26-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon26-3.png") no-repeat;
+            }
+        }
+        i.ps-icon27{
+            width: 30px;
+            height: 25px;
+            display: inline-block;
+            background: url("../static/newps/images/ps-icon27.png") no-repeat;
+            &.hover,&:active{
+                background: url("../static/newps/images/ps-icon27-2.png") no-repeat;
+                &:hover{
+                    background: url("../static/newps/images/ps-icon27-2.png") no-repeat;
+                }
+            }
+            &:hover{
+                background: url("../static/newps/images/ps-icon27-3.png") no-repeat;
+            }
+        }
         i.ps-icon84{
             width: 30px;
             height: 25px;
@@ -2408,6 +2481,15 @@ export default {
             margin-top:0;
             display: block;
             background: url("../static/newps/images/line-h.png") no-repeat;
+        }
+        i.ps-more{
+          position: relative;
+        }
+        ul{
+          position: absolute;
+          top: 0;
+          left: 30px;
+          z-index: 3;
         }
     }
     .ps-mid{

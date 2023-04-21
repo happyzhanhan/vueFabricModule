@@ -9428,7 +9428,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
          * @type String
          * @default
          */
-        uniScaleKey:           'B',  //shiftKey  happychange
+        uniScaleKey:           'B',  //shiftKey  happychange B
 
         /**
          * When true, objects use center point as the origin of scale transformation.
