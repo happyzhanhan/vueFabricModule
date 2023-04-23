@@ -5807,6 +5807,7 @@ export default {
             IfItalic: dotIfItalic,
             integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'dotFontSize':
           group.textStyle[name] = Number(value)
@@ -5912,6 +5913,7 @@ export default {
             IfStrikeThrough: decimalIfStrikeThrough,
             integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'decimalFontSize':
           group.textStyle[name] = value
@@ -6004,6 +6006,7 @@ export default {
             IfStrikeThrough: postfixIfStrikeThrough,
             integerFontSize: integerFontSize
           }, group.textImg.fontTrueheight)
+          this.changePosfix(group, group.textStyle) // 后缀位置调整
           break
         case 'postfixFontSize':
           group.textStyle[name] = Number(value)

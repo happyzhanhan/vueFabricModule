@@ -1717,7 +1717,7 @@ export default {
             'decimalIfStrikeThrough': 0, // 小数是否中划线
             'decimalIfUnderline': 0, // 小数是否下划线
             decimalFontType: '微软雅黑', // 字体
-            decimalFontSize: 30, // 字号
+            decimalFontSize: 50, // 字号
             decimalPlace: 0, // 小数在整数的位置  上：0  中：1  下：2
             /**
              * 后缀

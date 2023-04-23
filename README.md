@@ -710,3 +710,7 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.18
 - 小数字号对齐整数
 - 应用新增逻辑
+
+### 2023.04.23
+> v0.1.19
+- 改变小数字号，后缀位置调整
