@@ -714,3 +714,8 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.04.23
 > v0.1.19
 - 改变小数字号，后缀位置调整
+
+
+### 2023.05.11
+> v0.1.20
+- 图片适应和拉伸变换

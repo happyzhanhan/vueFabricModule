@@ -362,10 +362,17 @@
 
                         <div v-if="JSON.stringify(object)!=='{}'">
 
-                            <div class="ps-params-data">
+                            <div class="ps-params-data" v-if="object.isType==='Text'">
                                 <div class="ps-switch" :class="object.textAdvanceProperty == 2?'hover':''"><span>
                                     <b @click="changeObject('textAdvanceProperty', 0)">不使用</b>
                                     <b @click="changeObject('textAdvanceProperty', 2)">自适应</b>
+                                </span><i></i></div>
+                            </div>
+
+                            <div class="ps-params-data" v-if="object.isType==='Image'">
+                                <div class="ps-switch" :class="object.imgText == 'equal'?'':'hover'"><span>
+                                    <b @click="changeObject('imgText', 'equal')">适应</b>
+                                    <b @click="changeObject('imgText', '')">拉伸</b>
                                 </span><i></i></div>
                             </div>
 
@@ -1018,6 +1025,10 @@ export default {
           this.$set(this.object, 'visible', obj.visible)
           this.$set(this.object, 'angle', obj.angle)
 
+          if (obj.isType === 'Image') {
+            this.$set(this.object, 'imgText', 'obj.imgText')
+          }
+
           if (obj.isType === 'Price') {
             this.$set(this.object, 'textColor', obj.textStyle.textColor)
             this.$set(this.object, 'bgcolor', obj.textStyle.bgcolor)
@@ -1123,6 +1134,11 @@ export default {
           break
         case 'textAdvanceProperty': this.$set(this.object, 'textAdvanceProperty', data); this.$refs.canvas.exitEditing(); obj.set({'isElasticSize': data}); this.changeTextType(obj, obj.content)
           break
+        case 'imgText':
+          obj.set({'imgText': data})
+          this.$refs.canvas.setSrc(obj, obj.url)
+          this.$set(this.object, 'imgText', data)
+          break
         case 'visible': obj.set({'visible': data})
           this.$set(this.object, 'visible', data)
           break
@@ -1162,6 +1178,10 @@ export default {
       this.$set(this.object, 'stroke', obj.stroke)
       this.$set(this.object, 'strokeWidth', obj.strokeWidth)
       this.$set(this.object, 'strokeDashArray', obj.strokeDashArray ? obj.strokeDashArray : [0, 0])
+
+      if (obj.isType === 'Image') {
+        this.$set(this.object, 'imgText', obj.imgText)
+      }
     },
     // 点击画组件
     async draw (name) {
@@ -1224,7 +1244,7 @@ export default {
           break
 
         case 'Image':
-          let imgurl = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          let imgurl = 'http://192.168.100.211/group1/M00/00/5E/rBMAA2OpPcuAb8SdAAGhYRox_HE039.png' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
             left: 10,
             top: 200,
@@ -1234,7 +1254,8 @@ export default {
             url: imgurl,
             opacity: 0.5,
             stroke: '#ff0000',
-            strokeWidth: 2,
+            strokeWidth: 0,
+            imgText: '',
             visible: true
           }
           // let img = await this.loadImage(imgurl)
@@ -1253,8 +1274,8 @@ export default {
             strokeWidth: 2,
             visible: true
           }
-          let iimg = await this.loadImage(iconurl)
-          console.log(iimg)
+          // let iimg = await this.loadImage(iconurl)
+          // console.log(iimg)
           break
         case 'equalImage':
           let url = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
@@ -1266,11 +1287,12 @@ export default {
             src: url,
             url: url,
             stroke: '#ff0000',
+            imgText: 'equal',
             strokeWidth: 2,
             visible: true
           }
-          let imgnew = await this.loadImage(url)
-          console.log(imgnew)
+          //   let imgnew = await this.loadImage(url)
+          //   console.log(imgnew)
           break
 
         case 'Barcode':

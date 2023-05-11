@@ -2453,7 +2453,8 @@ export default {
             break
 
           case 'Image': // ----------------------------------------------------------------------------------------图片
-            canvasObject = await that.createURLImage(options)
+            // canvasObject = await that.createURLImage(options)
+            canvasObject = await that.createImage(options)
             break
           case 'Icon': // ----------------------------------------------------------------------------------------图片
             canvasObject = await that.createIcon(options)
@@ -3465,6 +3466,196 @@ export default {
         }
       })
     },
+    // 传入元素(类型Image, equalImage)改变图片
+    async setSrc (cur, src) {
+      if (cur.isType !== 'Image' && cur.isType !== 'equalImage') { return }
+      let oldwidth = JSON.parse(JSON.stringify(cur.width * cur.scaleX))
+      let oldheight = JSON.parse(JSON.stringify(cur.height * cur.scaleY))
+      let imgwidth, imgheight
+      let ImgDom = cur
+      if (cur.isType === 'equalImage' || cur.isType === 'Image') { ImgDom = cur.item(1) }
+      let img = await this.loadImage(src)
+      // console.log(img, img.width, cur.scaleX)
+      let newcur = ImgDom.setElement(img)
+      if (cur.isType === 'Image' && cur.imgText === 'equal') {
+        // console.log('适应')
+        if (img.width / img.height > (cur.width * cur.scaleX) / (cur.height * cur.scaleY)) {
+          imgwidth = (cur.width * cur.scaleX)
+          imgheight = (cur.width * cur.scaleX) / (img.width / img.height)
+          newcur.set({
+            scaleX: imgwidth / img.width / cur.scaleX,
+            scaleY: imgheight / img.height / cur.scaleY
+          })
+        } else {
+          imgwidth = (cur.height * cur.scaleY)
+          imgheight = (cur.height * cur.scaleY) * (img.width / img.height)
+          newcur.set({
+            scaleX: imgwidth / img.width / cur.scaleX,
+            scaleY: imgheight / img.height / cur.scaleY
+          })
+        }
+      } else if (cur.isType === 'Image' && cur.imgText === '') {
+        // console.log('拉伸', oldwidth, img.width)
+        newcur.set({
+          scaleX: oldwidth / img.width / cur.scaleX,
+          scaleY: oldheight / img.height / cur.scaleY
+        })
+      } else {
+        newcur.set({
+          scaleX: oldwidth / img.width,
+          scaleY: oldheight / img.height
+        })
+      }
+
+      newcur.setCoords()
+      this.canvas.renderAll()
+      this.canvas.requestRenderAll()
+    },
+    // 生成图片，配置自适应和拉伸
+    createImage (options) {
+      let canvas = this.canvas
+
+      return new Promise(function (resolve, reject) {
+        options.src = options.url ? options.url : './static/images/img.svg'
+        // var img = document.createElement('img')
+
+        var img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = options.src
+        img.setAttribute('crossOrigin', 'Anonymous')
+        // console.log(options.imgText, options.src)
+
+        img.onload = function () {
+          let imgwidth = 0
+          let imgheight = 0
+
+          if (options.imgText === 'equal') {
+            if (img.width / img.height > options.width / options.height) {
+              imgwidth = options.width
+              imgheight = options.width / (img.width / img.height)
+            } else {
+              imgheight = options.height
+              imgwidth = options.height * (img.width / img.height)
+            }
+          } else {
+            imgwidth = options.width
+            imgheight = options.height
+          }
+
+          // eslint-disable-next-line no-undef
+          var canvasImage = new fabric.Image(img, {
+            id: options.id ? options.id : 'image',
+            isType: 'Image-img',
+            padding: 0,
+            flipX: false,
+            flipY: false,
+            stopContextMenu: true, //  禁掉鼠标右键默认事件
+            minScaleLimit: 0.0001, //  最小限制
+            lockSkewingX: true, //  禁掉按住shift时的变形
+            lockSkewingY: true,
+
+            originX: 'center',
+            originY: 'center',
+
+            scaleX: imgwidth / img.width,
+            scaleY: imgheight / img.height,
+
+            angle: options.angle ? options.angle : 0,
+            name: options.name ? options.name : 'Image',
+
+            selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+            visible: options.visible !== false ? true : options.visible, // 元素是否可见
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+          // eslint-disable-next-line no-undef
+          var rect = new fabric.Rect({
+            isType: 'Image-bg',
+            id: options.id ? options.id : 'image-bg',
+            padding: 0,
+            originX: 'center',
+            originY: 'center',
+            width: options.width ? options.width : 100,
+            height: options.height ? options.height : 100,
+            fill: options.background ? options.background : ''
+
+          })
+
+          // eslint-disable-next-line no-undef
+          var group = new fabric.Group([rect, canvasImage], {
+            isType: 'Image',
+            component: 'component',
+            left: options.left,
+            top: options.top,
+            width: options.width,
+            height: options.height,
+            originX: 'left',
+            originY: 'top',
+            padding: 0,
+            id: options.id,
+            url: options.url,
+            src: options.url,
+            imgText: options.imgText, // equal：代表自适应的图片
+
+            stroke: options.stroke ? options.stroke : '', // 边框颜色
+            strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+            strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+            hasRotatingPoint: true,
+            lockScalingFlip: true,
+            minScaleLimit: 0.01,
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+
+          group.on('scaling', function (e) {
+            let newimgwidth = 0
+            let newimgheight = 0
+
+            if (group.imgText === 'equal') {
+              if (img.width / img.height > (group.width * group.scaleX) / (group.height * group.scaleY)) {
+                newimgwidth = (group.width * group.scaleX)
+                newimgheight = (group.width * group.scaleX) / (img.width / img.height)
+                group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+                group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+              } else {
+                newimgheight = (group.height * group.scaleY)
+                newimgwidth = (group.height * group.scaleY) * (img.width / img.height)
+                group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+                group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+              }
+            }
+
+            canvas.requestRenderAll()
+            canvas.renderAll()
+          })
+
+          group.setControlsVisibility({
+            bl: true,
+            br: true,
+            mb: true,
+            ml: true,
+            mr: true,
+            mt: true,
+            mtr: true,
+            tl: true,
+            tr: true
+          })
+          // canvas.add(group) // 把图片添加到画布上
+
+          // if (options && options.registeObjectEvent) {
+          //   Utils.registeObjectEvent(that, img)
+          // }
+          // group.setCoords()
+          // that.setActiveObject(group)
+          // canvas.renderAll.bind(canvas)
+
+          resolve(group)
+        }
+      })
+    },
     // 创建图片可跨域生成预览
     createURLImage (options) {
       return new Promise(function (resolve, reject) {
@@ -3476,6 +3667,7 @@ export default {
         img.setAttribute('crossOrigin', 'Anonymous')
 
         img.onload = function () {
+          console.log('onload')
           // eslint-disable-next-line no-undef
           var canvasImage = new fabric.Image(img, {
             id: options.id ? options.id : 'image',
@@ -3519,6 +3711,7 @@ export default {
           resolve(canvasImage)
         }
         img.onerror = function (err) {
+          console.log('onerror')
           console.warn(err)
           options.src = './static/images/img.svg'
           // eslint-disable-next-line no-undef
@@ -3805,22 +3998,6 @@ export default {
           }
         }
       })
-    },
-    // 传入元素(类型Image, equalImage)改变图片
-    async setSrc (cur, src) {
-      if (cur.isType !== 'Image' && cur.isType !== 'equalImage') { return }
-      let oldwidth = JSON.parse(JSON.stringify(cur.width * cur.scaleX))
-      let oldheight = JSON.parse(JSON.stringify(cur.height * cur.scaleY))
-      if (cur.isType === 'equalImage') { cur = cur.item(1) }
-      let img = await this.loadImage(src)
-      let newcur = cur.setElement(img)
-      newcur.set({
-        scaleX: oldwidth / img.width,
-        scaleY: oldheight / img.height
-      })
-      newcur.setCoords()
-      this.canvas.renderAll()
-      this.canvas.requestRenderAll()
     },
     // 获取创建条码的结果
     async createBarcode (options) {
