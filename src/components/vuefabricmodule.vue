@@ -3476,7 +3476,7 @@ export default {
       if (cur.isType === 'equalImage' || cur.isType === 'Image') { ImgDom = cur.item(1) }
       let img = await this.loadImage(src)
       cur.set('url', src)
-      // console.log(img, img.width, cur.scaleX)
+      // console.log(img, img.width, img.height)
       let newcur = ImgDom.setElement(img)
       if (cur.isType === 'Image' && cur.imgText === 'equal') {
         // console.log('适应')
@@ -3488,8 +3488,8 @@ export default {
             scaleY: imgheight / img.height / cur.scaleY
           })
         } else {
-          imgwidth = (cur.height * cur.scaleY)
-          imgheight = (cur.height * cur.scaleY) * (img.width / img.height)
+          imgheight = (cur.height * cur.scaleY)
+          imgwidth = (cur.height * cur.scaleY) * (img.width / img.height)
           newcur.set({
             scaleX: imgwidth / img.width / cur.scaleX,
             scaleY: imgheight / img.height / cur.scaleY
@@ -3515,6 +3515,7 @@ export default {
     // 生成图片，配置自适应和拉伸
     createImage (options) {
       let canvas = this.canvas
+      let _this = this
 
       return new Promise(function (resolve, reject) {
         options.src = options.url ? options.url : './static/images/img.svg'
@@ -3611,7 +3612,9 @@ export default {
             screenIndex: options.screenIndex
           })
 
-          group.on('scaling', function (e) {
+          group.on('scaling', async function (e) {
+            let src = group.url
+            let img = await _this.loadImage(src)
             let newimgwidth = 0
             let newimgheight = 0
 
@@ -4938,6 +4941,11 @@ export default {
         let img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = url
+        // console.log(img.readyState, img.complete)
+        if (img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
+          resolve(img)
+          return // 直接返回，不用再处理onload事件
+        }
         img.onload = async () => {
           resolve(img)
         }

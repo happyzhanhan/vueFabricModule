@@ -723,3 +723,6 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.05.24
 > v0.1.21
 - 图片默认值
+
+> v0.1.22
+- 图片支持适应和拉伸时计算图片宽高
