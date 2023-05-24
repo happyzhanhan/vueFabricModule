@@ -3475,6 +3475,7 @@ export default {
       let ImgDom = cur
       if (cur.isType === 'equalImage' || cur.isType === 'Image') { ImgDom = cur.item(1) }
       let img = await this.loadImage(src)
+      cur.set('url', src)
       // console.log(img, img.width, cur.scaleX)
       let newcur = ImgDom.setElement(img)
       if (cur.isType === 'Image' && cur.imgText === 'equal') {

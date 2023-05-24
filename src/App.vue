@@ -1244,7 +1244,7 @@ export default {
           break
 
         case 'Image':
-          let imgurl = 'http://192.168.100.211/group1/M00/00/5E/rBMAA2OpPcuAb8SdAAGhYRox_HE039.png' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
+          let imgurl = 'http://192.168.100.211/group1/M00/00/5E/rBMAA2OpPcyAEeGqACVYx9jBF8U923.png' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
             left: 10,
             top: 200,

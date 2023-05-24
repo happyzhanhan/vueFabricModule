@@ -719,3 +719,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.05.11
 > v0.1.20
 - 图片适应和拉伸变换
+
+### 2023.05.24
+> v0.1.21
+- 图片默认值
