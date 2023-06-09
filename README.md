@@ -726,3 +726,7 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.22
 - 图片支持适应和拉伸时计算图片宽高
+
+> v0.1.23
+- 二维码缩放影响图片显示
+- 新增修改9个控制角的图片

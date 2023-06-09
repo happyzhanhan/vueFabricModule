@@ -9428,7 +9428,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
          * @type String
          * @default
          */
-        uniScaleKey:           'B',  //shiftKey  happychange B
+        uniScaleKey:           'shiftKey',  //shiftKey  happychange B
 
         /**
          * When true, objects use center point as the origin of scale transformation.
@@ -13180,7 +13180,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
          * @type Number
          * @default
          */
-        minScaleLimit:            0,
+        minScaleLimit:            0.2,  // happy change
 
         /**
          * When set to `false`, an object can not be selected for modification (using either point-click-based or group-based selection).
