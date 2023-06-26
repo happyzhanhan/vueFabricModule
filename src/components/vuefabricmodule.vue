@@ -1754,6 +1754,11 @@ export default {
       }
       return newobj
     },
+    // 获取组装元素id
+    getObjectsByid (id) {
+      let objects = this.getObjects()
+      return objects.filter(one => one.component === 'component' && one.id === id)
+    },
     // 获取当前活跃元素
     getActiveObject () {
       var obj = this.canvas.getActiveObject()
@@ -3146,11 +3151,12 @@ export default {
 
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.textRectNew(options)
-            // console.log('TextRect New', canvasObject)
-            canvasObject.setCoords()
+            // canvasObject.setCoords()
 
             break
-
+          case 'NewText': // -------------------------------------------------可编辑文本优化 文本的特殊属性： 边距 背景 边框
+            canvasObject = await this.createNewText(options)
+            break
           case 'table':
             options = {
               tableinfo: {
@@ -3343,6 +3349,12 @@ export default {
               ...options
             }
             canvasObject = await this.createPrice(options)
+            break
+          case 'NewPrice':
+            options = {
+              ...options
+            }
+            canvasObject = await this.createNewPrice(options)
             break
           default:
 
@@ -5447,80 +5459,6 @@ export default {
         }, 200)
       })
     },
-    // 计算文本位置
-    countTextposition (group, options) {
-      let canvas = this.canvas
-      const { prefix, integer, decimalSeparator, postfixPlace, horizontalAlign, verticalAlign } = options
-      // console.log('位置定位：', horizontalAlign, verticalAlign)
-      // 小数的宽度
-      let decimalWidth = group.item(1).item(1).width - group.item(1).item(1)._getWidthBeforeCursor(0,
-        prefix.length + integer.length + decimalSeparator.length)
-      // 后缀的宽度
-      let postfixWidth = group.item(1).item(2).width - group.item(1).item(2).__charBounds[0][group.item(1).item(2).text.length - 1].width
-      // 文本域的宽度
-      let textWidth = ({
-        0: () => { return group.item(1).item(1).width + postfixWidth },
-        1: () => { return group.item(1).item(1).width + postfixWidth },
-        2: () => { return group.item(1).item(1).width + postfixWidth },
-        3: () => { return group.item(1).item(1).width + (postfixWidth > decimalWidth ? postfixWidth - decimalWidth : 0) },
-        4: () => { return group.item(1).item(1).width + (postfixWidth > decimalWidth ? postfixWidth - decimalWidth : 0) }
-      })[ postfixPlace || 0 ]()
-      // 字典格式
-      var newleft = ({
-        0: () => { return group.item(1).item(0).left - group.item(1).item(0).width / 2 },
-        1: () => { return -textWidth / 2 },
-        2: () => { return group.item(1).item(0).width / 2 - textWidth }
-      })[ horizontalAlign || 0 ]()
-
-      let newtop = ({
-        0: () => { return group.item(1).item(0).top - group.item(1).item(0).height / 2 },
-        1: () => { return -group.item(1).item(1).height / 2 },
-        2: () => { return group.item(1).item(0).height / 2 - group.item(1).item(1).height }
-      })[ verticalAlign || 0 ]()
-      canvas.requestRenderAll()
-      canvas.renderAll()
-      return {
-        newleft, newtop
-      }
-    },
-    // 设置文本位置和后缀跟随
-    async setPircePosition (group, options) {
-      // console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
-      const { postfixPlace, prefix, integer, decimalSeparator } = options
-      let pricew = await this.retrunText(group.item(1).item(1))
-      let textGroup = group.item(1)
-      const {newleft, newtop} = await this.countTextposition(group, options) // 9象限定位
-      // console.log(newleft, newtop, -group.item(1).item(0).width / 2, -group.item(1).item(0).height / 2)
-      textGroup.item(1).set({
-        originX: 'left',
-        originY: 'top',
-        visible: true,
-        left: newleft,
-        top: newtop
-      })
-      this.canvas.requestRenderAll()
-      // console.warn('整数的坐标', newleft, newtop)
-
-      // 后缀相对价格组件的位置
-      let postfixLeft = ({
-        0: () => { return textGroup.item(1).left + pricew },
-        1: () => { return textGroup.item(1).left + pricew },
-        2: () => { return textGroup.item(1).left + pricew },
-        3: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
-        4: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
-      })[ postfixPlace || 0 ]()
-      // console.log('后缀位置调整', postfixLeft)
-      // 后缀重新定位
-      textGroup.item(2).set({
-        originX: 'left',
-        originY: 'top',
-        visible: true,
-        left: postfixLeft,
-        top: textGroup.item(1).top
-      })
-      this.canvas.requestRenderAll()
-      this.canvas.renderAll()
-    },
     // 保留小数 修正
     toFixed (num, digits = 0) {
       let zeroStrNum = num.toString()
@@ -5681,666 +5619,6 @@ export default {
         priceText, integer, decimal
       }
     },
-    // 修改价格组件
-    async setPrice (group, name, value) {
-      // console.error(group, name, value)
-      const {prefix, integer, decimalSeparator, decimal, decimalPlace, decimalFontSize, decimalFontType, decimalIfBold, decimalIfItalic, decimalIfUnderline, decimalIfStrikeThrough,
-        prefixIfBold,
-        prefixIfItalic,
-        prefixIfStrikeThrough,
-        prefixIfUnderline,
-        prefixFontType,
-        prefixFontSize,
-        prefixPlace,
-        integerIfBold,
-        integerIfItalic,
-        integerIfStrikeThrough,
-        integerIfUnderline,
-        integerFontType,
-        integerFontSize,
-        dotIfBold,
-        dotIfItalic,
-        dotFontType,
-        dotFontSize,
-        postfix,
-        postfixIfBold,
-        postfixIfItalic,
-        postfixIfStrikeThrough,
-        postfixIfUnderline,
-        postfixFontType,
-        postfixFontSize,
-        postfixPlace} = group.textStyle
-
-      switch (name) {
-        case 'content':
-          await this.changePrice(group, {'text': value})
-          break
-        case 'textColor':
-          group.textStyle.textColor = value
-          group.options.textColor = value
-          group.item(1).item(1).set({
-            fill: value
-          })
-          group.item(1).item(2).set({
-            fill: value
-          })
-          break
-        case 'bgcolor':
-          group.textStyle.bgcolor = value
-          group.options.bgcolor = value
-          group.item(1).item(0).set({
-            fill: value
-          })
-          break
-
-        case 'horizontalAlign':
-          group.textStyle.horizontalAlign = Number(value)
-          group.options.horizontalAlign = Number(value)
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': Number(value)
-          })
-          break
-        case 'verticalAlign':
-          group.textStyle.verticalAlign = Number(value)
-          group.options.verticalAlign = Number(value)
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'verticalAlign': Number(value)
-          })
-          break
-        case 'width':
-          await this.changePrice(group, {'width': Number(value)})
-          break
-        case 'height':
-          await this.changePrice(group, {'height': Number(value)})
-          break
-        case 'angle':
-          await this.changePrice(group, {'angle': Number(value)})
-          break
-        case 'prefix':
-          await this.changePrice(group, {'prefix': value})
-          break
-        case 'postfix':
-          await this.changePrice(group, {'postfix': value})
-          break
-        case 'thousandSeparator':
-          await this.changePrice(group, {'thousandSeparator': value})
-          break
-        case 'decimalSeparator':
-          await this.changePrice(group, {'decimalSeparator': value})
-          break
-
-        case 'prefixIfBold':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: Number(value),
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'prefixIfItalic':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: Number(value),
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'prefixIfStrikeThrough':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: Number(value),
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'prefixIfUnderline':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: Number(value),
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'prefixFontType':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: prefixFontSize,
-            FontType: value,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'prefixFontSize':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: prefixPlace,
-            FontSize: Number(value),
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          // 9象限位置调整
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
-          break
-        case 'prefixPlace':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-            Place: Number(value),
-            FontSize: prefixFontSize,
-            FontType: prefixFontType,
-            IfBold: prefixIfBold,
-            IfItalic: prefixIfItalic,
-            IfUnderline: prefixIfUnderline,
-            IfStrikeThrough: prefixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-
-        case 'integerIfBold':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: integerFontSize,
-            FontType: integerFontType,
-            IfBold: Number(value),
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'integerIfItalic':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: integerFontSize,
-            FontType: integerFontType,
-            IfBold: integerIfBold,
-            IfItalic: Number(value),
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: integerIfUnderline,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'integerIfStrikeThrough':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: integerFontSize,
-            FontType: integerFontType,
-            IfBold: integerIfBold,
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: Number(value),
-            IfUnderline: integerIfUnderline,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'integerIfUnderline':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-            Place: 2,
-            FontSize: integerFontSize,
-            FontType: integerFontType,
-            IfBold: integerIfBold,
-            IfItalic: integerIfItalic,
-            IfStrikeThrough: integerIfStrikeThrough,
-            IfUnderline: Number(value),
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'integerFontType':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.changePrice(group, {'integerFontType': value})
-          break
-        case 'integerFontSize':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          let options = {
-            'integerFontSize': Number(value)
-          }
-          if (group.options.prefixFontSize > Number(value)) {
-            group.textStyle.prefixFontSize = Number(value)
-            group.options.prefixFontSize = Number(value)
-            options['prefixFontSize'] = Number(value)
-          }
-          if (group.options.dotFontSize > Number(value)) {
-            group.textStyle.dotFontSize = Number(value)
-            group.options.dotFontSize = Number(value)
-            options['dotFontSize'] = Number(value)
-          }
-          if (group.options.decimalFontSize > Number(value)) {
-            group.textStyle.decimalFontSize = Number(value)
-            group.options.decimalFontSize = Number(value)
-            options['decimalFontSize'] = Number(value)
-          }
-          if (group.options.postfixFontSize > Number(value)) {
-            group.textStyle.postfixFontSize = Number(value)
-            group.options.postfixFontSize = Number(value)
-            options['postfixFontSize'] = Number(value)
-          }
-          await this.changePrice(group, options)
-          // await this.setTextStyle(group.item(1).item(1), prefix.length, prefix.length + integer.length, {
-          //   Place: 2,
-          //   FontSize: Number(value),
-          //   FontType: integerFontType,
-          //   IfBold: integerIfBold,
-          //   IfItalic: integerIfItalic,
-          //   IfStrikeThrough: integerIfStrikeThrough,
-          //   IfUnderline: integerIfUnderline
-          // }, group.textImg.fontTrueheight)
-          // // 文字高度校准
-          // group.textImg = await this.todrawInterger({
-          //   integer: integer,
-          //   width: group.item(1).item(1).width,
-          //   height: group.item(1).item(1).height,
-          //   FontSize: Number(value),
-          //   FontType: integerFontType,
-          //   IfBold: integerIfBold,
-          //   IfItalic: integerIfItalic,
-          //   IfStrikeThrough: integerIfStrikeThrough,
-          //   IfUnderline: integerIfUnderline
-          // })
-          // // 前缀位置校准
-          // await this.setTextStyle(group.item(1).item(1), 0, prefix.length, {
-          //   Place: prefixPlace,
-          //   FontSize: prefixFontSize,
-          //   FontType: prefixFontType,
-          //   IfBold: prefixIfBold,
-          //   IfItalic: prefixIfItalic,
-          //   IfUnderline: prefixIfUnderline,
-          //   IfStrikeThrough: prefixIfStrikeThrough
-          // }, group.textImg.fontTrueheight)
-          // // 小数位置校准
-          // await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-          //   Place: decimalPlace,
-          //   FontSize: decimalFontSize,
-          //   FontType: decimalFontType,
-          //   IfBold: decimalIfBold,
-          //   IfItalic: decimalIfItalic,
-          //   IfUnderline: decimalIfUnderline,
-          //   IfStrikeThrough: decimalIfStrikeThrough
-          // }, group.textImg.fontTrueheight)
-          // // 后缀高度校准
-          // group.item(1).item(1).set({
-          //   fontSize: Number(value)
-          // })
-          // this.changePosfix(group, group.textStyle) // 后缀位置调整
-          // // 9象限位置调整
-          // await this.setPircePosition(group, {
-          //   ...group.textStyle,
-          //   'horizontalAlign': group.textStyle.horizontalAlign,
-          //   'verticalAlign': group.textStyle.verticalAlign
-          // })
-          break
-
-        case 'dotIfBold':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length, {
-            Place: 2,
-            FontSize: dotFontSize,
-            FontType: dotFontType,
-            IfBold: Number(value),
-            IfItalic: dotIfItalic,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'dotIfItalic':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length, {
-            Place: 2,
-            FontSize: dotFontSize,
-            FontType: dotFontType,
-            IfBold: dotIfBold,
-            IfItalic: Number(value),
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'dotFontType':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length, {
-            Place: 2,
-            FontSize: dotFontSize,
-            FontType: value,
-            IfBold: dotIfBold,
-            IfItalic: dotIfItalic,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'dotFontSize':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length, {
-            Place: 2,
-            FontSize: value,
-            FontType: dotFontType,
-            IfBold: dotIfBold,
-            IfItalic: dotIfItalic,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          // 9象限位置调整
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
-          break
-
-        case 'decimalPlace':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: Number(value),
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'decimalIfBold':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: Number(value),
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'decimalIfItalic':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: Number(value),
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'decimalIfUnderline':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: Number(value),
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'decimalIfStrikeThrough':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: Number(value),
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'decimalFontType':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: decimalFontSize,
-            FontType: value,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'decimalFontSize':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.setTextStyle(group.item(1).item(1), prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length, {
-            Place: decimalPlace,
-            FontSize: value,
-            FontType: decimalFontType,
-            IfBold: decimalIfBold,
-            IfItalic: decimalIfItalic,
-            IfUnderline: decimalIfUnderline,
-            IfStrikeThrough: decimalIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          // 9象限位置调整
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
-          break
-
-        case 'postfixIfBold':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: postfixFontSize,
-            FontType: postfixFontType,
-            IfBold: Number(value),
-            IfItalic: postfixIfItalic,
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'postfixIfItalic':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: postfixFontSize,
-            FontType: postfixFontType,
-            IfBold: postfixIfBold,
-            IfItalic: Number(value),
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'postfixIfStrikeThrough':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: postfixFontSize,
-            FontType: postfixFontType,
-            IfBold: postfixIfBold,
-            IfItalic: postfixIfItalic,
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: Number(value),
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'postfixIfUnderline':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: postfixFontSize,
-            FontType: postfixFontType,
-            IfBold: postfixIfBold,
-            IfItalic: postfixIfItalic,
-            IfUnderline: Number(value),
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          break
-        case 'postfixFontType':
-          group.textStyle[name] = value
-          group.options[name] = value
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: postfixFontSize,
-            FontType: value,
-            IfBold: postfixIfBold,
-            IfItalic: postfixIfItalic,
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-        case 'postfixFontSize':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: postfixPlace,
-            FontSize: Number(value),
-            FontType: postfixFontType,
-            IfBold: postfixIfBold,
-            IfItalic: postfixIfItalic,
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          // 9象限位置调整
-          await this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
-          break
-        case 'postfixPlace':
-          group.textStyle[name] = Number(value)
-          group.options[name] = Number(value)
-          await this.setTextStyle(group.item(1).item(2), 0, postfix.length, {
-            Place: Number(value),
-            FontSize: postfixFontSize,
-            FontType: postfixFontType,
-            IfBold: postfixIfBold,
-            IfItalic: postfixIfItalic,
-            IfUnderline: postfixIfUnderline,
-            IfStrikeThrough: postfixIfStrikeThrough,
-            integerFontSize: integerFontSize
-          }, group.textImg.fontTrueheight)
-          this.changePosfix(group, group.textStyle) // 后缀位置调整
-          break
-
-        case 'decimalDigit':
-          await this.changePrice(group, {'decimalDigit': Number(value)})
-          break
-        case 'roundingMode':
-          await this.changePrice(group, {'roundingMode': Number(value)})
-          break
-        default:
-          console.log(name, value)
-      }
-      this.canvas.requestRenderAll()
-      this.canvas.renderAll()
-    },
-    // 价格组件需要重绘
-    async changePrice (target, newoptions) {
-      if (target.isType !== 'Price') return
-      let options = JSON.parse(JSON.stringify(target.options))
-      let newtextdata = {
-        ...options,
-        left: target.left,
-        top: target.top,
-        ...newoptions
-      }
-
-      let canvas = this.canvas
-      canvas.remove(target)
-      // console.log('数字组件样式：', newtextdata)
-      let that = this
-      let canvasObject = await that.createPrice(newtextdata)
-      canvasObject.setCoords()
-      this.setActiveObject(canvasObject)
-      canvas.add(canvasObject)
-
-      // 9象限位置调整
-      setTimeout(async () => {
-        await this.setPircePosition(canvasObject, {
-          ...canvasObject.textStyle,
-          'horizontalAlign': canvasObject.textStyle.horizontalAlign,
-          'verticalAlign': canvasObject.textStyle.verticalAlign
-        })
-      }, 10)
-
-      await that.objectSetZindex() // 元素顺序
-      // console.log('元素顺序OK')
-      that.setTop() // 遮罩置顶
-      canvas.requestRenderAll()
-      canvas.renderAll()
-    },
     // 价格组件文字改变样式 (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) < 0 ? (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) : 0
     async setTextStyle (group, index = 0, lastindex, options, fontTrueheight) {
       const {Place, FontSize, FontType, IfBold, IfItalic, IfUnderline, IfStrikeThrough, integerFontSize} = options
@@ -6364,52 +5642,10 @@ export default {
         visible: true
       })
     },
-    // 绘制整数
-    async todrawInterger (options) {
-      const {integer, width, height, FontSize, FontType, IfBold, IfItalic, IfUnderline, IfStrikeThrough} = options
-      // 计算整数部分的文字高度
-      let res = await this.getTextOffset(integer, {
-        width: width,
-        height: height,
-        fontFamily: FontType || '微软雅黑',
-        fontSize: FontSize || 50,
-        fontWeight: IfBold === 1 ? 'bold' : 'normal' || 'normal',
-        fontStyle: IfItalic === 2 ? 'italic' : 'normal' || 'normal',
-        underline: IfUnderline === 1 ? true : false || false,
-        linethrough: IfStrikeThrough === 1 ? true : false || false
-      })
-      return res
-    },
-    // 后缀位置改动
-    async changePosfix (group, options) {
-      const {prefix, integer, decimalSeparator, postfixPlace} = options
-      let integerdom = group.item(1).item(1)
-      integerdom.measureLine(0)
-      let pricew = await this.retrunText(integerdom)
-      // 后缀相对价格组件的位置
-      let postfixLeft = ({
-        0: () => { return integerdom.left + pricew },
-        1: () => { return integerdom.left + pricew },
-        2: () => { return integerdom.left + pricew },
-        3: () => { return integerdom.left + integerdom.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
-        4: () => { return integerdom.left + integerdom.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
-      })[ postfixPlace || 0 ]()
-      // console.log('后缀位置调整', postfixLeft)
-      // 后缀重新定位
-      group.item(1).item(2).set({
-        originX: 'left',
-        originY: 'top',
-        left: postfixLeft,
-        top: integerdom.top
-      })
-      this.canvas.requestRenderAll()
-      this.canvas.renderAll()
-    },
     /**
-     * 创建价签组件 createPrice
+     * 创建一个替代的数字组件 createPrice
      */
     async createPrice (options) {
-      let canvas = this.canvas
       const {
         id,
         layer,
@@ -6467,7 +5703,8 @@ export default {
         postfixPlace,
         visible
       } = options
-      console.log(nopadding, gizp, roundingMode)
+      console.log(nopadding, gizp, bgOpacity, bgcolor, stroke, strokeWidth, visible)
+      // 分割价格
       const {priceText, integer, decimal} = await this.priceformat(text, roundingMode, decimalDigit, decimalSeparator, thousandSeparator)
       options = {
         ...options,
@@ -6475,42 +5712,8 @@ export default {
         integer,
         decimal
       }
-      // console.log(priceText, integer, decimal)
-      // if (!priceText) return // 不是价格数据返回
-      // console.log('价格', priceText, integer, decimal)
-      // eslint-disable-next-line no-undef
-      let price = new fabric.IText(prefix + priceText, {
-        // textBackgroundColor: '#eee',
-        fill: textColor,
-        fontSize: 10,
-        fontFamily: integerFontType,
-        width: width,
-        height: height,
-        left: -(width - strokeWidth) / 2,
-        top: -(height - strokeWidth) / 2,
-        prefix: prefix,
-        postfix: postfix,
-        decimalSeparator: decimalSeparator,
-        thousandSeparator: thousandSeparator,
-        fontWeight: integerIfBold === 1 ? 'bold' : 'normal' || 'normal',
-        fontStyle: integerIfItalic === 2 ? 'italic' : 'normal' || 'normal',
-        underline: integerIfUnderline === 1 ? true : false || false,
-        linethrough: integerIfStrikeThrough === 1 ? true : false || false,
-        charSpacing: 0,
-        isType: 'Price-integer',
-        originX: 'left',
-        originY: 'top',
-        scaleX: 1,
-        scaleY: 1,
-        splitByGrapheme: false,
-        flipX: false,
-        flipY: false,
-        selectable: false,
-        visible: false,
-        evented: true
-      })
       // 计算整数部分的文字高度
-      let res = await this.getTextOffset(integer, {
+      let res = await this.getTextOffset('123456789', {
         width: width,
         height: height,
         fontFamily: integerFontType || '微软雅黑',
@@ -6520,51 +5723,73 @@ export default {
         underline: integerIfUnderline === 1 ? true : false || false,
         linethrough: integerIfStrikeThrough === 1 ? true : false || false
       })
-      // let dy = -res.fontTrueheight + 25
-      // console.log('图片二进制计算：----', dy, res.fontTrueheight, 25 - res.fontTrueheight, res)
-
-      // 前缀
-      price.setSelectionStyles({
-        deltaY: prefixPlace === 2 ? 0 : (prefixPlace === 1 ? (prefixFontSize - res.fontTrueheight) / 2 : prefixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight),
-        fontSize: prefixFontSize,
-        fontFamily: prefixFontType,
-        fontWeight: prefixIfBold === 1 ? 'bold' : 'normal' || 'normal',
-        fontStyle: prefixIfItalic === 2 ? 'italic' : 'normal' || 'normal',
-        underline: prefixIfUnderline === 1 ? true : false || false,
-        linethrough: prefixIfStrikeThrough === 1 ? true : false || false
-      }, 0, prefix.length)
-      // 整数
-      price.setSelectionStyles({
-        deltaY: 0,
+      // 计算数字组件前半部分的样式
+      let priceStyle = {0: {}}
+      // 前缀样式
+      for (let i = 0; i < prefix.length; i++) {
+        priceStyle[0][i] = {
+          deltaY: prefixPlace === 2 ? 0 : (prefixPlace === 1 ? (prefixFontSize - res.fontTrueheight) / 2 : prefixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight),
+          fontSize: prefixFontSize,
+          fontFamily: prefixFontType,
+          fontWeight: prefixIfBold === 1 ? 'bold' : 'normal' || 'normal',
+          fontStyle: prefixIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+          underline: prefixIfUnderline === 1 ? true : false || false,
+          linethrough: prefixIfStrikeThrough === 1 ? true : false || false
+        }
+      }
+      if (decimalDigit > 0) {
+        // 小数点样式
+        for (let i = prefix.length + integer.length; i < prefix.length + integer.length + decimalSeparator.length; i++) {
+          priceStyle[0][i] = {
+            deltaY: 0,
+            fontSize: dotFontSize,
+            fontFamily: dotFontType,
+            fontWeight: dotIfBold === 1 ? 'bold' : 'normal' || 'normal',
+            fontStyle: dotIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+            underline: dotIfUnderline === 1 ? true : false || false,
+            linethrough: dotIfStrikeThrough === 1 ? true : false || false
+          }
+        }
+        // 小数样式(decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) < 0 ? (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight)) : 0
+        for (let i = prefix.length + integer.length + decimalSeparator.length; i < prefix.length + integer.length + decimalSeparator.length + decimal.length; i++) {
+          priceStyle[0][i] = {
+            deltaY: decimalPlace === 2 ? 0 : decimalFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight,
+            fontSize: decimalFontSize,
+            fontFamily: decimalFontType,
+            fontWeight: decimalIfBold === 1 ? 'bold' : 'normal' || 'normal',
+            fontStyle: decimalIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+            underline: decimalIfUnderline === 1 ? true : false || false,
+            linethrough: decimalIfStrikeThrough === 1 ? true : false || false
+          }
+        }
+      }
+      // eslint-disable-next-line no-undef
+      let price = new fabric.IText(prefix + priceText, {
+        fill: textColor,
         fontSize: integerFontSize,
         fontFamily: integerFontType,
+        prefix: prefix,
+        postfix: postfix,
+        decimalSeparator: decimalSeparator,
+        thousandSeparator: thousandSeparator,
         fontWeight: integerIfBold === 1 ? 'bold' : 'normal' || 'normal',
         fontStyle: integerIfItalic === 2 ? 'italic' : 'normal' || 'normal',
         underline: integerIfUnderline === 1 ? true : false || false,
-        linethrough: integerIfStrikeThrough === 1 ? true : false || false
-      }, prefix.length, prefix.length + integer.length)
-      if (decimalDigit > 0) {
-        // 小数点
-        price.setSelectionStyles({
-          deltaY: 0,
-          fontSize: dotFontSize,
-          fontFamily: dotFontType,
-          fontWeight: dotIfBold === 1 ? 'bold' : 'normal' || 'normal',
-          fontStyle: dotIfItalic === 2 ? 'italic' : 'normal' || 'normal',
-          underline: dotIfUnderline === 1 ? true : false || false,
-          linethrough: dotIfStrikeThrough === 1 ? true : false || false
-        }, prefix.length + integer.length, prefix.length + integer.length + decimalSeparator.length)
-        // 小数
-        price.setSelectionStyles({
-          deltaY: (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize - res.fontTrueheight)) < 0 ? (decimalPlace === 2 ? 0 : (decimalPlace === 1 ? (decimalFontSize - res.fontTrueheight) / 2 : decimalFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight)) : 0,
-          fontSize: decimalFontSize,
-          fontFamily: decimalFontType,
-          fontWeight: decimalIfBold === 1 ? 'bold' : 'normal' || 'normal',
-          fontStyle: decimalIfItalic === 2 ? 'italic' : 'normal' || 'normal',
-          underline: decimalIfUnderline === 1 ? true : false || false,
-          linethrough: decimalIfStrikeThrough === 1 ? true : false || false
-        }, prefix.length + integer.length + decimalSeparator.length, prefix.length + integer.length + decimalSeparator.length + decimal.length)
-      }
+        linethrough: integerIfStrikeThrough === 1 ? true : false || false,
+        styles: priceStyle,
+        charSpacing: 0,
+        isType: 'NewPriceInteger',
+        originX: 'left',
+        originY: 'top',
+        scaleX: 1,
+        scaleY: 1,
+        splitByGrapheme: false,
+        flipX: false,
+        flipY: false,
+        selectable: false,
+        visible: true,
+        evented: true
+      })
       // 后缀
       let postfixStyle = {0: {}}
       // 后缀的位置  上：0  中：1  下：2 小数上：3 小数下：4
@@ -6574,6 +5799,14 @@ export default {
         2: () => { return 0 },
         3: () => { return postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight },
         4: () => { return 0 }
+      })[ postfixPlace || 0 ]()
+      // 后缀相对价格组件的位置
+      let postfixLeft = ({
+        0: () => { return price.width },
+        1: () => { return price.width },
+        2: () => { return price.width },
+        3: () => { return price.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
+        4: () => { return price.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
       })[ postfixPlace || 0 ]()
       for (let i = 0; i < postfix.length; i++) {
         postfixStyle[0][i] = {
@@ -6590,18 +5823,15 @@ export default {
       // eslint-disable-next-line no-undef
       let postfixdom = new fabric.IText(postfix + ' ', {
         fill: textColor,
-        // textBackgroundColor: '#ddd',
         fontSize: 10,
         fontFamily: postfixFontType,
         originX: 'left',
         originY: 'top',
-        // left: price.left,
-        // top: price.top,
-        left: 0,
+        left: postfixLeft,
         top: 0,
         scaleX: 1,
         scaleY: 1,
-        isType: 'Price-postfix',
+        isType: 'NewPricePostfix',
         styles: postfixStyle,
         prefix: prefix,
         postfix: postfix,
@@ -6611,7 +5841,7 @@ export default {
         flipX: false,
         flipY: false,
         selectable: false,
-        visible: false,
+        visible: true,
         evented: false
       })
       // 后缀空格
@@ -6626,76 +5856,13 @@ export default {
       }, postfix.length, postfix.length + 1)
       // 背景颜色矩形
       // eslint-disable-next-line no-undef
-      let textRect = new fabric.Rect({
+      let Rect = new fabric.Rect({
         width: width - strokeWidth,
         height: height - strokeWidth,
         fill: bgcolor,
         scaleX: 1,
         scaleY: 1,
-        isType: 'Price-textRect',
-        originX: 'center',
-        originY: 'center',
-        visible: true,
-        splitByGrapheme: false,
-        flipX: false,
-        flipY: false,
-        selectable: false,
-        evented: false
-      })
-      // console.log('边框', strokeWidth, (width - strokeWidth))
-      const pricwidth = price.width
-      const priceheight = price.height
-      if (pricwidth > width - strokeWidth) {
-        price.set({
-          scaleX: (width - strokeWidth) / pricwidth,
-          visible: false
-        })
-      }
-      if (priceheight > height - strokeWidth) {
-        price.set({
-          scaleY: (height - strokeWidth) / priceheight,
-          visible: false
-        })
-      }
-      const postwidth = postfixdom.width
-      const postheight = postfixdom.height
-      if (postwidth > width - strokeWidth) {
-        postfixdom.set({
-          scaleX: (width - strokeWidth) / postwidth,
-          visible: false
-        })
-      }
-      if (postheight > height - strokeWidth) {
-        postfixdom.set({
-          scaleY: (height - strokeWidth) / postheight,
-          visible: false
-        })
-      }
-      // 文字组
-      // eslint-disable-next-line no-undef
-      let textGroup = new fabric.Group([textRect, price, postfixdom], {
-        isType: 'Price-textGroup',
-        originX: 'center',
-        originY: 'center',
-        id: id,
-        width: width - strokeWidth,
-        height: height - strokeWidth,
-        visible: true
-      })
-      canvas.requestRenderAll()
-      canvas.renderAll()
-
-      // 边框颜色矩形
-      // eslint-disable-next-line no-undef
-      let rect = new fabric.Rect({
-        width: width,
-        height: height,
-        fill: bgOpacity ? 'rgba(0,0,0,0)' : '', // bgOpacity ? '' : bgcolor
-        stroke: stroke,
-        strokeWidth: strokeWidth,
-        scaleX: 1,
-        scaleY: 1,
-        isType: 'Price-rect',
+        isType: 'NewPriceRect',
         originX: 'center',
         originY: 'center',
         visible: true,
@@ -6706,251 +5873,804 @@ export default {
         evented: false
       })
       // eslint-disable-next-line no-undef
-      let group = new fabric.Group([rect, textGroup], {
-        isType: 'Price',
+      let priceGroup = new fabric.Group([price, postfixdom], {
+        isType: 'NewPriceGroup',
         component: 'component',
         originX: 'left',
         originY: 'top',
+        fill: '#f0f',
         id: id,
-        layer: layer,
-        zIndex: layer,
-        width: width + strokeWidth,
-        height: height + strokeWidth,
-        left: left,
-        top: top,
         textImg: res,
         options: options,
         textStyle: options,
         visible: true
 
       })
-      // 背景颜色偏移补偿
-      if (width < 55) {
-        group.item(1).set({
-          left: group.item(1).left - 2
-        })
-      }
-
-      group.item(1).item(0).set({
-        width: group.width - strokeWidth * 2,
-        left: 0
-      })
-      // 裁切
       // eslint-disable-next-line no-undef
-      var clipPath = new fabric.Rect({
-        // absolutePositioned: true
-        width: group.item(1).item(0).width,
-        height: group.item(1).item(0).height,
-        scaleX: 1,
-        scaleY: 1,
-        originX: 'center',
-        originY: 'center'
+      let group = new fabric.Group([Rect], {
+        isType: 'Price',
+        component: 'component',
+        originX: 'left',
+        originY: 'top',
+        fill: '#f0f',
+        id: id,
+        layer: layer,
+        zIndex: layer,
+        left: left,
+        top: top,
+        textImg: res,
+        options: options,
+        textStyle: options,
+        angle: angle,
+        visible: true
+
       })
-      textGroup.set({
-        clipPath: clipPath,
-        dirty: true
+      const {newleft, newtop} = this.countPriceposition(Rect, priceGroup, options)
+      priceGroup.set({
+        left: newleft,
+        top: newtop
       })
+      group.add(priceGroup)
+      group.clipPath = Rect
 
       let _this = this
-      group.on('added', async function (e) {
-        price.measureLine(0)
-        let pricew = await _this.retrunText(price)
-        const {newleft, newtop} = await _this.countTextposition(group, options) // 9象限定位
-        textGroup.item(1).set({
-          originX: 'left',
-          originY: 'top',
-          scaleX: 1,
-          screenY: 1,
-          left: newleft,
-          top: newtop,
+      group.on('scaling', async function (e) {
+        group.item(1).set({
+          visible: false
+        })
+      })
+      group.on('scaled', async function (e) {
+        group.item(1).set({
           visible: true
         })
-        canvas.requestRenderAll()
-        pricew = await _this.retrunText(price)
-        // // 后缀相对价格组件的位置
-        let postfixLeft = ({
-          0: () => { return textGroup.item(1).left + pricew },
-          1: () => { return textGroup.item(1).left + pricew },
-          2: () => { return textGroup.item(1).left + pricew },
-          3: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
-          4: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
-        })[ postfixPlace || 0 ]()
-        // 后缀重新定位
-        textGroup.item(2).set({
-          visible: true,
-          originX: 'left',
-          originY: 'top',
-          scaleX: 1,
-          screenY: 1,
-          left: postfixLeft,
-          top: textGroup.item(1).top
-        })
-        // 后缀跟随后再隐藏，防止定位错误
-        group.set({
-          angle: angle,
-          visible: visible
-        })
-        group.setCoords()
-        setTimeout(async () => {
-          await _this.setPircePosition(group, {
-            ...group.textStyle,
-            'horizontalAlign': group.textStyle.horizontalAlign,
-            'verticalAlign': group.textStyle.verticalAlign
-          })
-          group.set({
-            angle: angle,
-            visible: visible
-          })
-          group.setCoords()
-        }, 5)
-
-        canvas.requestRenderAll()
-        canvas.renderAll()
-      })
-
-      group.on('selected', function (e) {
-
-      })
-
-      group.on('scaling', async function (e) {
-        // const scaleX = e.target.scaleX
-        // let groupwidth = (e.target.width * scaleX)
-        // let groupheight = (e.target.height * e.target.scaleY)
-
-        const {gizp} = group.options
-        console.log('scaling', gizp)
-        // if (gizp) {
-
-        // } else {
-        //   group.set('width', groupwidth)
-        //   group.set('height', groupheight)
-        //   group.set('scaleX', 1)
-        //   group.set('scaleY', 1)
-        //   // rect
-        //   group.item(0).set({
-        //     scaleX: 1,
-        //     scaleY: 1,
-        //     width: groupwidth - strokeWidth,
-        //     height: groupheight - strokeWidth,
-        //     originX: 'center',
-        //     originY: 'center',
-        //     left: 0,
-        //     top: 0
-        //   })
-        //   // textRect
-        //   group.item(1).set({
-        //     scaleX: 1,
-        //     scaleY: 1,
-        //     width: groupwidth - strokeWidth,
-        //     height: groupheight - strokeWidth,
-        //     originX: 'center',
-        //     originY: 'center'
-        //   })
-        //   group.item(1).item(0).set({
-        //     scaleX: 1,
-        //     scaleY: 1,
-        //     width: groupwidth - strokeWidth,
-        //     height: groupwidth - strokeWidth,
-        //     originX: 'center',
-        //     originY: 'center',
-        //     left: 0,
-        //     top: 0
-        //   })
-        //   group.item(1).set({
-        //     clipPath: null,
-        //     dirty: false
-        //   })
-        // }
-
-        group.item(1).item(1).set({
-          visible: false
-        })
-        group.item(1).item(2).set({
-          visible: false
-        })
-      })
-
-      group.on('scaled', async function (e) {
-        // console.log('放大缩小', e, group, e.target.scaleX)
-        const scaleX = e.target.scaleX
-        let groupwidth = (e.target.width * scaleX)
+        let groupwidth = (e.target.width * e.target.scaleX)
         let groupheight = (e.target.height * e.target.scaleY)
-        const strokeWidth = e.target.textStyle.strokeWidth
-        // let options = e.target.textStyle
         group.set('width', groupwidth)
         group.set('height', groupheight)
         group.set('scaleX', 1)
         group.set('scaleY', 1)
+        group.options.width = groupwidth
+        group.options.height = groupheight
 
-        group.textStyle.width = groupwidth
-        group.textStyle.height = groupheight
+        let Rect = group.item(0)
+        let priceGroup = group.item(1)
+        let options = group.options
 
-        // rect
-        group.item(0).set({
-          scaleX: 1,
-          scaleY: 1,
-          width: groupwidth - strokeWidth,
-          height: groupheight - strokeWidth,
-          originX: 'center',
-          originY: 'center',
-          left: 0,
-          top: 0
-        })
-        // textRect
-        group.item(1).set({
-          scaleX: 1,
-          scaleY: 1,
-          width: groupwidth - strokeWidth,
-          height: groupheight - strokeWidth,
-          originX: 'center',
-          originY: 'center'
-        })
-        group.item(1).item(0).set({
-          scaleX: 1,
-          scaleY: 1,
-          width: groupwidth - strokeWidth * 2,
-          height: groupheight - strokeWidth * 2,
-          originX: 'center',
-          originY: 'center',
-          left: 0,
-          top: 0
+        Rect.set({
+          width: groupwidth,
+          height: groupheight
         })
 
-        _this.setPircePosition(group, group.options)
-        // group.item(1).clipPath = group.item(1).item(0) // 文本的背景作为裁切
-
-        // group.item(1).clipPath.setPositionByOrigin(group.getCenterPoint(), 'center', 'center')
-        if (group.width > group.textStyle.width || group.height > group.textStyle.height) {
-          group.item(1).clipPath = null
-        } else {
-          // eslint-disable-next-line no-undef
-          group.item(1).clipPath = new fabric.Rect({
-            width: group.item(1).item(0).width,
-            height: group.item(1).item(0).height,
-            scaleX: 1,
-            scaleY: 1,
-            originX: 'center',
-            originY: 'center'
-          })
-          // console.log(group.width, group.height)
-          group.item(1).set({
-            dirty: true
-          })
-        }
-
-        setTimeout(() => {
-          group.item(1).item(1).set({
-            visible: true
-          })
-          group.item(1).item(2).set({
-            visible: true
-          })
-          group.textStyle.width = groupwidth
-          group.textStyle.height = groupheight
-          canvas.requestRenderAll()
-          canvas.renderAll()
-        }, 100)
+        const {newleft, newtop} = _this.countPriceposition(Rect, priceGroup, options)
+        priceGroup.set({
+          left: newleft,
+          top: newtop
+        })
       })
+
+      return group
+    },
+    // (新)计算文本位置
+    countPriceposition (Rect, priceGroup, options) {
+      const { horizontalAlign, verticalAlign } = options
+      // console.log('位置定位：', horizontalAlign, verticalAlign)
+      // 文本域的宽度
+      let textWidth = priceGroup.width * priceGroup.scaleX
+      let textHeight = priceGroup.height * priceGroup.scaleY
+      let rectWidth = Rect.width * Rect.scaleX
+      let rectHeight = Rect.height * Rect.scaleY
+      // 字典格式
+      var newleft = ({
+        0: () => { return -rectWidth / 2 },
+        1: () => { return -textWidth / 2 },
+        2: () => { return rectWidth / 2 - textWidth }
+      })[ horizontalAlign || 0 ]()
+
+      let newtop = ({
+        0: () => { return -rectHeight / 2 },
+        1: () => { return -textHeight / 2 },
+        2: () => { return rectHeight / 2 - textHeight }
+      })[ verticalAlign || 0 ]()
+      return {
+        newleft, newtop
+      }
+    },
+    // 修改数字组件内容 (改变形状的部分)
+    async changePriceValue (group, options) {
+      let canvas = this.canvas
+      let priceGroup = group.item(1)
+      // console.log(group, options)
+      // 分割价格
+      const {priceText, integer, decimal} = await this.priceformat(options.text, options.roundingMode, options.decimalDigit, options.decimalSeparator, options.thousandSeparator)
+      options = {
+        ...options,
+        priceText,
+        integer,
+        decimal
+      }
+      // 计算整数部分的文字高度
+      const {integerFontType, integerFontSize, integerIfBold, integerIfItalic, integerIfUnderline, integerIfStrikeThrough} = options
+      let res = await this.getTextOffset('123456789', {
+        width: integerFontSize * 2,
+        height: integerFontSize * 2,
+        fontFamily: integerFontType || '微软雅黑',
+        fontSize: integerFontSize || 50,
+        fontWeight: integerIfBold === 1 ? 'bold' : 'normal' || 'normal',
+        fontStyle: integerIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+        underline: integerIfUnderline === 1 ? true : false || false,
+        linethrough: integerIfStrikeThrough === 1 ? true : false || false
+      })
+      group.set({
+        textImg: res,
+        options: options,
+        textStyle: options
+      })
+      // 计算数字组件前半部分的样式
+      const {prefix, prefixPlace, prefixFontType, prefixFontSize, prefixIfBold, prefixIfItalic, prefixIfUnderline, prefixIfStrikeThrough} = options
+      let priceStyle = {0: {}}
+      // 前缀样式
+      for (let i = 0; i < prefix.length; i++) {
+        priceStyle[0][i] = {
+          deltaY: prefixPlace === 2 ? 0 : (prefixPlace === 1 ? (prefixFontSize - res.fontTrueheight) / 2 : prefixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight),
+          fontSize: prefixFontSize,
+          fontFamily: prefixFontType,
+          fontWeight: prefixIfBold === 1 ? 'bold' : 'normal' || 'normal',
+          fontStyle: prefixIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+          underline: prefixIfUnderline === 1 ? true : false || false,
+          linethrough: prefixIfStrikeThrough === 1 ? true : false || false
+        }
+      }
+      const {decimalDigit, decimalSeparator, dotFontType, dotFontSize, dotIfBold, dotIfItalic, dotIfUnderline, dotIfStrikeThrough} = options
+      if (decimalDigit > 0) {
+        // 小数点样式
+        console.log('小数点样式', prefix.length, integer.length)
+        for (let i = prefix.length + integer.length; i < prefix.length + integer.length + decimalSeparator.length; i++) {
+          priceStyle[0][i] = {
+            deltaY: 0,
+            fontSize: dotFontSize,
+            fontFamily: dotFontType,
+            fontWeight: dotIfBold === 1 ? 'bold' : 'normal' || 'normal',
+            fontStyle: dotIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+            underline: dotIfUnderline === 1 ? true : false || false,
+            linethrough: dotIfStrikeThrough === 1 ? true : false || false
+          }
+        }
+        const {decimalPlace, decimalFontType, decimalFontSize, decimalIfBold, decimalIfItalic, decimalIfUnderline, decimalIfStrikeThrough} = options
+        // 小数样式
+        for (let i = prefix.length + integer.length + decimalSeparator.length; i < prefix.length + integer.length + decimalSeparator.length + decimal.length; i++) {
+          priceStyle[0][i] = {
+            deltaY: decimalPlace === 2 ? 0 : decimalFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight,
+            fontSize: decimalFontSize,
+            fontFamily: decimalFontType,
+            fontWeight: decimalIfBold === 1 ? 'bold' : 'normal' || 'normal',
+            fontStyle: decimalIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+            underline: decimalIfUnderline === 1 ? true : false || false,
+            linethrough: decimalIfStrikeThrough === 1 ? true : false || false
+          }
+        }
+      }
+      // 文本修改样式
+      const {textColor, postfix, thousandSeparator} = options
+      let newPrice = priceGroup.item(0)
+      newPrice.set({
+        fill: textColor,
+        text: prefix + integer + decimalSeparator + decimal,
+        fontSize: integerFontSize,
+        fontFamily: integerFontType,
+        prefix: prefix,
+        postfix: postfix,
+        decimalSeparator: decimalSeparator,
+        thousandSeparator: thousandSeparator,
+        fontWeight: integerIfBold === 1 ? 'bold' : 'normal' || 'normal',
+        fontStyle: integerIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+        underline: integerIfUnderline === 1 ? true : false || false,
+        linethrough: integerIfStrikeThrough === 1 ? true : false || false
+      })
+      newPrice.set({
+        styles: priceStyle
+      })
+      // 后缀
+      const {postfixPlace, postfixFontType, postfixFontSize, postfixIfBold, postfixIfItalic, postfixIfUnderline, postfixIfStrikeThrough} = options
+      let postfixStyle = {0: {}}
+      // 后缀的位置  上：0  中：1  下：2 小数上：3 小数下：4
+      let deltaY = ({
+        0: () => { return postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight },
+        1: () => { return (postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight) / 2 },
+        2: () => { return 0 },
+        3: () => { return postfixFontSize * (res.fontTrueheight / integerFontSize) - res.fontTrueheight },
+        4: () => { return 0 }
+      })[ postfixPlace || 0 ]()
+      // 后缀相对价格组件的位置
+      let postfixLeft = ({
+        0: () => { return newPrice.width },
+        1: () => { return newPrice.width },
+        2: () => { return newPrice.width },
+        3: () => { return newPrice.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
+        4: () => { return newPrice.__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
+      })[ postfixPlace || 0 ]()
+      for (let i = 0; i < postfix.length; i++) {
+        postfixStyle[0][i] = {
+          deltaY: deltaY,
+          fontSize: postfixFontSize,
+          fontFamily: postfixFontType,
+          fontWeight: postfixIfBold === 1 ? 'bold' : 'normal' || 'normal',
+          fontStyle: postfixIfItalic === 2 ? 'italic' : 'normal' || 'normal',
+          underline: postfixIfUnderline === 1 ? true : false || false,
+          linethrough: postfixIfStrikeThrough === 1 ? true : false || false
+        }
+      }
+      let newPost = priceGroup.item(1)
+      newPost.set({
+        fill: textColor,
+        text: postfix + ' ',
+        fontSize: 10,
+        fontFamily: postfixFontType,
+        originX: 'left',
+        originY: 'top',
+        left: newPrice.left + postfixLeft,
+        top: newPrice.top,
+        scaleX: 1,
+        prefix: prefix,
+        postfix: postfix
+      })
+      newPost.set({
+        styles: postfixStyle
+      })
+      // 后缀空格
+      newPost.setSelectionStyles({
+        deltaY: 0,
+        fontSize: integerFontSize,
+        fontFamily: postfixFontType,
+        fontWeight: 'normal',
+        fontStyle: 'normal',
+        underline: false,
+        linethrough: false
+      }, postfix.length, postfix.length + 1)
+      // 价格文本重组
+      const {id} = options
+      // eslint-disable-next-line no-undef
+      let newPriceGroup = new fabric.Group([newPrice, newPost], {
+        isType: 'NewPriceGroup',
+        component: 'component',
+        originX: 'left',
+        originY: 'top',
+        fill: '#f0f',
+        id: id,
+        textImg: res,
+        options: options,
+        textStyle: options,
+        visible: true
+      })
+      console.log(newPriceGroup)
+      // 定位位置
+      const {newleft, newtop} = this.countPriceposition(group.item(0), newPriceGroup, group.options)
+      newPriceGroup.set({
+        left: newleft,
+        top: newtop
+      })
+      // 删除价格
+      group.remove(priceGroup)
+      // 添加新价格
+      group.add(newPriceGroup)
+      canvas.renderAll()
+    },
+    // 修改价格组件
+    async setPrice (group, name, value) {
+      let canvas = this.canvas
+      // console.error(group, name, value)
+      const {prefix, prefixIfBold, prefixIfItalic, prefixIfStrikeThrough, prefixIfUnderline, prefixFontType, prefixFontSize, prefixPlace, integerFontSize,
+        integerFontType, integerIfBold, integer, integerIfUnderline, integerIfStrikeThrough,
+        postfix, postfixIfBold, postfixIfItalic, postfixIfStrikeThrough, postfixIfUnderline, postfixFontType, postfixFontSize, postfixPlace} = group.textStyle
+
+      switch (name) {
+        case 'content':
+          group.options.content = value
+          group.options.text = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'textColor':
+          group.textStyle.textColor = value
+          group.options.textColor = value
+          group.item(1).item(0).set({
+            fill: value
+          })
+          group.item(1).item(1).set({
+            fill: value
+          })
+          break
+        case 'bgcolor':
+          group.textStyle.bgcolor = value
+          group.options.bgcolor = value
+          group.item(0).set({
+            fill: value
+          })
+          break
+
+        case 'horizontalAlign':
+          group.textStyle.horizontalAlign = Number(value)
+          group.options.horizontalAlign = Number(value)
+          // 定位位置
+          let {newleft, newtop} = this.countPriceposition(group.item(0), group.item(1), group.options)
+          group.item(1).set({
+            left: newleft,
+            top: newtop
+          })
+          break
+        case 'verticalAlign':
+          group.textStyle.verticalAlign = Number(value)
+          group.options.verticalAlign = Number(value)
+          // 定位位置
+          let {newleft: nleft, newtop: ntop} = this.countPriceposition(group.item(0), group.item(1), group.options)
+          group.item(1).set({
+            left: nleft,
+            top: ntop
+          })
+          break
+        case 'width':
+          console.log(group)
+          group.options[name] = Number(value)
+          group.textStyle[name] = Number(value)
+          // 缩放的形式改group
+          group.set({
+            scaleX: value / group.item(0).width
+          })
+          setTimeout(() => {
+            group.set({
+              width: group.width * group.scaleX,
+              scaleX: 1
+            })
+            group.item(0).set({
+              width: group.width * group.scaleX,
+              scaleX: 1
+            })
+            // 定位位置
+            let {newleft: nwleft, newtop: nwtop} = this.countPriceposition(group.item(0), group.item(1), group.options)
+            group.item(1).set({
+              scaleX: 1,
+              left: nwleft,
+              top: nwtop
+            })
+            canvas.renderAll()
+          }, 1)
+          break
+        case 'height':
+          group.options[name] = Number(value)
+          group.textStyle[name] = Number(value)
+          // 缩放的形式改group
+          group.set({
+            scaleY: value / group.item(0).height
+          })
+          setTimeout(() => {
+            group.set({
+              height: group.height * group.scaleY,
+              scaleY: 1
+            })
+            group.item(0).set({
+              height: group.height * group.scaleY,
+              scaleY: 1
+            })
+            // 定位位置
+            let {newleft: nwleft, newtop: nwtop} = this.countPriceposition(group.item(0), group.item(1), group.options)
+            group.item(1).set({
+              scaleY: 1,
+              left: nwleft,
+              top: nwtop
+            })
+            canvas.renderAll()
+          }, 1)
+          break
+        case 'angle':
+          group.options.angle = Number(value)
+          group.textStyle[name] = Number(value)
+          group.set({
+            angle: value
+          })
+          break
+        case 'prefix':
+          group.options[name] = value
+          group.textStyle[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'postfix':
+          group.options[name] = value
+          group.textStyle[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'thousandSeparator':
+          group.options[name] = value
+          group.textStyle[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalSeparator':
+          group.options[name] = value
+          group.textStyle[name] = value
+          this.changePriceValue(group, group.options)
+          break
+
+        case 'prefixIfBold':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'prefixIfItalic':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(0), 0, prefix.length, {
+            Place: prefixPlace,
+            FontSize: prefixFontSize,
+            FontType: prefixFontType,
+            IfBold: prefixIfBold,
+            IfItalic: Number(value),
+            IfUnderline: prefixIfUnderline,
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'prefixIfStrikeThrough':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(0), 0, prefix.length, {
+            Place: prefixPlace,
+            FontSize: prefixFontSize,
+            FontType: prefixFontType,
+            IfBold: prefixIfBold,
+            IfItalic: prefixIfItalic,
+            IfUnderline: prefixIfUnderline,
+            IfStrikeThrough: Number(value),
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'prefixIfUnderline':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(0), 0, prefix.length, {
+            Place: prefixPlace,
+            FontSize: prefixFontSize,
+            FontType: prefixFontType,
+            IfBold: prefixIfBold,
+            IfItalic: prefixIfItalic,
+            IfUnderline: Number(value),
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'prefixFontType':
+          group.textStyle[name] = value
+          group.options[name] = value
+          await this.setTextStyle(group.item(1).item(0), 0, prefix.length, {
+            Place: prefixPlace,
+            FontSize: prefixFontSize,
+            FontType: value,
+            IfBold: prefixIfBold,
+            IfItalic: prefixIfItalic,
+            IfUnderline: prefixIfUnderline,
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'prefixFontSize':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'prefixPlace':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(0), 0, prefix.length, {
+            Place: Number(value),
+            FontSize: prefixFontSize,
+            FontType: prefixFontType,
+            IfBold: prefixIfBold,
+            IfItalic: prefixIfItalic,
+            IfUnderline: prefixIfUnderline,
+            IfStrikeThrough: prefixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+
+        case 'integerIfBold':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'integerIfItalic':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'integerIfStrikeThrough':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'integerIfUnderline':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          // this.changePriceValue(group, group.options)
+          await this.setTextStyle(group.item(1).item(0), prefix.length, prefix.length + integer.length, {
+            Place: 0,
+            FontSize: integerFontSize,
+            FontType: integerFontType,
+            IfBold: integerIfBold,
+            IfItalic: Number(value),
+            IfUnderline: integerIfUnderline,
+            IfStrikeThrough: integerIfStrikeThrough
+          }, group.textImg.fontTrueheight)
+          break
+        case 'integerFontType':
+          group.textStyle[name] = value
+          group.options[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'integerFontSize':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          let options = {
+            'integerFontSize': Number(value)
+          }
+          if (group.options.prefixFontSize > Number(value)) {
+            group.textStyle.prefixFontSize = Number(value)
+            group.options.prefixFontSize = Number(value)
+            options['prefixFontSize'] = Number(value)
+          }
+          if (group.options.dotFontSize > Number(value)) {
+            group.textStyle.dotFontSize = Number(value)
+            group.options.dotFontSize = Number(value)
+            options['dotFontSize'] = Number(value)
+          }
+          if (group.options.decimalFontSize > Number(value)) {
+            group.textStyle.decimalFontSize = Number(value)
+            group.options.decimalFontSize = Number(value)
+            options['decimalFontSize'] = Number(value)
+          }
+          if (group.options.postfixFontSize > Number(value)) {
+            group.textStyle.postfixFontSize = Number(value)
+            group.options.postfixFontSize = Number(value)
+            options['postfixFontSize'] = Number(value)
+          }
+          this.changePriceValue(group, group.options)
+          break
+
+        case 'dotIfBold':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'dotIfItalic':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'dotFontType':
+          group.textStyle[name] = value
+          group.options[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'dotFontSize':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+
+        case 'decimalPlace':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalIfBold':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalIfItalic':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalIfUnderline':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalIfStrikeThrough':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalFontType':
+          group.textStyle[name] = value
+          group.options[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'decimalFontSize':
+          group.textStyle[name] = value
+          group.options[name] = value
+          this.changePriceValue(group, group.options)
+          break
+
+        case 'postfixIfBold':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'postfixIfItalic':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(1), 0, postfix.length, {
+            Place: postfixPlace,
+            FontSize: postfixFontSize,
+            FontType: postfixFontType,
+            IfBold: postfixIfBold,
+            IfItalic: Number(value),
+            IfUnderline: postfixIfUnderline,
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'postfixIfStrikeThrough':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(1), 0, postfix.length, {
+            Place: postfixPlace,
+            FontSize: postfixFontSize,
+            FontType: postfixFontType,
+            IfBold: postfixIfBold,
+            IfItalic: postfixIfItalic,
+            IfUnderline: postfixIfUnderline,
+            IfStrikeThrough: Number(value),
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'postfixIfUnderline':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          await this.setTextStyle(group.item(1).item(1), 0, postfix.length, {
+            Place: postfixPlace,
+            FontSize: postfixFontSize,
+            FontType: postfixFontType,
+            IfBold: postfixIfBold,
+            IfItalic: postfixIfItalic,
+            IfUnderline: Number(value),
+            IfStrikeThrough: postfixIfStrikeThrough,
+            integerFontSize: integerFontSize
+          }, group.textImg.fontTrueheight)
+          break
+        case 'postfixFontType':
+          group.textStyle[name] = value
+          group.options[name] = value
+          this.changePriceValue(group, group.options)
+          break
+        case 'postfixFontSize':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'postfixPlace':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+
+        case 'decimalDigit':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        case 'roundingMode':
+          group.textStyle[name] = Number(value)
+          group.options[name] = Number(value)
+          this.changePriceValue(group, group.options)
+          break
+        default:
+          console.log(name, value)
+      }
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
+    /**
+     * 创建文本矩形组件 createNewText （暂不支持自适应）
+     */
+    async createNewText (options) {
+      // let canvas = this.canvas
+      // eslint-disable-next-line no-undef
+      const rect = new fabric.Rect({
+        isType: 'NewText-rect',
+        id: options.id,
+        options: options,
+        component: 'component',
+        width: parseInt(options.width * options.scaleX + options.strokeWidth),
+        height: parseInt(options.height * options.scaleY + options.strokeWidth),
+        fill: 'yellow'
+      })
+      // eslint-disable-next-line no-undef
+      const text = new fabric.Textbox(options.textdemo, {
+        ...options,
+        id: options.id,
+        options: options,
+        component: 'component',
+        strokeWidth: 0,
+        stroke: options.stroke ? options.stroke : '#000000',
+
+        fill: options.fontColor ? options.fontColor : '#ffffff',
+        fillColor: options.color ? options.color : '#ffffff',
+        fontSize: options.fontSize ? options.fontSize : 12,
+
+        scaleX: 1,
+        scaleY: 1,
+
+        isElasticSize: options.isElasticSize ? options.isElasticSize : 0,
+        lineHeight: parseInt((options.fontSize + options.verticalSpace) / options.fontSize),
+        isType: 'NewText-text',
+        splitByGrapheme: true,
+        selectable: false,
+        evented: false
+      })
+
+      // this.textPadding = options.textPadding ? options.textPadding : (options.strokeWidth ? options.strokeWidth : 0)
+
+      // eslint-disable-next-line no-undef
+      // const clipPath = new fabric.Rect({
+      //   originX: 'left',
+      //   originY: 'top',
+      //   left: -(options.width * options.scaleX) / 2,
+      //   top: -(options.height * options.scaleY) / 2,
+      //   width: options.width * options.scaleX,
+      //   height: options.height * options.scaleY
+      // })
+
+      // if (text.isElasticSize !== 2) {
+      //   // 文本重新赋值渲染
+      //   let newtext = this.textStyleFormat(text, text.textdemo)
+      //   text.set('text', newtext)
+
+      //   text.clipPath = null // 裁切一下形状
+      // } else {
+      //   // 自适应文本不换行
+      //   let newtext = text.textdemo.replace(this._wordJoiners, '')
+      //   text.set('text', newtext)
+
+      //   text.set('splitByGrapheme', false)
+
+      //   // 计算当行的最大宽度和最大高度
+      //   var maxWidth = text.getLineWidth(0)
+      //   for (var i = 1, len = text._textLines.length; i < len; i++) {
+      //     var currentLineWidth = text.getLineWidth(i)
+      //     maxWidth = maxWidth + currentLineWidth
+      //   }
+      //   var maxHeight = text.getHeightOfLine(0)
+      //   // 文本变形
+      //   text.set('scaleX', (this.width * this.scaleX - this.textPadding) / maxWidth)
+      //   text.set('scaleY', (this.height * this.scaleY - this.textPadding) / maxHeight)
+
+      //   text.clipPath = null
+      // }
+      // eslint-disable-next-line no-undef
+      let group = new fabric.Group([rect], {
+        isType: 'NewText',
+        component: 'component',
+        originX: 'left',
+        originY: 'top',
+        id: options.id,
+        layer: options.layer,
+        zIndex: options.layer,
+        width: options.width + options.strokeWidth,
+        height: options.height + options.strokeWidth,
+        left: options.left,
+        top: options.top,
+        options: options,
+        screenIndex: options.screenIndex,
+        visible: true
+
+      })
+      text.set({
+        width: parseInt(options.width * options.scaleX + options.strokeWidth),
+        height: 50,
+        left: -rect.width / 2,
+        top: -rect.height / 2
+      })
+      group.add(text)
+      group.clipPath = rect
       group.setControlsVisibility({
         bl: true,
         br: true,
@@ -6962,7 +6682,152 @@ export default {
         tl: true,
         tr: true
       })
+      group.on('scaling', async (e) => {
+        this.textRectScaling(group)
+      })
+      group.on('scaled', async (e) => {
+        this.textRectScaled(group)
+      })
+      group.on('mousedblclick', () => {
+        this.textRectMousedbclick(group)
+      })
+      group.item(1).on('editing:entered', (e) => {
+        this.textRectentered(group)
+      })
+      group.item(1).on('editing:exited', (e) => {
+        this.textRectexited(group)
+      })
+
       return group
+    },
+    // 文本缩放ing
+    textRectScaling (group) {
+      let groupwidth = (group.width * group.scaleX)
+      let groupheight = (group.height * group.scaleY)
+      group.item(1).set({
+        left: -group.item(0).width / 2,
+        top: -group.item(0).height / 2,
+        width: groupwidth,
+        height: groupheight,
+        scaleX: 1 / group.scaleX,
+        scaleY: 1 / group.scaleY
+      })
+    },
+    // 文本缩放ed
+    textRectScaled (group) {
+      let groupwidth = (group.width * group.scaleX)
+      let groupheight = (group.height * group.scaleY)
+      group.set({
+        scaleX: 1,
+        scaleY: 1
+      })
+      group.set({
+        width: groupwidth,
+        height: groupheight
+      })
+
+      group.item(0).set({
+        width: groupwidth,
+        height: groupheight
+      })
+      group.set({
+        clipPath: group.item(0),
+        dirty: true
+      })
+
+      group.item(1).set({
+        scaleX: 1,
+        scaleY: 1,
+        left: -groupwidth / 2,
+        top: -groupheight / 2,
+        width: groupwidth,
+        height: groupheight
+      })
+    },
+    // 文本双击
+    textRectMousedbclick (group) {
+      console.log('双击进入')
+      let canvas = this.canvas
+      var destroyedGroup = group.destroy()
+      var items = destroyedGroup.getObjects()
+
+      items.forEach(function (item) {
+        canvas.add(item)
+      })
+      this.canvas.remove(group)
+      this.canvas.setActiveObject(items[1])
+      items[1].enterEditing()
+    },
+    // 文本进入编辑
+    textRectentered (group) {
+      console.log('进入编辑')
+      group.item(1).setSelectionEnd(group.item(1)._text.length)
+      group.item(0).set({
+        selected: false,
+        evented: false,
+        hasBorders: false
+      })
+      group.item(1).set({
+        textBackgroundColor: '#EEEEEE',
+        hasBorders: false
+      })
+    },
+    // 文本退出编辑
+    textRectexited (group) {
+      console.log('退出编辑')
+      let canvas = this.canvas
+      var objs = this.getObjectsByid(group.id)
+      if (!objs.length || objs[0].isType === 'NewText') { return }
+      console.log('objs', objs)
+      let rect = objs[0]
+      let text = objs[1]
+      // eslint-disable-next-line no-undef
+      var group2 = new fabric.Group([rect], {
+        isType: 'NewText',
+        component: 'component',
+        originX: 'left',
+        originY: 'top',
+        id: group.id,
+        width: rect.width,
+        height: rect.height,
+        visible: true
+      })
+      console.log(rect.width)
+      text.set({
+        textBackgroundColor: '',
+        width: rect.width,
+        height: rect.height,
+        left: -rect.width / 2,
+        top: -rect.height / 2
+      })
+      group2.add(text)
+      group2.set({
+        clipPath: rect,
+        dirty: true
+      })
+      objs.forEach(obj => {
+        canvas.remove(obj)
+      })
+      canvas.add(group2)
+      group2.setCoords()
+      group2.on('scaling', async (e) => {
+        this.textRectScaling(group2)
+      })
+      group2.on('scaled', async (e) => {
+        this.textRectScaled(group2)
+      })
+      group2.on('mousedblclick', () => {
+        this.textRectMousedbclick(group2)
+      })
+      group2.item(1).on('editing:entered', (e) => {
+        this.textRectentered(group2)
+      })
+      group2.item(1).on('editing:exited', () => {
+        this.textRectexited(group2)
+      })
+      // 文本宽高大小
+      canvas.requestRenderAll()
+      canvas.renderAll()
     }
   }
 }

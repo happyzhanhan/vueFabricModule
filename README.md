@@ -730,3 +730,7 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.23
 - 二维码缩放影响图片显示
 - 新增修改9个控制角的图片
+
+### 2023.06.26
+> v0.1.24
+- 优化价格组件

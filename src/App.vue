@@ -175,6 +175,11 @@
                @dblclick="draw('TextRect')"
             ></i>
 
+            <i class="ps-icon7 ps-icon"
+               title="文本2"
+               @dblclick="draw('NewText')"
+            ></i>
+
             <!-- <i class="ps-icon7 ps-icon"
               title="测试文本"
                @dblclick="draw('TextRectBox')"
@@ -362,7 +367,7 @@
 
                         <div v-if="JSON.stringify(object)!=='{}'">
 
-                            <div class="ps-params-data" v-if="object.isType==='Text'">
+                            <div class="ps-params-data">
                                 <div class="ps-switch" :class="object.textAdvanceProperty == 2?'hover':''"><span>
                                     <b @click="changeObject('textAdvanceProperty', 0)">不使用</b>
                                     <b @click="changeObject('textAdvanceProperty', 2)">自适应</b>
@@ -431,7 +436,7 @@
                                 </div>
                             </div>
 
-                            <div  class="ps-layer-botButton" v-if="object.isType!=='Price'">
+                            <div  class="ps-layer-botButton" v-if="object.isType!=='Price' ">
                                 <div class="color-btn">
                                     <span class="color-background"  @click="showColor = !showColor" :style="'background:'+ object.fillinColor +';'"></span>
 
@@ -469,7 +474,7 @@
                                 </div>
                             </div>
 
-                            <div  class="ps-layer-botButton" v-if="object.isType==='Price'">
+                            <div  class="ps-layer-botButton" v-if="object.isType==='Price' ">
                                <div class="ps-params-data">
                                     <div class="ps-switch" :class="object.visible?'':'hover'"><span>
                                         <b @click="changeObject('visible', true)">显示</b>
@@ -478,7 +483,7 @@
                                 </div>
                             </div>
 
-                            <div  class="ps-layer-botButton" v-if="object.isType==='Price'">
+                            <div  class="ps-layer-botButton" v-if="object.isType==='Price' ">
                                 <div class="color-btn">
                                     <span class="color-background"  @click="showTextColor = !showTextColor" :style="'background:'+ object.textColor +';'"></span>
 
@@ -494,7 +499,7 @@
                                 </div>
                             </div>
 
-                            <div class="pricebox"  v-if="object.isType==='Price'">
+                            <div class="pricebox"  v-if="object.isType==='Price' ">
                                 <div  class="ps-params-data">
                                  <div class="ps-param-line">
                                     <div class="oneparam">
@@ -1302,6 +1307,7 @@ export default {
             width: 150,
             height: 50,
             hasRotatingPoint: false,
+            format: 'CODE39',
             imgText: '69012345679',
             color: '#000',
             bgcolor: '#FFFFFF',
@@ -1405,6 +1411,55 @@ export default {
           break
 
         case 'TextRect':
+          options = {
+            left: 500,
+            top: 80,
+            hasRotatingPoint: true,
+            width: 300,
+            height: 200,
+            fontColor: '#000000',
+            // fill: 'rgba(0,0,0,0)',
+            // strokeWidth: 1,
+
+            fontFamily: '宋体',
+
+            visible: true,
+            fontSize: 30,
+            textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
+            originXY: ['right', 'bottom'],
+
+            isElasticSize: 1,
+
+            maxLines: 7,
+            omitStyleText: '...', // 两个汉字 4个字母
+            omitStyle: 1,
+            newline: '|',
+
+            minFontSize: 12,
+            textAlign: 'left',
+            verticalSpace: 0,
+
+            fontWeight: 'bold',
+            linethrough: true,
+            underline: true,
+            fontStyle: 'italic',
+
+            // xLeft: 0,
+            // yTop: 0,
+            // xRight: 0,
+            // yBot: 0,
+
+            fillinColor: '#0f0',
+            border: 2,
+
+            angle: 0,
+            stroke: '#9864FF',
+            strokeWidth: 0
+            // strokeDashArray: [3, 1]
+
+          }
+          break
+        case 'NewText':
           options = {
             left: 500,
             top: 80,
@@ -1739,7 +1794,7 @@ export default {
             'decimalIfStrikeThrough': 0, // 小数是否中划线
             'decimalIfUnderline': 0, // 小数是否下划线
             decimalFontType: '微软雅黑', // 字体
-            decimalFontSize: 50, // 字号
+            decimalFontSize: 25, // 字号
             decimalPlace: 0, // 小数在整数的位置  上：0  中：1  下：2
             /**
              * 后缀
@@ -1751,7 +1806,7 @@ export default {
             'postfixIfUnderline': 0, // 后缀是否下划线
             postfixFontType: '微软雅黑', // 字体
             postfixFontSize: 20, // 字号
-            postfixPlace: 0, // 后缀的位置  上：0  中：1  下：2       小数下：3           小数上：4
+            postfixPlace: 4, // 后缀的位置  上：0  中：1  下：2       小数下：3           小数上：4
             visible: true
           }
           break
@@ -1771,8 +1826,10 @@ export default {
       // canvaobj.setControlsVisibility({
       //   mtr: false
       // })
-      console.log(this.$refs.canvas.toJson(), this.$refs.canvas.getObjectsNew())
+      console.log('toJson:', this.$refs.canvas.toJson(), this.$refs.canvas.getObjectsNew())
       this.textJSON = this.$refs.canvas.toJson(canvaobj)
+
+      // this.$refs.canvas.canvas.loadFromJSON(this.textJSON)
 
       this.changeAllObjects() // 同步图层
     },
