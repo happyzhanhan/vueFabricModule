@@ -734,3 +734,6 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.06.26
 > v0.1.24
 - 优化价格组件
+
+> v0.1.25
+- 优化价格组件(某个参数)

@@ -5823,7 +5823,7 @@ export default {
       // eslint-disable-next-line no-undef
       let postfixdom = new fabric.IText(postfix + ' ', {
         fill: textColor,
-        fontSize: 10,
+        fontSize: integerFontSize,
         fontFamily: postfixFontType,
         originX: 'left',
         originY: 'top',
@@ -6159,7 +6159,7 @@ export default {
       let canvas = this.canvas
       // console.error(group, name, value)
       const {prefix, prefixIfBold, prefixIfItalic, prefixIfStrikeThrough, prefixIfUnderline, prefixFontType, prefixFontSize, prefixPlace, integerFontSize,
-        integerFontType, integerIfBold, integer, integerIfUnderline, integerIfStrikeThrough,
+        integerFontType, integerIfBold, integer, integerIfItalic, integerIfStrikeThrough,
         postfix, postfixIfBold, postfixIfItalic, postfixIfStrikeThrough, postfixIfUnderline, postfixFontType, postfixFontSize, postfixPlace} = group.textStyle
 
       switch (name) {
@@ -6392,8 +6392,8 @@ export default {
             FontSize: integerFontSize,
             FontType: integerFontType,
             IfBold: integerIfBold,
-            IfItalic: Number(value),
-            IfUnderline: integerIfUnderline,
+            IfItalic: integerIfItalic,
+            IfUnderline: Number(value),
             IfStrikeThrough: integerIfStrikeThrough
           }, group.textImg.fontTrueheight)
           break
