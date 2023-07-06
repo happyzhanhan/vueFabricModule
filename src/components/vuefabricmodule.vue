@@ -4063,7 +4063,7 @@ export default {
       return new Promise(function (resolve, reject) {
         let canvasObject
         options.imgText = options.imgText ? options.imgText : 'barcode123456789'
-        options.barlineWidth = options.barlineWidth ? options.barlineWidth : 1
+        options.barlineWidth = options.barlineWidth || 1
 
         let barbox = document.getElementById('barbox')
         let bardom = document.createElement('img')
@@ -4106,7 +4106,7 @@ export default {
         // eslint-disable-next-line no-undef
         JsBarcode('#barcode' + options.id, options.imgText, {
           id: options.id,
-          format: options.format ? options.format : 'CODE128', // 条形码的格式
+          format: options.barcodeType ? options.barcodeType : 'CODE128', // 条形码的格式
           lineColor: options.color ? options.color : '#000000', // 线条颜色
           margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
           width: options.barlineWidth, // 线宽
@@ -4207,7 +4207,7 @@ export default {
             fill: options.lineColor,
             color: options.color ? options.color : '#000000',
             bgcolor: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)',
-            format: options.format ? options.format : 'CODE128', // 条形码的格式
+            barcodeType: options.barcodeType ? options.barcodeType : 'CODE128', // 条形码的格式
 
             lockRotation: true,
             flipX: false,
@@ -4279,12 +4279,12 @@ export default {
     async changeBarcodeImage (options) {
       // console.log(options.item(1).width,options.item(1).scaleX,options.width,options.scaleX);
       let lineWidth = options.barlineWidth
-      lineWidth = parseInt(options.barlineWidth * ((options.width * options.scaleX) / (options.item(1).width * options.item(1).scaleX)))
+      lineWidth = Math.floor(options.barlineWidth * ((options.width * options.scaleX) / (options.item(1).width * options.item(1).scaleX)))
 
       if (lineWidth === 0) {
         lineWidth = 1
       }
-      // console.log('条码线宽：',lineWidth);
+      // console.log('条码线宽：', lineWidth, options.barlineWidth)
 
       options.set({
         width: options.width * options.scaleX,
@@ -4299,7 +4299,7 @@ export default {
       let newoptions = {
         id: options.id ? options.id : 0,
         layer: options.layer ? options.layer : options.id,
-        format: options.item(1).format ? options.item(1).format : 'CODE128', // 条形码的格式
+        barcodeType: options.barcodeType ? options.barcodeType : 'CODE128', // 条形码的格式
         lineColor: options.color ? options.color : '#000000', // 线条颜色
         bgcolor: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
         margin: 0, // 条码四边空白（默认为10px）
@@ -4338,7 +4338,8 @@ export default {
         })
         options.set({
           width: options.item(1)._element.width,
-          scaleX: 1
+          scaleX: 1,
+          dirty: null
         })
         options.item(1).set({
           left: 0
@@ -4372,7 +4373,7 @@ export default {
 
         // eslint-disable-next-line no-undef
         JsBarcode('#barcode' + option.id, number, {
-          format: option.format ? option.format : 'CODE128', // 条形码的格式
+          format: option.barcodeType ? option.barcodeType : 'CODE128', // 条形码的格式
           lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
           margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
           width: option.lineWidth ? option.lineWidth : 2, // 线宽
@@ -5648,6 +5649,7 @@ export default {
     async createPrice (options) {
       const {
         id,
+        screenIndex,
         layer,
         left,
         top,
@@ -5902,6 +5904,7 @@ export default {
         options: options,
         textStyle: options,
         angle: angle,
+        screenIndex: screenIndex,
         visible: true
 
       })

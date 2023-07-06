@@ -434,6 +434,20 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="ps-param-line" >
+                                    <div class="onebar">
+                                        <div class="param-barcode">
+                                            条码类型:
+                                        </div>
+                                        <div class="PS_select">
+                                            <select name="barcodeType" id="" v-model="object.barcodeType"  @change="changeObject('barcodeType', object.barcodeType)">
+                                                <option value="CODE128" >CODE128</option>
+                                                <option value="CODE39">CODE39</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div  class="ps-layer-botButton" v-if="object.isType!=='Price' ">
@@ -1029,6 +1043,7 @@ export default {
           this.$set(this.object, 'textAdvanceProperty', obj.isElasticSize ? obj.isElasticSize : 0)
           this.$set(this.object, 'visible', obj.visible)
           this.$set(this.object, 'angle', obj.angle)
+          this.$set(this.object, 'barcodeType', obj.barcodeType)
 
           if (obj.isType === 'Image') {
             this.$set(this.object, 'imgText', 'obj.imgText')
@@ -1108,7 +1123,7 @@ export default {
       }, 500)
     },
     // 数据改变画布组件
-    changeObject (name, data) {
+    async changeObject (name, data) {
       console.log(name, data)
       let obj = this.$refs.canvas.getEditObj()
       console.log(obj)
@@ -1143,6 +1158,14 @@ export default {
           obj.set({'imgText': data})
           this.$refs.canvas.setSrc(obj, obj.url)
           this.$set(this.object, 'imgText', data)
+          break
+        case 'barcodeType':
+          obj.set({'barcodeType': data})
+          this.$set(this.object, 'barcodeType', data)
+          obj.visible = false
+          await this.$refs.canvas.changeBarcodeImage(obj)
+          obj.visible = true
+          await this.$refs.canvas.changeBarcodeImage(obj)
           break
         case 'visible': obj.set({'visible': data})
           this.$set(this.object, 'visible', data)
@@ -1304,10 +1327,10 @@ export default {
           options = {
             left: 60,
             top: 30,
-            width: 150,
+            width: 436,
             height: 50,
             hasRotatingPoint: false,
-            format: 'CODE39',
+            barcodeType: 'CODE39',
             imgText: '69012345679',
             color: '#000',
             bgcolor: '#FFFFFF',
@@ -2862,6 +2885,50 @@ export default {
                             text-align: right;
                         }
                     }
+                    .onebar{
+                        width: 100%;
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        .param-barcode{
+                            width: 60px;
+                            text-align: left;
+                        }
+                        .PS_select{
+                            select{
+                                border:1px solid #282828;
+                                height: 22px;
+                                outline: none;
+                                // background:url("../static/newps/images/icon-fangdajing.png") no-repeat 5px center;
+                                background: #3a3a3a;
+                                // background-size:12px 12px;
+                                // linear-gradient(0deg, #606060 20%, #6c6c6c 50%, #707070 70%);
+                                border-radius: 3px;
+                                color:#fff;
+                                font-size: 12px;
+                                position: relative;
+                                width: 160px;
+
+                                .ps-icon-fangdajing{
+                                    display: inline-block;
+                                    position: absolute;
+                                    left:2px;
+                                    top:1px;
+                                }
+
+                                option{
+                                    color:#fff;
+                                    font-size: 12px;
+                                    line-height: 24px;
+                                }
+
+                                &:active{
+                                    // background:#3a3a3a url("../static/newps/images/icon-fangdajing.png") no-repeat 5px center;
+                                    background-size:12px 12px;
+                                }
+                            }
+                        }
+                    }
 
                 }
                 .ps-history-data{
@@ -3311,6 +3378,7 @@ export default {
             }
         }
     }
+
 </style>
 
 <style>
