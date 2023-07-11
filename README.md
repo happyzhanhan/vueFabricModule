@@ -1,4 +1,13 @@
+![vue-fabric-module](/static/images/logo.svg "vue-fabric-module")
+
+
 # vue-fabric-module
+
+![vue-fabric-module](https://img.shields.io/badge/download-171-yellow.svg "vue-fabric-module")
+![vue-fabric-module](https://img.shields.io/badge/version-0.1.26-blue.svg "vue-fabric-module")
+![vue-fabric-module](https://img.shields.io/badge/npm-taobao-red.svg "vue-fabric-module")
+![vue-fabric-module](https://img.shields.io/badge/github-vuefabricmodule-gry.svg "vue-fabric-module")
+
 
 > vue-fabric-module :【基于vue2.0 fabric.js开发的画布组件，支持业务以下：创建圆形，矩形，文本，条码，二维码，图片，表格等等，画布的图册移动，隐藏，删除，画布的撤销、还原、缩放、对齐、居中、预览和保存等】The canvas component developed based on vue2.0 fabric.js supports the following businesses: creating circles, rectangles, texts, barcodes, QR codes, pictures, tables, etc., moving, hiding, deleting, and canceling canvases. Restore, zoom, align, center, preview and save, etc.
 
