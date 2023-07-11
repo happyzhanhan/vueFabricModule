@@ -740,6 +740,4 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.26
 - 新增一个价格组件的参数
-
-> v0.1.27
 - 条码类型改变条码图片修改

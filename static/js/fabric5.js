@@ -13752,8 +13752,6 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                   options: this.options,
                   textStyle: this.textStyle,
 
-                  barcodeType: this.barcodeType,
-
                 };
 
 

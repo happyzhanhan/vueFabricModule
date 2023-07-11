@@ -4084,8 +4084,8 @@ export default {
                 CODE128 (自动模式切换)
                 CODE128 A/B/C (强制模式)
                 EAN
-                EAN-13
-                EAN-8
+                EAN13
+                EAN8
                 EAN-5
                 EAN-2
                 UPC (A)
@@ -4102,18 +4102,22 @@ export default {
                 https://www.cnblogs.com/huangenai/p/6347607.html
 
                 */
-
-        // eslint-disable-next-line no-undef
-        JsBarcode('#barcode' + options.id, options.imgText, {
-          id: options.id,
-          format: options.barcodeType ? options.barcodeType : 'CODE128', // 条形码的格式
-          lineColor: options.color ? options.color : '#000000', // 线条颜色
-          margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
-          width: options.barlineWidth, // 线宽
-          height: options.height ? options.height : 20, // 条码高度
-          background: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
-          displayValue: false // 是否显示文字信息
-        })
+        try {
+          // eslint-disable-next-line no-undef
+          let newbarcode = JsBarcode('#barcode' + options.id, options.imgText, {
+            id: options.id,
+            format: options.barcodeType ? options.barcodeType : 'CODE128', // 条形码的格式
+            lineColor: options.color ? options.color : '#000000', // 线条颜色
+            margin: options.margin ? options.margin : 0, // 条码四边空白（默认为10px）
+            width: options.barlineWidth, // 线宽
+            height: options.height ? options.height : 20, // 条码高度
+            background: options.bgcolor ? options.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
+            displayValue: false // 是否显示文字信息
+          })
+          console.warn(newbarcode)
+        } catch (e) {
+          console.warn(e)
+        }
 
         options.originXY = options.originXY ? options.originXY : ['left', 'top']
         document.getElementById(barid).onload = () => {
@@ -4371,16 +4375,31 @@ export default {
 
         // console.log(barbox,bardom);
 
-        // eslint-disable-next-line no-undef
-        JsBarcode('#barcode' + option.id, number, {
-          format: option.barcodeType ? option.barcodeType : 'CODE128', // 条形码的格式
-          lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
-          margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
-          width: option.lineWidth ? option.lineWidth : 2, // 线宽
-          height: option.height ? option.height : 20, // 条码高度
-          background: option.bgcolor ? option.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
-          displayValue: false // 是否显示文字信息
-        })
+        try {
+          // eslint-disable-next-line no-undef
+          let newbarcode = JsBarcode('#barcode' + option.id, number, {
+            format: option.barcodeType ? option.barcodeType : 'CODE128', // 条形码的格式
+            lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
+            margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
+            width: option.lineWidth ? option.lineWidth : 2, // 线宽
+            height: option.height ? option.height : 20, // 条码高度
+            background: option.bgcolor ? option.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
+            displayValue: false // 是否显示文字信息
+          })
+          console.warn(newbarcode)
+        } catch (e) {
+          console.warn(e)
+          // eslint-disable-next-line no-undef
+          // JsBarcode('#barcode' + option.id, '000000', {
+          //   format: option.barcodeType ? option.barcodeType : 'CODE128', // 条形码的格式
+          //   lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
+          //   margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
+          //   width: option.lineWidth ? option.lineWidth : 2, // 线宽
+          //   height: option.height ? option.height : 20, // 条码高度
+          //   background: option.bgcolor ? option.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
+          //   displayValue: false // 是否显示文字信息
+          // })
+        }
 
         document.getElementById('barcode' + option.id).onload = () => {
           // console.log(document.getElementById("barcode").src);
