@@ -438,6 +438,7 @@ this.$refs.canvas.createElement(name, options)
 > 对象新增参数 2023.02.02
 ```
 | name                | Description                               | default                    |
+| ------------------- | ----------------------------------------- | -------------------------- |
 | strokeWidth         | 边框粗细                                   | 0                          |
 | stroke              | 边框颜色                                   | ''                         |
 | borderType          | 边框类型                                   | 1                          |
@@ -448,6 +449,7 @@ this.$refs.canvas.createElement(name, options)
 
 ## 上线发包流程
 
+```
 1.改pagckage.json版本号；
 2.填写版本记录发布内容；
 3.npm run build 生成js生成环境文件；
@@ -455,7 +457,7 @@ this.$refs.canvas.createElement(name, options)
   git commit -m 'vxx.xx.xx'
   git push origin master
 4.npm publish --otp=xxxxxx;
-  
+```
 
 
 ## Changelog
