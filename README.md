@@ -436,7 +436,7 @@ this.$refs.canvas.createElement(name, options)
 ```
 
 > 对象新增参数 2023.02.02
-```
+
 | name                | Description                               | default                    |
 | ------------------- | ----------------------------------------- | -------------------------- |
 | strokeWidth         | 边框粗细                                   | 0                          |
@@ -445,7 +445,6 @@ this.$refs.canvas.createElement(name, options)
 | strokeDashArray     | 边框类型设定 1:直线[0,0] ;  2:虚线 [5,1]    | 直线[0,0]                  |
 | fillinColor         | 文本组件填充背景颜色                        | 'rgba(0,0,0,0)'            |
 
-```
 
 ## 上线发包流程
 
