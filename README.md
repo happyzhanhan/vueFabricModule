@@ -7,7 +7,7 @@
 ![vue-fabric-module](https://img.shields.io/badge/version-0.1.26-blue.svg "VERSION")
 ![vue-fabric-module](https://img.shields.io/badge/npm-taobao-red.svg "NPM")
 ![vue-fabric-module](https://img.shields.io/badge/github-vuefabricmodule-gry.svg "GIT")
-![vue-fabric-module](https://img.shields.io/badge/MIT-2023-green.svg "MIT")
+![vue-fabric-module](https://img.shields.io/badge/LICENSE-MIT-green.svg "MIT")
 
 
 > vue-fabric-module :【基于vue2.0 fabric.js开发的画布组件画布编辑器，支持业务以下：创建圆形，矩形，文本，条码，二维码，图片，表格等等，画布的图册移动，隐藏，删除，画布的撤销、还原、缩放、对齐、居中、预览和保存等】The canvas component developed based on vue2.0 fabric.js.This canvas-edit supports the following businesses: creating circles, rectangles, texts, barcodes, QR codes, pictures, tables, etc., moving, hiding, deleting, and canceling canvases. Restore, zoom, align, center, preview and save, etc.
@@ -752,3 +752,7 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.26
 - 新增一个价格组件的参数
 - 条码类型改变条码图片修改
+
+### 2023.07.13
+> v0.1.27
+- 修复图片旋转功能

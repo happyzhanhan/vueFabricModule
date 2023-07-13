@@ -3614,7 +3614,6 @@ export default {
             scaleX: imgwidth / img.width,
             scaleY: imgheight / img.height,
 
-            angle: options.angle ? options.angle : 0,
             name: options.name ? options.name : 'Image',
 
             selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
@@ -3652,6 +3651,7 @@ export default {
             url: options.url,
             src: options.url,
             imgText: options.imgText, // equal：代表自适应的图片
+            angle: options.angle || 0,
 
             stroke: options.stroke ? options.stroke : '', // 边框颜色
             strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
