@@ -1492,7 +1492,7 @@ export default {
 
             angle: 0,
             stroke: '#9864FF',
-            strokeWidth: 0
+            strokeWidth: 20
             // strokeDashArray: [3, 1]
 
           }
@@ -1515,7 +1515,7 @@ export default {
             textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 1,
+            isElasticSize: 2,
 
             maxLines: 7,
             omitStyleText: '...', // 两个汉字 4个字母
@@ -1541,7 +1541,7 @@ export default {
 
             angle: 0,
             stroke: '#9864FF',
-            strokeWidth: 0
+            strokeWidth: 20
             // strokeDashArray: [3, 1]
 
           }

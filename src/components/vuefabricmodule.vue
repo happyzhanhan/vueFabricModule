@@ -289,6 +289,7 @@ export default {
       let keyCode = window.event.keyCode
       if (keyCode === 46) { // Delete
         if (document.activeElement.tagName === 'INPUT') { return }
+        if (document.activeElement.tagName === 'TEXTAREA') { return }
         that.removeActiveObject()
       }
       if (event.shiftKey && keyCode === 68) { // Shift + D
@@ -297,6 +298,7 @@ export default {
       if (keyCode === 37) { // ←
         // console.warn(document.activeElement.tagName)
         if (document.activeElement.tagName === 'INPUT') { return }
+        if (document.activeElement.tagName === 'TEXTAREA') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().left = parseInt(that.getEditObj().left - 1)
@@ -314,6 +316,7 @@ export default {
       }
       if (keyCode === 38) { // ↑
         if (document.activeElement.tagName === 'INPUT') { return }
+        if (document.activeElement.tagName === 'TEXTAREA') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().top = parseInt(that.getEditObj().top - 1)
@@ -331,6 +334,7 @@ export default {
       }
       if (keyCode === 39) { // →
         if (document.activeElement.tagName === 'INPUT') { return }
+        if (document.activeElement.tagName === 'TEXTAREA') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().left = parseInt(that.getEditObj().left + 1)
@@ -348,6 +352,7 @@ export default {
       }
       if (keyCode === 40) { // ↓
         if (document.activeElement.tagName === 'INPUT') { return }
+        if (document.activeElement.tagName === 'TEXTAREA') { return }
         e.preventDefault()
         e.stopPropagation()
         that.getEditObj().top = parseInt(that.getEditObj().top + 1)
@@ -3565,21 +3570,165 @@ export default {
       this.canvas.requestRenderAll()
     },
     // 生成图片，配置自适应和拉伸
-    createImage (options) {
+    async createImage (options) {
       let canvas = this.canvas
       let _this = this
 
+      options.src = options.url ? options.url : './static/images/img.svg'
+      var img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.src = options.src
+      img.setAttribute('crossOrigin', 'Anonymous')
+
+      try {
+        img = await this.loadImage(options.src)
+      } catch (e) {
+        options.url = '../../static/images/badimg.svg'
+        options.src = '../../static/images/badimg.svg'
+        img = await this.loadImage(options.src)
+      }
+
       return new Promise(function (resolve, reject) {
-        options.src = options.url ? options.url : './static/images/img.svg'
         // var img = document.createElement('img')
 
-        var img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.src = options.src
-        img.setAttribute('crossOrigin', 'Anonymous')
         // console.log(options.imgText, options.src)
 
         img.onload = function () {
+          let imgwidth = 0
+          let imgheight = 0
+
+          if (options.imgText === 'equal') {
+            if (img.width / img.height > options.width / options.height) {
+              imgwidth = options.width
+              imgheight = options.width / (img.width / img.height)
+            } else {
+              imgheight = options.height
+              imgwidth = options.height * (img.width / img.height)
+            }
+          } else {
+            imgwidth = options.width
+            imgheight = options.height
+          }
+
+          // eslint-disable-next-line no-undef
+          var canvasImage = new fabric.Image(img, {
+            id: options.id ? options.id : 'image',
+            isType: 'Image-img',
+            padding: 0,
+            flipX: false,
+            flipY: false,
+            stopContextMenu: true, //  禁掉鼠标右键默认事件
+            minScaleLimit: 0.0001, //  最小限制
+            lockSkewingX: true, //  禁掉按住shift时的变形
+            lockSkewingY: true,
+
+            originX: 'center',
+            originY: 'center',
+
+            scaleX: imgwidth / img.width,
+            scaleY: imgheight / img.height,
+
+            name: options.name ? options.name : 'Image',
+
+            selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
+            visible: options.visible !== false ? true : options.visible, // 元素是否可见
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+          // eslint-disable-next-line no-undef
+          var rect = new fabric.Rect({
+            isType: 'Image-bg',
+            id: options.id ? options.id : 'image-bg',
+            padding: 0,
+            originX: 'center',
+            originY: 'center',
+            width: options.width ? options.width : 100,
+            height: options.height ? options.height : 100,
+            fill: options.background ? options.background : ''
+
+          })
+
+          // eslint-disable-next-line no-undef
+          var group = new fabric.Group([rect, canvasImage], {
+            isType: 'Image',
+            component: 'component',
+            left: options.left,
+            top: options.top,
+            width: options.width,
+            height: options.height,
+            originX: 'left',
+            originY: 'top',
+            padding: 0,
+            id: options.id,
+            layer: options.layer,
+            url: options.url,
+            src: options.url,
+            imgText: options.imgText, // equal：代表自适应的图片
+            angle: options.angle || 0,
+
+            stroke: options.stroke ? options.stroke : '', // 边框颜色
+            strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
+            strokeDashArray: options.strokeDashArray ? options.strokeDashArray : [0, 0], // 边框样式 虚线 [5,1]     直线[0,0]  线段也是这个参数
+
+            hasRotatingPoint: true,
+            lockScalingFlip: true,
+            minScaleLimit: 0.01,
+
+            eyeshow: options.eyeshow,
+            screenIndex: options.screenIndex
+          })
+
+          group.on('scaling', async function (e) {
+            let src = group.url
+            let img = await _this.loadImage(src)
+            let newimgwidth = 0
+            let newimgheight = 0
+
+            if (group.imgText === 'equal') {
+              if (img.width / img.height > (group.width * group.scaleX) / (group.height * group.scaleY)) {
+                newimgwidth = (group.width * group.scaleX)
+                newimgheight = (group.width * group.scaleX) / (img.width / img.height)
+                group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+                group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+              } else {
+                newimgheight = (group.height * group.scaleY)
+                newimgwidth = (group.height * group.scaleY) * (img.width / img.height)
+                group.item(1).set('scaleX', newimgwidth / img.width / group.scaleX)
+                group.item(1).set('scaleY', newimgheight / img.height / group.scaleY)
+              }
+            }
+
+            canvas.requestRenderAll()
+            canvas.renderAll()
+          })
+
+          group.setControlsVisibility({
+            bl: true,
+            br: true,
+            mb: true,
+            ml: true,
+            mr: true,
+            mt: true,
+            mtr: true,
+            tl: true,
+            tr: true
+          })
+          // canvas.add(group) // 把图片添加到画布上
+
+          // if (options && options.registeObjectEvent) {
+          //   Utils.registeObjectEvent(that, img)
+          // }
+          // group.setCoords()
+          // that.setActiveObject(group)
+          // canvas.renderAll.bind(canvas)
+
+          resolve(group)
+        }
+        img.onerror = function (e) {
+          img.src = './static/images/img.svg'
+          img.setAttribute('crossOrigin', 'Anonymous')
+
           let imgwidth = 0
           let imgheight = 0
 
@@ -3770,7 +3919,7 @@ export default {
         img.onerror = function (err) {
           console.log('onerror')
           console.warn(err)
-          options.src = './static/images/img.svg'
+          options.src = './static/images/badimg.svg'
           // eslint-disable-next-line no-undef
           fabric.Image.fromURL(options.src, function (img) {
             img.crossOrigin = 'Anonymous'
@@ -4117,6 +4266,16 @@ export default {
           console.warn(newbarcode)
         } catch (e) {
           console.warn(e)
+          // eslint-disable-next-line no-undef
+          JsBarcode('#barcode' + options.id, 'nodata', {
+            format: 'CODE128', // 条形码的格式
+            lineColor: options.lineColor || '#000000', // 线条颜色
+            margin: options.margin || 0, // 条码四边空白（默认为10px）
+            width: options.lineWidth || 2, // 线宽
+            height: options.height || 20, // 条码高度
+            background: options.bgcolor || 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
+            displayValue: false // 是否显示文字信息
+          })
         }
 
         options.originXY = options.originXY ? options.originXY : ['left', 'top']
@@ -4390,15 +4549,15 @@ export default {
         } catch (e) {
           console.warn(e)
           // eslint-disable-next-line no-undef
-          // JsBarcode('#barcode' + option.id, '000000', {
-          //   format: option.barcodeType ? option.barcodeType : 'CODE128', // 条形码的格式
-          //   lineColor: option.lineColor ? option.lineColor : '#000000', // 线条颜色
-          //   margin: option.margin ? option.margin : 0, // 条码四边空白（默认为10px）
-          //   width: option.lineWidth ? option.lineWidth : 2, // 线宽
-          //   height: option.height ? option.height : 20, // 条码高度
-          //   background: option.bgcolor ? option.bgcolor : 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
-          //   displayValue: false // 是否显示文字信息
-          // })
+          JsBarcode('#barcode' + option.id, 'nodata', {
+            format: 'CODE128', // 条形码的格式
+            lineColor: option.lineColor || '#000000', // 线条颜色
+            margin: option.margin || 0, // 条码四边空白（默认为10px）
+            width: option.lineWidth || 2, // 线宽
+            height: option.height || 20, // 条码高度
+            background: option.bgcolor || 'rgba(255,255,255,0.3)', // 背景颜色 #f1edea
+            displayValue: false // 是否显示文字信息
+          })
         }
 
         document.getElementById('barcode' + option.id).onload = () => {
@@ -5014,7 +5173,8 @@ export default {
         let img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = url
-        // console.log(img.readyState, img.complete)
+        console.log('img---', img)
+        console.log(img.readyState, img.complete)
         if (img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
           resolve(img)
           return // 直接返回，不用再处理onload事件
@@ -5023,7 +5183,8 @@ export default {
           resolve(img)
         }
         img.onerror = async (err) => {
-          reject(err)
+          console.log('err', err)
+          reject(err.type)
         }
       })
     },
@@ -6601,18 +6762,33 @@ export default {
         id: options.id,
         options: options,
         component: 'component',
-        width: parseInt(options.width * options.scaleX + options.strokeWidth),
-        height: parseInt(options.height * options.scaleY + options.strokeWidth),
+        width: parseInt(options.width * options.scaleX),
+        height: parseInt(options.height * options.scaleY),
+
+        stroke: options.stroke || 'rgba(0,0,0,0)', // 边框颜色
+        strokeWidth: options.strokeWidth || 0, // 边框宽度
+        strokeDashArray: [0, 0],
         fill: 'yellow'
       })
       // eslint-disable-next-line no-undef
-      const text = new fabric.Textbox(options.textdemo, {
+      // const rectClip = new fabric.Rect({
+      //   isType: 'NewText-rectClip',
+      //   id: options.id,
+      //   options: options,
+      //   component: 'component',
+      //   width: parseInt(options.width * options.scaleX - options.strokeWidth),
+      //   height: parseInt(options.height * options.scaleY - options.strokeWidth),
+      //   fill: 'red'
+      // })
+      // eslint-disable-next-line no-undef
+      const text = new fabric.TextboxNew(options.textdemo, {
         ...options,
         id: options.id,
         options: options,
         component: 'component',
         strokeWidth: 0,
         stroke: options.stroke ? options.stroke : '#000000',
+        // padding: options.strokeWidth || 0,
 
         fill: options.fontColor ? options.fontColor : '#ffffff',
         fillColor: options.color ? options.color : '#ffffff',
@@ -6628,6 +6804,19 @@ export default {
         selectable: false,
         evented: false
       })
+      // eslint-disable-next-line no-undef
+      // let grouptext = new fabric.Group([rectClip, text], {
+      //   isType: 'NewText-grouptext',
+      //   component: 'component',
+      //   originX: 'left',
+      //   originY: 'top',
+      //   id: options.id,
+
+      //   layer: options.layer,
+      //   zIndex: options.layer,
+      //   options: options,
+      //   visible: true
+      // })
 
       // this.textPadding = options.textPadding ? options.textPadding : (options.strokeWidth ? options.strokeWidth : 0)
 
@@ -6674,6 +6863,11 @@ export default {
         originX: 'left',
         originY: 'top',
         id: options.id,
+
+        stroke: options.stroke || 'rgba(0,0,0,0)', // 边框颜色
+        strokeWidth: 0, // 边框宽度
+        strokeDashArray: [0, 0],
+
         layer: options.layer,
         zIndex: options.layer,
         width: options.width + options.strokeWidth,
@@ -6686,13 +6880,16 @@ export default {
 
       })
       text.set({
-        width: parseInt(options.width * options.scaleX + options.strokeWidth),
-        height: 50,
-        left: -rect.width / 2,
-        top: -rect.height / 2
+        width: parseInt(options.width * options.scaleX - options.strokeWidth),
+        height: parseInt(options.height * options.scaleY - options.strokeWidth),
+        left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
+        top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth
       })
       group.add(text)
-      group.clipPath = rect
+      group.item(1).set({
+        height: parseInt(options.height * options.scaleY - options.strokeWidth)
+      })
+      // group.item(2).clipPath = rectClip
       group.setControlsVisibility({
         bl: true,
         br: true,
@@ -6727,12 +6924,15 @@ export default {
       let groupwidth = (group.width * group.scaleX)
       let groupheight = (group.height * group.scaleY)
       group.item(1).set({
-        left: -group.item(0).width / 2,
-        top: -group.item(0).height / 2,
-        width: groupwidth,
-        height: groupheight,
+        // left: -(groupwidth - group.options.strokeWidth) / 2,
+        // top: -(groupheight - group.options.strokeWidth) / 2,
+        width: groupwidth - 2 * group.options.strokeWidth * group.scaleX,
+        height: groupheight - 2 * group.options.strokeWidth * group.scaleY,
         scaleX: 1 / group.scaleX,
         scaleY: 1 / group.scaleY
+      })
+      group.item(1).set({
+        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth * group.scaleY)
       })
     },
     // 文本缩放ed
@@ -6749,21 +6949,24 @@ export default {
       })
 
       group.item(0).set({
-        width: groupwidth,
-        height: groupheight
+        width: groupwidth - group.options.strokeWidth,
+        height: groupheight - group.options.strokeWidth
       })
-      group.set({
-        clipPath: group.item(0),
-        dirty: true
-      })
+      // group.set({
+      //   clipPath: group.item(0),
+      //   dirty: true
+      // })
 
       group.item(1).set({
         scaleX: 1,
         scaleY: 1,
-        left: -groupwidth / 2,
-        top: -groupheight / 2,
-        width: groupwidth,
-        height: groupheight
+        left: -groupwidth / 2 + group.options.strokeWidth,
+        top: -groupheight / 2 + group.options.strokeWidth,
+        width: groupwidth - 2 * group.options.strokeWidth,
+        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
+      })
+      group.item(1).set({
+        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
       })
     },
     // 文本双击
@@ -6783,14 +6986,21 @@ export default {
     // 文本进入编辑
     textRectentered (group) {
       console.log('进入编辑')
+      group.item(1).setSelectionStart(0)
       group.item(1).setSelectionEnd(group.item(1)._text.length)
+      group.item(1).hiddenTextarea.focus()
       group.item(0).set({
         selected: false,
         evented: false,
         hasBorders: false
       })
       group.item(1).set({
-        textBackgroundColor: '#EEEEEE',
+        textBackgroundColor: '#FFFFFF',
+        fontSize: 14,
+        fontStyle: 'normal',
+        fontWeight: 'normal',
+        linethrough: false,
+        underline: false,
         hasBorders: false
       })
     },
@@ -6810,22 +7020,31 @@ export default {
         originX: 'left',
         originY: 'top',
         id: group.id,
-        width: rect.width,
-        height: rect.height,
+        width: rect.width + group.options.strokeWidth,
+        height: rect.height + group.options.strokeWidth,
+        options: group.options,
         visible: true
       })
       console.log(rect.width)
       text.set({
         textBackgroundColor: '',
-        width: rect.width,
-        height: rect.height,
-        left: -rect.width / 2,
-        top: -rect.height / 2
+        fontSize: group.options.fontSize,
+        fontStyle: 'italic',
+        fontWeight: 'bold',
+        linethrough: true,
+        underline: true,
+        width: rect.width - group.options.strokeWidth,
+        height: rect.height - group.options.strokeWidth,
+        left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
+        top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth
       })
       group2.add(text)
-      group2.set({
-        clipPath: rect,
-        dirty: true
+      // group2.set({
+      //   clipPath: rect,
+      //   dirty: true
+      // })
+      group2.item(1).set({
+        height: parseInt(group2.height * group2.scaleY - 2 * group2.options.strokeWidth)
       })
       objs.forEach(obj => {
         canvas.remove(obj)
