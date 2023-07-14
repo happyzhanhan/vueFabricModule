@@ -3575,25 +3575,33 @@ export default {
       let _this = this
 
       options.src = options.url ? options.url : './static/images/img.svg'
-      var img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.src = options.src
-      img.setAttribute('crossOrigin', 'Anonymous')
+      // var img = new Image()
+      // img.crossOrigin = 'anonymous'
+      // img.src = options.src
+      // img.setAttribute('crossOrigin', 'Anonymous')
 
-      try {
-        img = await this.loadImage(options.src)
-      } catch (e) {
-        options.url = '../../static/images/badimg.svg'
-        options.src = '../../static/images/badimg.svg'
-        img = await this.loadImage(options.src)
-      }
-
-      return new Promise(function (resolve, reject) {
+      return new Promise(async function (resolve, reject) {
         // var img = document.createElement('img')
-
+        // eslint-disable-next-line no-unused-vars
+        var imgdom
+        try {
+          imgdom = await _this.loadImage(options.src)
+          // console.log('img1', imgdom)
+        } catch (e) {
+          options.url = '../../static/images/badimg.svg'
+          options.src = '../../static/images/badimg.svg'
+          imgdom = await _this.loadImage(options.src)
+          // console.log('img2', imgdom)
+        }
         // console.log(options.imgText, options.src)
+        var img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = options.src
+        img.setAttribute('crossOrigin', 'Anonymous')
 
+        // console.log('img3', imgdom.complete, imgdom)
         img.onload = function () {
+          // console.log('img3-1', img.complete, img)
           let imgwidth = 0
           let imgheight = 0
 
@@ -3726,6 +3734,7 @@ export default {
           resolve(group)
         }
         img.onerror = function (e) {
+          // console.log('img3-2', img.complete, img)
           img.src = './static/images/img.svg'
           img.setAttribute('crossOrigin', 'Anonymous')
 
@@ -5173,19 +5182,20 @@ export default {
         let img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = url
-        console.log('img---', img)
-        console.log(img.readyState, img.complete)
-        if (img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
-          resolve(img)
-          return // 直接返回，不用再处理onload事件
-        }
-        img.onload = async () => {
-          resolve(img)
-        }
-        img.onerror = async (err) => {
-          console.log('err', err)
-          reject(err.type)
-        }
+        setTimeout(() => {
+          if (img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
+            resolve(img)
+            return // 直接返回，不用再处理onload事件
+          }
+          img.onload = async () => {
+            // console.log(img.readyState, img.complete)
+            resolve(img)
+          }
+          img.onerror = async (err) => {
+            // console.log('err', err)
+            reject(err.type)
+          }
+        }, 200)
       })
     },
     // 图片转base64

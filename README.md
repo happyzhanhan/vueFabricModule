@@ -761,3 +761,6 @@ this.$refs.canvas.createElement(name, options)
 - 修复图片加载失败时默认图片
 - 修复条码加载失败时显示
 - 部分文本组件的重构
+
+> v0.1.29
+- 图片组件加载失败后判断
