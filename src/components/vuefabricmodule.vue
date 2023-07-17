@@ -1690,6 +1690,17 @@ export default {
             strokeWidth: _clipboard.textStyle.strokeWidth
           }
         }
+        if (_clipboard.isType === 'NewText') {
+          _clipboard = {
+            ..._clipboard.options,
+            ..._clipboard,
+            textdemo: _clipboard.options.textdemo,
+            stroke: _clipboard.options.stroke,
+            strokeWidth: _clipboard.options.strokeWidth,
+            width: parseInt(_clipboard.options.width),
+            height: parseInt(_clipboard.options.height)
+          }
+        }
         if (_clipboard.isType === 'Icon') {
           _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
           _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
@@ -4929,7 +4940,7 @@ export default {
     },
     // 文本不使用 的文本
     newtextStyleFormat: function (target, text) {
-      //   console.log('触发文本裁剪',target.width);
+      // console.log('触发文本裁剪', target.width)
       //  console.log(target.maxLines,target.omitStyleText,target.newline);
       if (!target.maxLines) {
         return target.text
@@ -6762,7 +6773,8 @@ export default {
     },
 
     /**
-     * 创建文本矩形组件 createNewText （暂不支持自适应）
+     * 创建文本矩形组件 createNewText ----------------------------------------------------------------------------------------------------
+     * options {}
      */
     async createNewText (options) {
       // let canvas = this.canvas
@@ -6778,100 +6790,81 @@ export default {
         stroke: options.stroke || 'rgba(0,0,0,0)', // 边框颜色
         strokeWidth: options.strokeWidth || 0, // 边框宽度
         strokeDashArray: [0, 0],
-        fill: 'yellow'
+        fill: options.backColor || ''
       })
-      // eslint-disable-next-line no-undef
-      // const rectClip = new fabric.Rect({
-      //   isType: 'NewText-rectClip',
-      //   id: options.id,
-      //   options: options,
-      //   component: 'component',
-      //   width: parseInt(options.width * options.scaleX - options.strokeWidth),
-      //   height: parseInt(options.height * options.scaleY - options.strokeWidth),
-      //   fill: 'red'
-      // })
-      // eslint-disable-next-line no-undef
-      const text = new fabric.TextboxNew(options.textdemo, {
+
+      // console.log('options', options)
+      let textoptions = {
         ...options,
         id: options.id,
         options: options,
+        textdemo: options.textdemo,
         component: 'component',
         strokeWidth: 0,
+        angle: 0,
         stroke: options.stroke ? options.stroke : '#000000',
+        left: options.left,
+        top: options.top,
+        // width: options.width,
+        height: options.height,
         // padding: options.strokeWidth || 0,
+        width: parseInt(options.width * options.scaleX - options.strokeWidth),
 
-        fill: options.fontColor ? options.fontColor : '#ffffff',
-        fillColor: options.color ? options.color : '#ffffff',
-        fontSize: options.fontSize ? options.fontSize : 12,
+        fontFamily: options.fontFamily || '微软雅黑',
+        fill: options.fontColor || '#ffffff',
+        fillColor: options.color || '#ffffff',
+        fontSize: options.fontSize || 12,
+        fontStyle: options.fontStyle || 'normal',
+        fontWeight: options.fontWeight || 'normal',
+        linethrough: options.linethrough || false,
+        underline: options.underline || false,
 
         scaleX: 1,
         scaleY: 1,
 
-        isElasticSize: options.isElasticSize ? options.isElasticSize : 0,
+        isElasticSize: options.isElasticSize ? options.isElasticSize : 0, // textAdvanceProperty
         lineHeight: parseInt((options.fontSize + options.verticalSpace) / options.fontSize),
+        originX: 'left',
+        originY: 'top',
         isType: 'NewText-text',
         splitByGrapheme: true,
-        selectable: false,
+        selectable: true,
         evented: false
-      })
-      // eslint-disable-next-line no-undef
-      // let grouptext = new fabric.Group([rectClip, text], {
-      //   isType: 'NewText-grouptext',
-      //   component: 'component',
-      //   originX: 'left',
-      //   originY: 'top',
-      //   id: options.id,
+      }
+      // 2:自适应  0，1：正常 弹性
+      let text = ({
+        0: () => {
+          // eslint-disable-next-line no-undef
+          let textbox = new fabric.TextboxNew(options.textdemo, {...textoptions})
+          let text = this.newtextStyleFormat(textbox, options.textdemo)
+          textbox.text = text
+          return textbox
+        },
+        1: () => {
+          // eslint-disable-next-line no-undef
+          let textbox = new fabric.TextboxNew(options.textdemo, {...textoptions})
+          let text = this.newtextStyleFormat(textbox, options.textdemo)
+          textbox.text = text
+          return textbox
+        },
+        2: () => {
+          // eslint-disable-next-line no-undef
+          let textbox = new fabric.Textbox(options.textdemo, {...textoptions,
+            width: parseInt(options.width * options.scaleX - options.strokeWidth),
+            lineHeight: 1,
+            splitByGrapheme: false
+          })
+          return textbox
+        }
+      })[ options.isElasticSize || 0 ]()
 
-      //   layer: options.layer,
-      //   zIndex: options.layer,
-      //   options: options,
-      //   visible: true
-      // })
-
-      // this.textPadding = options.textPadding ? options.textPadding : (options.strokeWidth ? options.strokeWidth : 0)
-
-      // eslint-disable-next-line no-undef
-      // const clipPath = new fabric.Rect({
-      //   originX: 'left',
-      //   originY: 'top',
-      //   left: -(options.width * options.scaleX) / 2,
-      //   top: -(options.height * options.scaleY) / 2,
-      //   width: options.width * options.scaleX,
-      //   height: options.height * options.scaleY
-      // })
-
-      // if (text.isElasticSize !== 2) {
-      //   // 文本重新赋值渲染
-      //   let newtext = this.textStyleFormat(text, text.textdemo)
-      //   text.set('text', newtext)
-
-      //   text.clipPath = null // 裁切一下形状
-      // } else {
-      //   // 自适应文本不换行
-      //   let newtext = text.textdemo.replace(this._wordJoiners, '')
-      //   text.set('text', newtext)
-
-      //   text.set('splitByGrapheme', false)
-
-      //   // 计算当行的最大宽度和最大高度
-      //   var maxWidth = text.getLineWidth(0)
-      //   for (var i = 1, len = text._textLines.length; i < len; i++) {
-      //     var currentLineWidth = text.getLineWidth(i)
-      //     maxWidth = maxWidth + currentLineWidth
-      //   }
-      //   var maxHeight = text.getHeightOfLine(0)
-      //   // 文本变形
-      //   text.set('scaleX', (this.width * this.scaleX - this.textPadding) / maxWidth)
-      //   text.set('scaleY', (this.height * this.scaleY - this.textPadding) / maxHeight)
-
-      //   text.clipPath = null
-      // }
       // eslint-disable-next-line no-undef
       let group = new fabric.Group([rect], {
         isType: 'NewText',
         component: 'component',
         originX: 'left',
         originY: 'top',
+        angle: options.angle,
         id: options.id,
 
         stroke: options.stroke || 'rgba(0,0,0,0)', // 边框颜色
@@ -6889,17 +6882,25 @@ export default {
         visible: true
 
       })
-      text.set({
-        width: parseInt(options.width * options.scaleX - options.strokeWidth),
-        height: parseInt(options.height * options.scaleY - options.strokeWidth),
-        left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
-        top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth
-      })
+      if (options.isElasticSize === 2) {
+        text.set({
+          scaleX: parseInt(options.width * options.scaleX - options.strokeWidth) / text.getLineWidth(0), // 文本的实际宽度
+          scaleY: parseInt(options.height * options.scaleY - options.strokeWidth) / text.height,
+          left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
+          top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth
+        })
+      } else {
+        text.set({
+          width: parseInt(options.width * options.scaleX - options.strokeWidth),
+          height: parseInt(options.height * options.scaleY - options.strokeWidth),
+          left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
+          top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth
+        })
+      }
       group.add(text)
       group.item(1).set({
         height: parseInt(options.height * options.scaleY - options.strokeWidth)
       })
-      // group.item(2).clipPath = rectClip
       group.setControlsVisibility({
         bl: true,
         br: true,
@@ -6917,6 +6918,9 @@ export default {
       group.on('scaled', async (e) => {
         this.textRectScaled(group)
       })
+      group.on('rotated', async (e) => {
+        this.textRectrotated(e)
+      })
       group.on('mousedblclick', () => {
         this.textRectMousedbclick(group)
       })
@@ -6933,17 +6937,18 @@ export default {
     textRectScaling (group) {
       let groupwidth = (group.width * group.scaleX)
       let groupheight = (group.height * group.scaleY)
-      group.item(1).set({
-        // left: -(groupwidth - group.options.strokeWidth) / 2,
-        // top: -(groupheight - group.options.strokeWidth) / 2,
-        width: groupwidth - 2 * group.options.strokeWidth * group.scaleX,
-        height: groupheight - 2 * group.options.strokeWidth * group.scaleY,
-        scaleX: 1 / group.scaleX,
-        scaleY: 1 / group.scaleY
-      })
-      group.item(1).set({
-        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth * group.scaleY)
-      })
+      if (group.options.isElasticSize !== 2) {
+        group.item(1).set({
+          width: groupwidth - 2 * group.options.strokeWidth * group.scaleX,
+          height: groupheight - 2 * group.options.strokeWidth * group.scaleY,
+          scaleX: 1 / group.scaleX,
+          scaleY: 1 / group.scaleY
+        })
+        group.item(1).set({
+          // visible: false
+          height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth * group.scaleY)
+        })
+      }
     },
     // 文本缩放ed
     textRectScaled (group) {
@@ -6962,26 +6967,46 @@ export default {
         width: groupwidth - group.options.strokeWidth,
         height: groupheight - group.options.strokeWidth
       })
-      // group.set({
-      //   clipPath: group.item(0),
-      //   dirty: true
-      // })
 
-      group.item(1).set({
-        scaleX: 1,
-        scaleY: 1,
-        left: -groupwidth / 2 + group.options.strokeWidth,
-        top: -groupheight / 2 + group.options.strokeWidth,
-        width: groupwidth - 2 * group.options.strokeWidth,
-        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
-      })
-      group.item(1).set({
-        height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
+      if (group.options.isElasticSize !== 2) {
+        group.item(1).set({
+          visible: true,
+          scaleX: 1,
+          scaleY: 1,
+          left: -groupwidth / 2 + group.options.strokeWidth,
+          top: -groupheight / 2 + group.options.strokeWidth,
+          width: groupwidth - 2 * group.options.strokeWidth,
+          height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
+        })
+        let newtext = this.newtextStyleFormat(group.item(1), group.item(1).textdemo) // 文字 格式化
+        group.item(1).set('text', newtext)
+        group.item(1).set({
+          height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
+        })
+      } else {
+        group.item(1).set({
+          scaleX: parseInt(groupwidth - 2 * group.options.strokeWidth) / group.item(1).getLineWidth(0),
+          left: -(groupwidth) / 2 + group.options.strokeWidth
+        })
+        group.item(1).set({
+          scaleY: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth) / (group.item(1).aCoords.bl.y - group.item(1).aCoords.tl.y),
+          top: -(groupheight) / 2 + group.options.strokeWidth
+        })
+      }
+    },
+    // 文本旋转
+    textRectrotated (e) {
+      let group = e.target
+      group.set({
+        options: {...group.options, angle: e.transform.target.angle}
       })
     },
     // 文本双击
     textRectMousedbclick (group) {
-      console.log('双击进入')
+      group.set({
+        angle: 0
+      })
+      // console.log('双击进入')
       let canvas = this.canvas
       var destroyedGroup = group.destroy()
       var items = destroyedGroup.getObjects()
@@ -6991,22 +7016,56 @@ export default {
       })
       this.canvas.remove(group)
       this.canvas.setActiveObject(items[1])
+
+      items[0].set({
+        options: destroyedGroup.options
+      })
+      if (destroyedGroup.options.isElasticSize !== 2) {
+        items[1].set({
+          text: items[1].textdemo,
+          evented: true
+        })
+      } else {
+        items[1].set({
+          text: items[1].textdemo,
+          scaleX: 1,
+          scaleY: 1
+        })
+        items[1].set({
+          Width: items[0].width - destroyedGroup.options.strokeWidth,
+          splitByGrapheme: true,
+          evented: true,
+          selected: true
+        })
+      }
+      canvas.requestRenderAll()
       items[1].enterEditing()
     },
     // 文本进入编辑
     textRectentered (group) {
-      console.log('进入编辑')
+      // console.log('进入编辑', group.item(1).splitByGrapheme, group.item(1).width, group.item(0).width - group.options.strokeWidth)
+      group.item(1).set({
+        width: group.item(0).width - group.options.strokeWidth
+      })
+      group.item(1)._splitText()
+
       group.item(1).setSelectionStart(0)
-      group.item(1).setSelectionEnd(group.item(1)._text.length)
+      group.item(1).setSelectionEnd(group.item(1).textdemo.length)
       group.item(1).hiddenTextarea.focus()
       group.item(0).set({
         selected: false,
         evented: false,
         hasBorders: false
       })
+      group.item(0).set({
+        fill: '#F1F1F1',
+        stroke: '#DDDDDD'
+      })
       group.item(1).set({
         textBackgroundColor: '#FFFFFF',
+        Width: group.item(0).width - group.options.strokeWidth,
         fontSize: 14,
+        fill: '#000',
         fontStyle: 'normal',
         fontWeight: 'normal',
         linethrough: false,
@@ -7016,13 +7075,15 @@ export default {
     },
     // 文本退出编辑
     textRectexited (group) {
-      console.log('退出编辑')
+      // console.log('退出编辑', group.item(1).textdemo)
       let canvas = this.canvas
       var objs = this.getObjectsByid(group.id)
       if (!objs.length || objs[0].isType === 'NewText') { return }
       console.log('objs', objs)
       let rect = objs[0]
       let text = objs[1]
+
+      group.options.textdemo = text.text
       // eslint-disable-next-line no-undef
       var group2 = new fabric.Group([rect], {
         isType: 'NewText',
@@ -7032,32 +7093,65 @@ export default {
         id: group.id,
         width: rect.width + group.options.strokeWidth,
         height: rect.height + group.options.strokeWidth,
-        options: group.options,
+        options: rect.options,
         visible: true
       })
-      console.log(rect.width)
+      group.item(0).set({
+        fill: group.options.backColor,
+        stroke: group.options.stroke
+      })
       text.set({
         textBackgroundColor: '',
+        textdemo: group.options.textdemo,
+        fill: group.options.fontColor,
         fontSize: group.options.fontSize,
-        fontStyle: 'italic',
-        fontWeight: 'bold',
-        linethrough: true,
-        underline: true,
-        width: rect.width - group.options.strokeWidth,
-        height: rect.height - group.options.strokeWidth,
-        left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
-        top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth
+        fontStyle: group.options.fontStyle,
+        fontWeight: group.options.fontWeight,
+        linethrough: group.options.linethrough,
+        underline: group.options.underline
       })
+      if (group.options.isElasticSize !== 2) {
+        text.set({
+          width: rect.width - group.options.strokeWidth,
+          height: rect.height - group.options.strokeWidth,
+          left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
+          top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth
+        })
+        let newtext = this.newtextStyleFormat(text, group.options.textdemo) // 文字 格式化
+        group.item(1).set('text', newtext)
+      } else {
+        text.text = text.text.trim().replace(/\s*/g, '') // 过滤前后空格和换行符 replace(/[\r\n]/g, '')
+        // group.options.textdemo = text.text
+        text.set({
+          width: group2.item(0).width - group2.options.strokeWidth,
+          scaleX: 1,
+          splitByGrapheme: false
+        })
+        group.item(1)._splitText()
+        text.set({
+          left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
+          top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth,
+          scaleX: parseInt(rect.width - group.options.strokeWidth) / text.getLineWidth(0), // 文本的实际宽度
+          scaleY: parseInt(rect.height - group.options.strokeWidth) / text.height
+        })
+      }
+
       group2.add(text)
       // group2.set({
       //   clipPath: rect,
       //   dirty: true
       // })
-      group2.item(1).set({
-        height: parseInt(group2.height * group2.scaleY - 2 * group2.options.strokeWidth)
-      })
+      if (group.options.isElasticSize !== 2) {
+        group2.item(1).set({
+          height: parseInt(group2.height * group2.scaleY - 2 * group2.options.strokeWidth)
+        })
+      }
       objs.forEach(obj => {
         canvas.remove(obj)
+      })
+      // 组装后旋转
+      group2.set({
+        angle: group2.options.angle
       })
       canvas.add(group2)
       group2.setCoords()
@@ -7066,6 +7160,9 @@ export default {
       })
       group2.on('scaled', async (e) => {
         this.textRectScaled(group2)
+      })
+      group2.on('rotated', async (e) => {
+        this.textRectrotated(e)
       })
       group2.on('mousedblclick', () => {
         this.textRectMousedbclick(group2)

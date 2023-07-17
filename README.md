@@ -764,3 +764,7 @@ this.$refs.canvas.createElement(name, options)
 
 > v0.1.29
 - 图片组件加载失败后判断
+
+### 2023.07.17
+> v0.1.30
+- 文本组合组件重构NewText
