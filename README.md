@@ -779,3 +779,7 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.33
 - 画布改变宽高颜色
 
+> v0.1.34
+- 画布标尺和辅助线做成开关
+
+

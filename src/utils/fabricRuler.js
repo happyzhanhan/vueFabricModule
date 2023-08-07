@@ -51,7 +51,7 @@ let initFabricRuler = function () {
     // 初始化标尺组件
     drawfabricRuler: async function (c) {
       canvas = c
-      status = canvas.showRule
+      status = canvas.showRule || false
       if(status){
         let Ruler = this
         vpt = canvas.viewportTransform
@@ -453,8 +453,9 @@ let initFabricRuler = function () {
       }, 10)
     },
     // 标尺移动
-    rulerNomove: async function () {
-      status = canvas.showRule
+    rulerNomove: async function (c) {
+      canvas = c
+      status = canvas.showRule || false
       if (!status) return
       vpt = canvas.viewportTransform;
       zoom = canvas.getZoom();

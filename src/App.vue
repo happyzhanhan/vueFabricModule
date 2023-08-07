@@ -933,7 +933,7 @@ export default {
       borderstyleshow: false,
       hover9index: 1,
       open9: false,
-      showGuideline: false,
+      showGuideline: true,
       showRule: false,
       previewUrl: ''
     }

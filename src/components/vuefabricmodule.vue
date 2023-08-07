@@ -299,19 +299,19 @@ export default {
     this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩  this.BgColor
 
-    this.canvas.showRule = this.showRule || false
-    if (this.showRule === 'true') {
-      //  初始化标尺(辅助-标尺)
-      initFabricRuler.drawfabricRuler(canvas)
-    }
-
     this.setCursor(99)
-
-    this.canvas.showGuideline = this.showGuideline || false
-    if (this.showGuideline === 'true') {
-      // 初始化辅助线(辅助-对齐线)
-      initAligningGuidelines(canvas)
-    }
+    canvas.showRule = this.showRule || false
+    canvas.showGuideline = this.showGuideline || false
+    setTimeout(() => {
+      if (this.showRule) {
+        //  初始化标尺(辅助-标尺)
+        initFabricRuler.drawfabricRuler(canvas)
+      }
+      if (this.showGuideline) {
+        // 初始化辅助线(辅助-对齐线)
+        initAligningGuidelines(canvas)
+      }
+    }, 500)
 
     document.onkeydown = function (e) {
       let keyCode = window.event.keyCode
@@ -413,7 +413,7 @@ export default {
         e.e.stopPropagation()
 
         // 标尺位置想要固定在顶部(辅助-标尺)
-        initFabricRuler.rulerNomove()
+        initFabricRuler.rulerNomove(this.canvas)
       }
     })
     this.canvas.on('mouse:down', function (options) {
@@ -451,7 +451,7 @@ export default {
         that.lastPosY = e.e.clientY
         canvas.setViewportTransform(canvas.viewportTransform)
         // 标尺位置想要固定在顶部(辅助-标尺)
-        initFabricRuler.rulerNomove()
+        initFabricRuler.rulerNomove(canvas)
       }
       // 鼠标的坐标显示虚点(辅助-鼠标点)
       // initFabricRuler.drawPoint(e.absolutePointer.x, e.absolutePointer.y)
@@ -969,7 +969,7 @@ export default {
       viewportTransform[5] = canvas.height / 2 - objCenter.y * viewportTransform[3]
       canvas.setViewportTransform(viewportTransform)
       // 标尺位置想要固定在顶部(辅助-标尺)
-      initFabricRuler.rulerNomove()
+      initFabricRuler.rulerNomove(canvas)
       canvas.renderAll()
     },
     // 画布左上对齐
