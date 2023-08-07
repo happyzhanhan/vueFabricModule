@@ -1,7 +1,7 @@
 {
   "name": "vuefabricmodule",
   "description": "vue fabric module:[vuefabricmodule, inputSearch]",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "author": "zhouzhenhan <1659725767@qq.com>",
   "license": "MIT",
   "private": false,

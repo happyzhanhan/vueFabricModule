@@ -772,3 +772,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.08.07
 > v0.1.31
 - 新增标尺和辅助线的开关设置
+
+> v0.1.32
+- 图片旋转角度没有返回
+

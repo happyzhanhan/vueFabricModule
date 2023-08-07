@@ -585,10 +585,11 @@ export default {
         // that.setActiveObject(options.target)
       }
       if (options.target.isType === 'tableList') {
-        setTimeout(() => {
-          that.objectSetZindex() // 元素顺序
-        }, 100)
+        that.objectSetZindex() // 元素顺序
       }
+      setTimeout(() => {
+        that.setTop() // 遮罩置顶，背景置底重置
+      }, 500)
     })
     this.canvas.on('object:rotated', function (options) {
       that.$emit('object:rotated', options)
@@ -3338,7 +3339,6 @@ export default {
             scaleX: imgwidth / img.width,
             scaleY: imgheight / img.height,
 
-            angle: options.angle ? options.angle : 0,
             name: options.name ? options.name : 'Image',
 
             stroke: options.stroke ? options.stroke : '', // 边框颜色
@@ -3425,7 +3425,9 @@ export default {
           // group.setCoords()
           // that.setActiveObject(group)
           // canvas.renderAll.bind(canvas)
-
+          group.set({
+            angle: options.angle
+          })
           resolve(group)
         }
       })
@@ -3539,7 +3541,7 @@ export default {
 
             originX: 'center',
             originY: 'center',
-
+            angle: 0,
             scaleX: imgwidth / img.width,
             scaleY: imgheight / img.height,
 
@@ -3555,6 +3557,7 @@ export default {
           var rect = new fabric.Rect({
             isType: 'Image-bg',
             id: options.id ? options.id : 'image-bg',
+            angle: 0,
             padding: 0,
             originX: 'center',
             originY: 'center',
@@ -3580,7 +3583,6 @@ export default {
             url: options.url,
             src: options.url,
             imgText: options.imgText, // equal：代表自适应的图片
-            angle: options.angle || 0,
 
             stroke: options.stroke ? options.stroke : '', // 边框颜色
             strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
@@ -3637,7 +3639,9 @@ export default {
           // group.setCoords()
           // that.setActiveObject(group)
           // canvas.renderAll.bind(canvas)
-
+          group.set({
+            angle: options.angle
+          })
           resolve(group)
         }
         img.onerror = function (e) {
@@ -3680,6 +3684,7 @@ export default {
             scaleY: imgheight / img.height,
 
             name: options.name ? options.name : 'Image',
+            angle: 0,
 
             selectable: options.selectable !== false ? true : options.selectable, // 元素是否可选中  如段码屏中可见不可移动false
             visible: options.visible !== false ? true : options.visible, // 元素是否可见
@@ -3691,6 +3696,7 @@ export default {
           var rect = new fabric.Rect({
             isType: 'Image-bg',
             id: options.id ? options.id : 'image-bg',
+            angle: 0,
             padding: 0,
             originX: 'center',
             originY: 'center',
@@ -3716,7 +3722,6 @@ export default {
             url: options.url,
             src: options.url,
             imgText: options.imgText, // equal：代表自适应的图片
-            angle: options.angle || 0,
 
             stroke: options.stroke ? options.stroke : '', // 边框颜色
             strokeWidth: options.strokeWidth ? options.strokeWidth : 0, // 边框宽度
@@ -3773,7 +3778,9 @@ export default {
           // group.setCoords()
           // that.setActiveObject(group)
           // canvas.renderAll.bind(canvas)
-
+          group.set({
+            angle: options.angle
+          })
           resolve(group)
         }
       })
