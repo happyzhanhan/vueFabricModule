@@ -782,4 +782,7 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.34
 - 画布标尺和辅助线做成开关
 
+> v0.1.35
+- 默认画布撑满
+- 画布表框1像素去掉
 

@@ -288,18 +288,19 @@ export default {
     this.canvas.setWidth(this.boxWidth)
     this.canvas.setHeight(this.boxHeight)
 
-    // this.changeBigZoom()
-    // setTimeout(() => {
-    //   if (this.zoom !== 1) {
-    //     this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
-    //   }
-    // }, 100)
-
     // 画布初始化
     this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩  this.BgColor
 
+    this.changeBigZoom()
+    setTimeout(() => {
+      if (this.zoom !== 1) {
+        this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
+      }
+    }, 100)
+
     this.setCursor(99)
+
     canvas.showRule = this.showRule || false
     canvas.showGuideline = this.showGuideline || false
     setTimeout(() => {
@@ -676,7 +677,7 @@ export default {
         scaleY: 1,
         stopContextMenu: true, // 禁掉鼠标右键默认事件
         hoverCursor: 'default',
-        strokeWidth: 1,
+        strokeWidth: 0,
         stroke: '#999',
         excludeFromExport: true,
         perPixelTargetFind: false

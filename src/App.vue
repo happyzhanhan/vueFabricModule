@@ -1878,10 +1878,8 @@ export default {
           }
       }
       // options.id = JSON.parse(JSON.stringify(this.id))
-      console.warn('创建类型：', name)
       options.id = this.id
       canvaobj = await this.$refs.canvas.createElement(name, options)
-      console.log('canvaobj:', canvaobj.id)
       this.id = this.id + 1
       // canvaobj.setControlsVisibility({
       //   mtr: false
@@ -1926,6 +1924,8 @@ export default {
       let bg = this.$refs.canvas.returnbg()
       let url = await this.$refs.canvas.toCutObject(bg)
       console.log(url)
+      let img = this.$refs.canvas.dataURLtoFile(url)
+      console.log(img)
       // document.body.appendChild(url)
       this.previewUrl = url
     },
