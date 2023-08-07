@@ -299,6 +299,7 @@ export default {
     this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩  this.BgColor
 
+    this.canvas.showRule = this.showRule || false
     if (this.showRule === 'true') {
       //  初始化标尺(辅助-标尺)
       initFabricRuler.drawfabricRuler(canvas)
@@ -306,6 +307,7 @@ export default {
 
     this.setCursor(99)
 
+    this.canvas.showGuideline = this.showGuideline || false
     if (this.showGuideline === 'true') {
       // 初始化辅助线(辅助-对齐线)
       initAligningGuidelines(canvas)
@@ -886,9 +888,9 @@ export default {
       this.canvas.remove(bg)
       let that = this
       setTimeout(() => {
-        that.changeBigZoom()
         that.initbg(options) // 画布初始化
         that.getBlack({width: options.width, height: options.height}, that.BgColor) // 遮罩
+        that.changeBigZoom()
       }, 100)
       // this.setCursor(99)
 

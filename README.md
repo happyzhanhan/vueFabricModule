@@ -776,3 +776,6 @@ this.$refs.canvas.createElement(name, options)
 > v0.1.32
 - 图片旋转角度没有返回
 
+> v0.1.33
+- 画布改变宽高颜色
+

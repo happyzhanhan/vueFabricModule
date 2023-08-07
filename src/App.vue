@@ -25,7 +25,7 @@
         <div class="psh-button">
             <b>滤镜(T)</b>
         </div>
-        <div class="psh-button">
+        <div class="psh-button" @click="changeBigZoom">
             <b>视图(V)</b>
         </div>
         <div class="psh-button">
@@ -273,9 +273,9 @@
 
 <!--            </div>-->
 
-             <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#666'" :width="parseInt(width)" :height="parseInt(height)"
+             <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#666'"  :backgroundColor="background" :width="parseInt(width)" :height="parseInt(height)"
                               :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" :showRule="showRule" :showGuideline="showGuideline"
-                              :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
+                             @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
                               @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData"
                               @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved"
                               @object:modified="objectmodified"></vuefabricmodule>
@@ -881,7 +881,7 @@ export default {
       height: '600',
       boxWidth: document.documentElement.clientWidth - 120,
       boxHeight: document.documentElement.clientHeight - 62,
-      background: '#ffffff',
+      background: '#f1f1f1',
       /* 颜色选择器 */
       colors: {
         color: '',
@@ -1912,7 +1912,7 @@ export default {
     },
     // 缩放比例
     changeBigZoom () {
-
+      this.$refs.canvas.changeWH({width: 600, height: 600, backgroundColor: '#fff'})
     },
     // 切换手和选择
     selectLi (no) {
