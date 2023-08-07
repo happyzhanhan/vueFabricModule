@@ -34,12 +34,20 @@
         <div class="psh-button">
             <b>帮助(H)</b>
         </div>
-        <div class="psh-button" >
+        <div class="psh-button" @click="topreview">
             <b>截屏(C)</b>
         </div>
         <div class="psh-button" @click="$refs.canvas.copypaste()">
             <b>复制(D)</b>
         </div>
+
+      <div class="psh-button" @click="changeRule(showRule)">
+        <b :class="{'hover': showRule}">标尺</b>
+      </div>
+
+      <div class="psh-button" @click="changeGuide(showGuideline)">
+        <b  :class="{'hover': showGuideline}">对齐线</b>
+      </div>
     </div>
 
     <div class="ps-head">
@@ -88,6 +96,13 @@
                 <div class="ps-button-new" @click="$refs.canvas.changeBigZoom()">
                     按最大比例居中
                 </div>
+              <div class="ps-button-new" @click="$refs.canvas.changeOrigin()">
+                按当前比例居中
+              </div>
+
+<!--              <div class="ps-button-new" @click="topreview">-->
+<!--                预览-->
+<!--              </div>-->
 
             </div>
 
@@ -106,31 +121,31 @@
             <!-- <div class="ps-fenge"></div>-->
 
             <div class="ps-block">
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toLeftAlign()">
                 <i class="zknicon zknicon-zuoduiqi1"></i>
               </div>
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toHorizontalCenterAlign()">
                 <i class="zknicon zknicon-chuizhijunfen"></i>
               </div>
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toRightAlign()">
                 <i class="zknicon zknicon-youduiqi1"></i>
               </div>
 
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toTopAlign()">
                 <i class="zknicon zknicon-shangduiqi"></i>
               </div>
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toVerticalCenterAlign()">
                 <i class="zknicon zknicon-shuipingjuzhongduiqi"></i>
               </div>
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toBottomAlign()">
                 <i class="zknicon zknicon-xiaduiqi"></i>
               </div>
 
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toHorizontalCenterDistribution()">
                 <i class="zknicon zknicon-chuizhijunfen"></i>
               </div>
 
-              <div class="ps-button-new">
+              <div class="ps-button-new" @click="$refs.canvas.toVerticalCenterDistribution()">
                 <i class="zknicon zknicon-shuipingjunfen"></i>
               </div>
 
@@ -254,11 +269,16 @@
         <div class="ps-mid">
 
             <!--左上角-->
-            <div class="zuoshang" v-if="zoom===1">
+<!--            <div class="zuoshang" >-->
 
-            </div>
+<!--            </div>-->
 
-             <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#333'" :width="parseInt(width)" :height="parseInt(height)" :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" showRule="NONE" :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata" @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData" @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved" @object:modified="objectmodified"></vuefabricmodule>
+             <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#666'" :width="parseInt(width)" :height="parseInt(height)"
+                              :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" :showRule="showRule" :showGuideline="showGuideline"
+                              :backgroundColor="background" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
+                              @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData"
+                              @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved"
+                              @object:modified="objectmodified"></vuefabricmodule>
 
         </div>
 
@@ -365,6 +385,9 @@
                             <p class="ps-type-name">无属性</p>
                         </div>
 
+                        <div>
+                          <img :src="previewUrl" alt="">
+                        </div>
                         <div v-if="JSON.stringify(object)!=='{}'">
 
                             <div class="ps-params-data">
@@ -761,7 +784,7 @@ export default {
   },
   data () {
     return {
-      zoom: 2,
+      zoom: 1,
       currentLayer: [0, 1],
       currentSuo: 0,
       showlayer: false,
@@ -854,7 +877,7 @@ export default {
       suofangdirection: true,
 
       id: 1,
-      width: '1000',
+      width: '800',
       height: '600',
       boxWidth: document.documentElement.clientWidth - 120,
       boxHeight: document.documentElement.clientHeight - 62,
@@ -909,7 +932,10 @@ export default {
       showBorderColor: false,
       borderstyleshow: false,
       hover9index: 1,
-      open9: false
+      open9: false,
+      showGuideline: false,
+      showRule: false,
+      previewUrl: ''
     }
   },
   created () {
@@ -1236,8 +1262,8 @@ export default {
       switch (name) {
         case 'Rect':
           options = {
-            left: 10,
-            top: 10,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             color: colors[i],
@@ -1249,8 +1275,8 @@ export default {
           break
         case 'Rectangle':
           options = {
-            left: 220,
-            top: 10,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             color: colors[i],
@@ -1261,8 +1287,8 @@ export default {
           break
         case 'Circle':
           options = {
-            left: 440,
-            top: 10,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             color: colors[i],
@@ -1273,8 +1299,8 @@ export default {
           break
         case 'Dottedline':
           options = {
-            left: 660,
-            top: 40,
+            left: 0,
+            top: 0,
             width: 200,
             height: 3,
             strokeWidth: 3,
@@ -1289,8 +1315,8 @@ export default {
         case 'Image':
           let imgurl = 'http://192.168.100.211/group1/M00/00/8A/rBMAA2RtfHSAGkIJAAKb6zKx59I826.jpg' // 'http://183.134.78.46:81/group1/M00/01/10/rBMAA2KHQraAE4fbAAAIabvbb5U379.jpg'
           options = {
-            left: 10,
-            top: 200,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             src: imgurl,
@@ -1307,8 +1333,8 @@ export default {
         case 'Icon':
           let iconurl = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
           options = {
-            left: 100,
-            top: 200,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             src: iconurl,
@@ -1323,8 +1349,8 @@ export default {
         case 'equalImage':
           let url = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
           options = {
-            left: 220,
-            top: 200,
+            left: 0,
+            top: 0,
             width: 200,
             height: 100,
             src: url,
@@ -1340,8 +1366,8 @@ export default {
 
         case 'Barcode':
           options = {
-            left: 60,
-            top: 30,
+            left: 0,
+            top: 0,
             width: 436,
             height: 50,
             hasRotatingPoint: false,
@@ -1359,8 +1385,8 @@ export default {
 
         case 'Qrcode':
           options = {
-            left: 200,
-            top: 100,
+            left: 0,
+            top: 0,
             width: 50,
             height: 50,
             barcodeType: 0, // 0:原二维码 1:datamaxtri
@@ -1516,7 +1542,7 @@ export default {
             textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 2, // textAdvanceProperty
+            isElasticSize: 1, // textAdvanceProperty
             angle: 0,
 
             maxLines: 7,
@@ -1892,6 +1918,25 @@ export default {
       this.$refs.canvas.changemoveing(no === 0)
       this.hover9index = no
       this.open9 = false
+    },
+    // 预览
+    async topreview () {
+      let bg = this.$refs.canvas.returnbg()
+      let url = await this.$refs.canvas.toCutObject(bg)
+      console.log(url)
+      // document.body.appendChild(url)
+      this.previewUrl = url
+    },
+
+    // 开关标尺
+    changeRule () {
+      this.showRule = !this.showRule
+      this.$refs.canvas.showCloseRuler(this.showRule)
+    },
+    // 开关辅助线
+    changeGuide () {
+      this.showGuideline = !this.showGuideline
+      this.$refs.canvas.showCloseGuideline(this.showGuideline)
     }
   }
 }

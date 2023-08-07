@@ -1,3 +1,5 @@
+<!-- eslint-disable no-unused-vars -->
+<!-- eslint-disable no-unused-vars -->
 <!-- eslint-disable no-undef -->
 <template>
  <div class="bigbox" id="bigbox"  @contextmenu="showMenu">
@@ -23,9 +25,15 @@ import vueContextMenu from '../examples/contextmenu.vue'
 
 // import { on, off } from '../examples/event' // 事件监听
 import Utils from '../utils/utils'
-// import initAligningGuidelines from '../utils/guidelines'
+// eslint-disable-next-line no-unused-vars
+import initFabricRuler from '../utils/fabricRuler'
+// eslint-disable-next-line no-unused-vars
+import initAligningGuidelines from '../utils/fabricGuidelines'
 // require('../../static/js/fabric5.js')
-
+import {
+  // eslint-disable-next-line no-unused-vars
+  debounce
+} from '../utils/debounce'
 export default {
   name: 'vuefabricmodule',
   components: {vueContextMenu, html2canvas},
@@ -59,8 +67,12 @@ export default {
       required: false
     },
     showRule: {
-      type: String,
-      default: 'NONE'
+      type: [Boolean, String],
+      default: false
+    },
+    showGuideline: {
+      type: [Boolean, String],
+      default: false
     },
     // 初始化缩放比
     zoom: {
@@ -132,8 +144,10 @@ export default {
       panning: false,
       cid: 0, // 底层获取id
       qrcodeImg: '',
-      xLeft: -200,
-      yTop: -100
+      xLeft: 0,
+      yTop: 0,
+      lastPosX: 0,
+      lastPosY: 0
     }
   },
   watch: {
@@ -170,7 +184,7 @@ export default {
     // eslint-disable-next-line no-undef
     this.canvas = new fabric.Canvas('canvas', { preserveObjectStacking: true })
     let canvas = this.canvas
-    // initAligningGuidelines(canvas) // 辅助线问题
+
     canvas.controlsAboveOverlay = false
     canvas.skipOffscreen = true
     canvas.preserveObjectStacking = true
@@ -274,16 +288,28 @@ export default {
     this.canvas.setWidth(this.boxWidth)
     this.canvas.setHeight(this.boxHeight)
 
-    this.changeBigZoom()
-    setTimeout(() => {
-      if (this.zoom !== 1) {
-        this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
-      }
-    }, 100)
+    // this.changeBigZoom()
+    // setTimeout(() => {
+    //   if (this.zoom !== 1) {
+    //     this.setZoom(this.zoom) // 如果不是默认的1,则强制按父组件传入的比例显示
+    //   }
+    // }, 100)
 
-    this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height}) // 画布初始化
-    this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩
+    // 画布初始化
+    this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
+    this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩  this.BgColor
+
+    if (this.showRule === 'true') {
+      //  初始化标尺(辅助-标尺)
+      initFabricRuler.drawfabricRuler(canvas)
+    }
+
     this.setCursor(99)
+
+    if (this.showGuideline === 'true') {
+      // 初始化辅助线(辅助-对齐线)
+      initAligningGuidelines(canvas)
+    }
 
     document.onkeydown = function (e) {
       let keyCode = window.event.keyCode
@@ -371,6 +397,10 @@ export default {
     }
 
     let that = this
+    this.canvas.on('after:render', function (e) {
+      // 标尺显示活跃元素坐标和范围(辅助-活跃元素)
+      // initFabricRuler.calcObjectRect()
+    })
     this.canvas.on('mouse:wheel', function (e) {
       if (that.isMoveing) {
         var zoom = (event.deltaY > 0 ? -0.1 : 0.1) + that.canvas.getZoom()
@@ -379,13 +409,20 @@ export default {
         that.setZoom(zoom) // 改变画布的缩放
         e.e.preventDefault()
         e.e.stopPropagation()
+
+        // 标尺位置想要固定在顶部(辅助-标尺)
+        initFabricRuler.rulerNomove()
       }
     })
     this.canvas.on('mouse:down', function (options) {
       if (that.isMoveing) { // 是否拖拽移动
         that.panning = true
         canvas.selection = false
+
+        that.lastPosX = options.e.clientX
+        that.lastPosY = options.e.clientY
       }
+      that.canvas.clearContext(that.canvas.contextTop)// 清除边框线
       that.$emit('mouse:down', options)
     })
     this.canvas.on('mouse:up', function (options) {
@@ -396,33 +433,46 @@ export default {
       that.$emit('mouse:up', options)
     })
     this.canvas.on('mouse:move', function (e) {
-      if (that.isMoveing && that.panning && e && e.e) {
+      // console.log(e.absolutePointer, e.pointer  && e && e.e)
+
+      // console.log(e.absolutePointer)
+
+      if (that.isMoveing && that.panning) {
+        // console.log(that.canvas.viewportTransform)
         // eslint-disable-next-line no-undef
-        var delta = new fabric.Point(e.e.movementX, e.e.movementY)
-        canvas.relativePan(delta)
+        // var delta = new fabric.Point(e.e.movementX, e.e.movementY)
+        // canvas.relativePan(delta)
+        that.canvas.discardActiveObject()
+        canvas.viewportTransform[4] += e.e.clientX - that.lastPosX
+        canvas.viewportTransform[5] += e.e.clientY - that.lastPosY
+        that.lastPosX = e.e.clientX
+        that.lastPosY = e.e.clientY
+        canvas.setViewportTransform(canvas.viewportTransform)
+        // 标尺位置想要固定在顶部(辅助-标尺)
+        initFabricRuler.rulerNomove()
       }
+      // 鼠标的坐标显示虚点(辅助-鼠标点)
+      // initFabricRuler.drawPoint(e.absolutePointer.x, e.absolutePointer.y)
+
+      that.canvas.requestRenderAll()
       that.$emit('mouse:move', e)
     })
     this.canvas.on('mouse:over', function (options) {
-      // let bound = options.target
-      // if (bound) {
-      //   bound.set('opacity', 0.8)
-      // }
-
       if (options.target && options.target.id) {
-        canvas.contextContainer.strokeStyle = 'rgba(0,98,178,1)'
-        canvas.contextContainer.lineWidth = 2
-        canvas.contextContainer.setLineDash([5, 3])
+        let ctx = that.canvas.contextTop
+        // console.log(canvas, canvas.getSelectionContext(), canvas.contextContainer, canvas.contextTop)
+        ctx.strokeStyle = 'rgba(0,98,178,1)'
+        ctx.lineWidth = 2
+        ctx.setLineDash([6, 4, 2])
         canvas.forEachObject(function (obj) {
           if (obj && obj.id !== undefined) {
             if (obj.component === 'component' && obj.isType !== 'TextRect-text' && options.target.id === obj.id) {
-              var bound = obj.getBoundingRect()
-
-              canvas.contextContainer.strokeRect(
+              var bound = obj.getBoundingRect(false, true)
+              ctx.strokeRect(
                 bound.left - 1,
                 bound.top - 1,
-                bound.width + 1,
-                bound.height + 1
+                bound.width + 2,
+                bound.height + 2
               )
             }
           }
@@ -436,7 +486,12 @@ export default {
       // if (bound) {
       //   bound.set('opacity', 1)
       // }
-      that.canvas.renderAll()
+      that.canvas.clearContext(that.canvas.contextTop)// 清除边框线
+      if (!options.target) {
+        // that.canvas.remove(...initFabricRuler.returnsRuler('sPoint')) // 删除已有的标记(辅助-鼠标点)
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      }
       that.$emit('mouse:out', options)
     })
     this.canvas.on('selection:created', function (options) {
@@ -552,6 +607,22 @@ export default {
     })
   },
   methods: {
+    /**
+     * 设置画布中心到指定对象中心点上
+     * @param {Object} obj 指定的对象
+     */
+    setCenterFromObject (obj) {
+      const { canvas } = this
+      const objCenter = obj.getCenterPoint()
+      console.log('getCenterPoint', objCenter)
+      const viewportTransform = canvas.viewportTransform
+      // if (canvas.width === undefined || canvas.height === undefined || !viewportTransform) return
+      viewportTransform[4] = canvas.width / 2 - objCenter.x * viewportTransform[0]
+      viewportTransform[5] = canvas.height / 2 - objCenter.y * viewportTransform[3]
+      // console.log('viewportTransform:', viewportTransform, viewportTransform[4], viewportTransform[5])
+      canvas.setViewportTransform(viewportTransform)
+      canvas.renderAll()
+    },
     // 初始化背景
     initbg (options) {
       let left = 0
@@ -566,21 +637,19 @@ export default {
       } else {
         top = 0
       }
-      // console.log(top, left)
-      this.xLeft = -left
-      this.yTop = -top
+      console.log(top, left)
       options = {
         width: options.width ? options.width : this.width,
         height: options.height ? options.height : this.height,
         backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : ''
       }
-
-      this.xLeft = -left
-      this.yTop = -top
+      // 白色画布相对canvas偏移量
+      this.xLeft = 0 // -left
+      this.yTop = 0 // -top
       // eslint-disable-next-line no-undef
       let rect = new fabric.Rect({
-        left: left,
-        top: top,
+        left: 0,
+        top: 0,
         width: options.width,
         height: options.height,
         fill: JSON.parse(JSON.stringify(options.backgroundColor)),
@@ -604,8 +673,8 @@ export default {
         scaleY: 1,
         stopContextMenu: true, // 禁掉鼠标右键默认事件
         hoverCursor: 'default',
-        strokeWidth: 0,
-        stroke: null,
+        strokeWidth: 1,
+        stroke: '#999',
         excludeFromExport: true,
         perPixelTargetFind: false
       })
@@ -615,7 +684,16 @@ export default {
           strokeWidth: 1
         })
       }
+      // 超出不显示
+      // rect.clone((cloned) => {
+      //   this.canvas.inverted = false
+      //   this.canvas.absolutePositioned = false
+      //   this.canvas.clipPath = cloned
+      //   this.canvas.requestRenderAll()
+      // })
       this.canvas.add(rect)
+      this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
+
       rect.sendToBack()
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
@@ -625,6 +703,13 @@ export default {
       let objects = this.canvas.getObjects()
       objects.forEach((obj) => {
         if (obj.isType === 'sMask') {
+          // console.log('遮罩置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.isType === 'sRulerBg') {
           // console.log('遮罩置顶')
           obj.zIndex = -1
           obj.bringToFront()
@@ -696,26 +781,17 @@ export default {
       //   this.renderAll()
       // })
     },
+    /**
+     [0]: 水平缩放（x轴方向）
+     [1]: 水平倾斜（x轴方向）
+     [2]: 垂直倾斜（y轴方向）
+     [3]: 垂直缩放（y轴方向）
+     [4]: 水平移动（x轴方向）
+     [5]: 垂直移动（y轴方向）
+     * */
     // 画遮罩区域
     getBlack (options, color) {
       let that = this
-
-      let x1, x2, y1, y2
-      if (this.boxWidth > options.width * this.canvasZoom) {
-        x1 = this.boxWidth / 2 - options.width / 2
-        x2 = x1 + options.width
-      } else {
-        x1 = 0
-        x2 = options.width
-      }
-      if (this.boxHeight > options.height * this.canvasZoom) {
-        y1 = this.boxHeight / 2 - options.height / 2
-        y2 = y1 + options.height
-      } else {
-        y1 = 0
-        y2 = options.height
-      }
-      console.log(x1, x2, y1, y2)
       let bg = that.returnbg()
       if (that.returnsMask().length && that.returnsMask().length > 0) {
         that.canvas.remove(...that.returnsMask())
@@ -743,16 +819,9 @@ export default {
         name: 'sMask',
         isType: 'sMask'
       }
+
       // eslint-disable-next-line no-undef
       const rect1 = new fabric.Rect({
-        ...pathOption,
-        left: bg.left - 1000,
-        top: bg.top - 2,
-        width: 1000,
-        height: 1000 + options.height
-      })
-      // eslint-disable-next-line no-undef
-      const rect2 = new fabric.Rect({
         ...pathOption,
         left: bg.left - 1000,
         top: bg.top - 1000,
@@ -760,21 +829,31 @@ export default {
         height: 1000
       })
       // eslint-disable-next-line no-undef
+      const rect2 = new fabric.Rect({
+        ...pathOption,
+        left: bg.left + 2 + options.width,
+        top: bg.top - 1000,
+        width: 1000,
+        height: 1000 + options.height + 1000
+      })
+      // eslint-disable-next-line no-undef
       const rect3 = new fabric.Rect({
         ...pathOption,
-        left: options.width + bg.left,
-        top: bg.top - 2,
-        width: 1000,
-        height: 1000 + options.height
+        left: bg.left - 1000,
+        top: options.height + 2 + bg.top,
+        width: 1000 + options.width + 1000,
+        height: 1000
       })
+
       // eslint-disable-next-line no-undef
       const rect4 = new fabric.Rect({
         ...pathOption,
-        left: bg.left - 1000,
-        top: options.height + bg.top,
-        width: 2000 + options.width,
-        height: 1000
+        left: -1000,
+        top: -1000,
+        width: 1000,
+        height: 1000 + options.height + 1000
       })
+
       that.canvas.add(rect1)
       rect1.bringToFront()
 
@@ -789,21 +868,8 @@ export default {
 
       that.canvas.requestRenderAll()
       that.canvas.renderAll()
-
-      this.canvas.remove(...this.returnsRuler()) // 删除已有的标尺
-      setTimeout(() => {
-        that.drawRulerInit({
-          axisWidth: 1,
-          lineColor: '#999',
-          gridWidth: 30,
-          gridHeight: 20,
-          left: bg.left,
-          top: bg.top,
-          width: options.width,
-          height: options.height
-        }, this.showRule) // 画尺子
-      }, 100)
     },
+
     // 改变宽高背景颜色
     changeWH (options) {
       if (!options) { return }
@@ -819,7 +885,6 @@ export default {
       this.canvas.remove(bg)
       let that = this
       setTimeout(() => {
-        console.warn(this.returnbg())
         that.changeBigZoom()
         that.initbg(options) // 画布初始化
         that.getBlack({width: options.width, height: options.height}, that.BgColor) // 遮罩
@@ -851,14 +916,28 @@ export default {
       this.canvas.renderAll()
     },
     // 设置缩放比
+    setZoomOld (n) {
+      this.canvasZoom = n
+      // let canvaCenterLeft = this.boxWidth / 2
+      // let canvaCenterTop = this.boxHeight / 2
+      // console.log(canvaCenterLeft, canvaCenterTop)
+      let bg = this.returnbg()
+      const objCenter = bg.getCenterPoint()
+      // console.log(objCenter)
+      // eslint-disable-next-line no-undef
+      let zoomPoint = new fabric.Point(objCenter.x, objCenter.y) // 居中缩放中心
+      this.canvas.zoomToPoint(zoomPoint, n)
+      this.changeOrigin() // 按当前比例居中
+      setTimeout(() => {
+        this.canvas.renderAll()
+        this.$emit('changeZoomTo', n)
+      }, 100)
+    },
+    // 设置缩放
     setZoom (n) {
       this.canvasZoom = n
-      let canvaCenterLeft = this.boxWidth / 2
-      let canvaCenterTop = this.boxHeight / 2
-      // console.log(canvaCenterLeft, canvaCenterTop)
-      // eslint-disable-next-line no-undef
-      let zoomPoint = new fabric.Point(canvaCenterLeft, canvaCenterTop) // 居中缩放中心
-      this.canvas.zoomToPoint(zoomPoint, n)
+      this.canvas.setZoom(n)
+      this.changeOrigin() // 按当前比例居中
       setTimeout(() => {
         this.canvas.renderAll()
         this.$emit('changeZoomTo', n)
@@ -870,16 +949,25 @@ export default {
     },
     // 按照1:1缩放
     changeOneZoom () {
-      this.canvas.setZoom(1)
-      this.canvas.absolutePan({x: 0, y: 0})
+      let canvas = this.canvas
+      canvas.setZoom(1)
+      // this.canvas.absolutePan({x: 0, y: 0})
+      this.changeOrigin() // 按当前比例居中
       this.canvasZoom = 1
       this.$emit('changeZoomTo', 1)
     },
     // 按照当前缩放比居中
     changeOrigin () {
-      let zoom = this.canvas.getZoom()
-      this.changeOneZoom() // 先1:1 确定中心点
-      this.setZoom(zoom)
+      let canvas = this.canvas
+      let bg = this.returnbg()
+      const objCenter = bg.getCenterPoint()
+      const viewportTransform = canvas.viewportTransform
+      viewportTransform[4] = canvas.width / 2 - objCenter.x * viewportTransform[0]
+      viewportTransform[5] = canvas.height / 2 - objCenter.y * viewportTransform[3]
+      canvas.setViewportTransform(viewportTransform)
+      // 标尺位置想要固定在顶部(辅助-标尺)
+      initFabricRuler.rulerNomove()
+      canvas.renderAll()
     },
     // 画布左上对齐
     changeLeftTop () {
@@ -897,7 +985,7 @@ export default {
     },
     // 铺满
     changeBigZoom () {
-      this.changeOneZoom() // 先1:1 确定中心点
+      // eslint-disable-next-line no-unused-vars
       let zoom = 1
       if (this.boxWidth / this.boxHeight < (this.width) / (this.height)) {
         // console.log('宽扁')
@@ -927,8 +1015,8 @@ export default {
         Zoom = 1
       }
       // console.log('初始化缩放按最大的宽高适配：', Zoom)
-      console.log('缩放：', zoom)
       this.setZoom(parseFloat(Zoom))
+      this.changeOrigin() // 按当前比例居中
     },
     // 改变画布背景移动状态和鼠标手样式
     changemoveing (bol) {
@@ -965,28 +1053,6 @@ export default {
       }
     },
     // 返回背景
-    returnbg () {
-      let objects = this.canvas.getObjects()
-      let returndata
-      objects.forEach((one) => {
-        if (one.isType === 'sBg') {
-          returndata = one
-        }
-      })
-      return returndata
-    },
-    // 返回标尺
-    returnsRuler () {
-      let objects = this.canvas.getObjects()
-      let returndata = []
-      objects.forEach((one) => {
-        if (one.isType === 'sRuler') {
-          returndata.push(one)
-        }
-      })
-      return returndata
-    },
-    // 返回背景
     returnsMask () {
       let objects = this.canvas.getObjects()
       let returndata = []
@@ -997,188 +1063,18 @@ export default {
       })
       return returndata
     },
-    // 画标尺
-    drawRulerInit (params, status) {
-      switch (status) {
-        case 'ALL':
-          this.drawRulerH(params) // 画上边的标尺
-          this.drawRulerV(params) // 画左侧的标尺
-          break
-        case 'HORIZONTAL':
-          this.drawRulerH(params)
-          break
-        case 'VERTICAL':
-          this.drawRulerV(params)
-          break
-        case 'NONE':
-          break
-        default:
-          break
-      }
-    },
-    // 画纵向标尺
-    drawRulerH (params) {
-      let that = this
-      // 长线
-      let objectline = []
-      for (let i = 0; i < (params.width + 1) / 50; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([50 * i, 0, 50 * i, params.gridHeight], {
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline.push(line)
-      }
-      let objecttext = []
-      for (let i = 0; i < (params.width - 10) / 50; i++) {
-        let data = i * 50 + ''
-        // eslint-disable-next-line no-undef
-        let text = new fabric.Text(data, {
-          originX: 'left',
-          originY: 'top',
-          left: 50 * i + 5,
-          top: params.gridHeight * 0.01,
-          fill: params.lineColor,
-          strokeWidth: 0.3,
-          fontSize: 12
-        })
-        objecttext.push(text)
-      }
-      // 分隔短线
-      let objectline2 = []
-      for (let i = 0; i < (params.width) / 10; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([5 + 10 * i, params.gridHeight * 0.8, 5 + 10 * i, params.gridHeight], {
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline2.push(line)
-      }
-      // 分隔长线
-      let objectline3 = []
-      for (let i = 0; i < (params.width) / 10; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([10 + 10 * i, params.gridHeight * 0.6, 10 + 10 * i, params.gridHeight], {
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline3.push(line)
-      }
-
-      // eslint-disable-next-line no-undef
-      let rulerPath = new fabric.Group([...objectline, ...objecttext, ...objectline2, ...objectline3], {
-        type: 'line',
-        originX: 'left',
-        originY: 'top',
-        selectable: false,
-        excludeFromExport: true,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockRotation: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        lockUniScaling: true,
-        hoverCursor: 'auto',
-        name: 'sRuler',
-        left: params.left,
-        top: params.top - params.gridHeight,
-        isType: 'sRuler',
-        evented: false
-      })
-      that.canvas.add(rulerPath)
-      rulerPath.bringToFront()
-      that.canvas.requestRenderAll()
-      that.canvas.renderAll()
-    },
-    // 画横向标尺
-    drawRulerV (params) {
-      let that = this
-      // 长线
-      let objectline = []
-      for (let i = 0; i < (params.height + 1) / 50; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([0, 50 * i, params.gridWidth, 50 * i], {
-          originX: 'left',
-          originY: 'top',
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline.push(line)
-      }
-      let objecttext = []
-      for (let i = 0; i < (params.height - 10) / 50; i++) {
-        let data = i * 50 + ''
-        for (let j = 0; j < data.length; j++) {
-          // eslint-disable-next-line no-undef
-          let text = new fabric.Text(data[j], {
-            originX: 'left',
-            originY: 'top',
-            left: params.gridWidth * 0.01,
-            top: j * 12 + (50 * i + 5),
-            fill: params.lineColor,
-            strokeWidth: 0.3,
-            fontSize: 12,
-            width: 12
-          })
-          objecttext.push(text)
+    // 返回背景
+    returnbg () {
+      let objects = this.canvas.getObjects()
+      let returndata
+      objects.forEach((one) => {
+        if (one.isType === 'sBg') {
+          returndata = one
         }
-      }
-      // 分隔短线
-      let objectline2 = []
-      for (let i = 0; i < (params.height) / 10; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([params.gridWidth * 0.8, 5 + 10 * i, params.gridWidth, 5 + 10 * i], {
-          originX: 'left',
-          originY: 'top',
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline2.push(line)
-      }
-      // 分隔长线
-      let objectline3 = []
-      for (let i = 0; i < (params.height) / 10; i++) {
-        // eslint-disable-next-line no-undef
-        let line = new fabric.Line([params.gridWidth * 0.6, 10 + 10 * i, params.gridWidth, 10 + 10 * i], {
-          originX: 'left',
-          originY: 'top',
-          stroke: params.lineColor,
-          strokeWidth: params.axisWidth,
-          strokeDashArray: [0, 0]
-        })
-        objectline3.push(line)
-      }
-
-      // eslint-disable-next-line no-undef
-      let rulerPath = new fabric.Group([...objectline, ...objecttext, ...objectline2, ...objectline3], {
-        type: 'line',
-        originX: 'left',
-        originY: 'top',
-        selectable: false,
-        excludeFromExport: true,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockRotation: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        lockUniScaling: true,
-        hoverCursor: 'auto',
-        name: 'sRuler',
-        left: params.left - params.gridWidth,
-        top: params.top,
-        isType: 'sRuler',
-        evented: false
       })
-      that.canvas.add(rulerPath)
-      rulerPath.bringToFront()
-      that.canvas.requestRenderAll()
-      that.canvas.renderAll()
+      return returndata
     },
+
     // 右键事件
     showMenu () {
       if (!this.showMouseRight) {
@@ -1697,8 +1593,8 @@ export default {
             textdemo: _clipboard.options.textdemo,
             stroke: _clipboard.options.stroke,
             strokeWidth: _clipboard.options.strokeWidth,
-            width: parseInt(_clipboard.options.width),
-            height: parseInt(_clipboard.options.height)
+            width: parseInt(_clipboard.width * _clipboard.scaleX),
+            height: parseInt(_clipboard.height * _clipboard.scaleY)
           }
         }
         if (_clipboard.isType === 'Icon') {
@@ -5303,6 +5199,45 @@ export default {
       })
       return dataImg
     },
+    // 生成预览图片
+    async dataUrl () {
+      this.discardActive()
+      let bg = this.returnbg()
+      var dataImg = await this.canvas.toDataURL({
+        format: 'png',
+        multiplier: 2,
+        left: bg.oCoords.tl.x,
+        top: bg.oCoords.tl.y,
+        width: bg.width * this.canvasZoom,
+        height: bg.height * this.canvasZoom
+      })
+      // console.log(dataImg)
+      let imgFile = this.dataURLtoFile(dataImg)
+      // console.log(imgFile)
+      // 如果想要预览转出来的图片可以：
+      const fileReader = new FileReader() // 创建一个 fileReader
+      fileReader.readAsDataURL(imgFile) // 将生成的图片文件读到 fileReader中
+      const img = new Image()
+      img.src = fileReader.result // 将 fileReader.result 设置为 图片的 src
+      document.body.appendChild(img)
+      console.log(imgFile, img)
+      return imgFile
+    },
+    // base64转文件
+    dataURLtoFile (dataurl, filename = 'file') {
+      let arr = dataurl.split(',')
+      let mime = arr[0].match(/:(.*?);/)[1]
+      let suffix = mime.split('/')[1]
+      let bstr = atob(arr[1])
+      let n = bstr.length
+      let u8arr = new Uint8Array(n)
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n)
+      }
+      return new File([u8arr], `${filename}.${suffix}`, {
+        type: mime
+      })
+    },
     // 文本不使用 的文本
     textStyleFormat: function (target, text) {
       //  console.log(target.maxLines,target.omitStyleText,target.newline);
@@ -6772,6 +6707,22 @@ export default {
       this.canvas.renderAll()
     },
 
+    // 辅助线
+    showCloseGuideline (bol) {
+      let canvas = this.canvas
+      this.canvas.showGuideline = bol
+      // 初始化辅助线(辅助-对齐线)
+      initAligningGuidelines(canvas)
+    },
+
+    // 标尺
+    showCloseRuler (bol) {
+      let canvas = this.canvas
+      this.canvas.showRule = bol
+      //  初始化标尺(辅助-标尺)
+      initFabricRuler.drawfabricRuler(canvas)
+    },
+
     /**
      * 创建文本矩形组件 createNewText ----------------------------------------------------------------------------------------------------
      * options {}
@@ -7184,6 +7135,7 @@ export default {
 <style scoped>
 .bigbox{
   position:relative;
+  box-shadow: inset 0 0 9px 2px #0000001f;
   overflow: hidden;
 }
 </style>

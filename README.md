@@ -768,3 +768,7 @@ this.$refs.canvas.createElement(name, options)
 ### 2023.07.17
 > v0.1.30
 - 文本组合组件重构NewText
+
+### 2023.08.07
+> v0.1.31
+- 新增标尺和辅助线的开关设置
