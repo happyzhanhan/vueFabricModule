@@ -414,7 +414,7 @@ export default {
         e.e.stopPropagation()
 
         // 标尺位置想要固定在顶部(辅助-标尺)
-        initFabricRuler.rulerNomove(this.canvas)
+        initFabricRuler.rulerNomove(that.canvas)
       }
     })
     this.canvas.on('mouse:down', function (options) {
@@ -5971,12 +5971,12 @@ export default {
       // eslint-disable-next-line no-undef
       let postfixdom = new fabric.IText(postfix + ' ', {
         fill: textColor,
-        fontSize: integerFontSize,
+        fontSize: 10,
         fontFamily: postfixFontType,
         originX: 'left',
         originY: 'top',
-        left: postfixLeft,
-        top: 0,
+        left: price.left + postfixLeft,
+        top: price.top,
         scaleX: 1,
         scaleY: 1,
         isType: 'NewPricePostfix',
@@ -6061,6 +6061,8 @@ export default {
       })
       group.add(priceGroup)
       group.clipPath = Rect
+
+      group.visible = visible
 
       let _this = this
       group.on('scaling', async function (e) {

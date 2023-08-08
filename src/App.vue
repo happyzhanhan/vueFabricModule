@@ -934,7 +934,7 @@ export default {
       hover9index: 1,
       open9: false,
       showGuideline: true,
-      showRule: false,
+      showRule: true,
       previewUrl: ''
     }
   },
@@ -1793,7 +1793,7 @@ export default {
           break
         case 'Price':
           options = {
-            left: 500,
+            left: 20,
             top: 300,
             width: 400,
             height: 200,
@@ -1805,7 +1805,7 @@ export default {
             decimalDigit: 2, // 小数位数
             roundingMode: 4, // 舍入模式   7：无  4：四舍五入 0：向上取整  1：向下取整
 
-            horizontalAlign: 1, // 整体横向对齐 012
+            horizontalAlign: 2, // 整体横向对齐 012
             verticalAlign: 1, // 整体竖向对齐 012
 
             textColor: '#FF55AA', // 文本颜色
@@ -1827,7 +1827,7 @@ export default {
             'prefixIfStrikeThrough': 0, // 前缀是否中划线(0:不中划线,1:中划线)
             'prefixIfUnderline': 0, // 前缀是否下划线(0:不下划线,1:下划线)
             prefixFontType: '微软雅黑', // 字体
-            prefixFontSize: 25, // 字号
+            prefixFontSize: 50, // 字号
             prefixPlace: 0, // 前缀的位置  上：0  中：1  下：2
             /**
              * 整数
@@ -1837,7 +1837,7 @@ export default {
             'integerIfStrikeThrough': 0, // 整数部分是否中划线
             'integerIfUnderline': 0, // 整数部分是否下划线
             integerFontType: '微软雅黑', // 字体
-            integerFontSize: 50, // 字号
+            integerFontSize: 100, // 字号
             /**
              * 小数分隔符
              */
@@ -1845,7 +1845,7 @@ export default {
             'dotIfBold': 0, // 小数点是否加粗(0:不加粗,1:加粗)
             'dotIfItalic': 0, // 小数点是否斜体(0:不斜体,2:斜体)
             dotFontType: '宋体', // 字体
-            dotFontSize: 50, // 字号
+            dotFontSize: 100, // 字号
             /**
              * 小数
              */
@@ -1854,7 +1854,7 @@ export default {
             'decimalIfStrikeThrough': 0, // 小数是否中划线
             'decimalIfUnderline': 0, // 小数是否下划线
             decimalFontType: '微软雅黑', // 字体
-            decimalFontSize: 25, // 字号
+            decimalFontSize: 50, // 字号
             decimalPlace: 0, // 小数在整数的位置  上：0  中：1  下：2
             /**
              * 后缀
@@ -1865,7 +1865,7 @@ export default {
             'postfixIfStrikeThrough': 0, // 后缀是否中划线
             'postfixIfUnderline': 0, // 后缀是否下划线
             postfixFontType: '微软雅黑', // 字体
-            postfixFontSize: 20, // 字号
+            postfixFontSize: 40, // 字号
             postfixPlace: 4, // 后缀的位置  上：0  中：1  下：2       小数下：3           小数上：4
             visible: true
           }

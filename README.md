@@ -786,3 +786,8 @@ this.$refs.canvas.createElement(name, options)
 - 默认画布撑满
 - 画布表框1像素去掉
 
+### 2023.08.08
+> v0.1.36
+- 数字价格组件初始化右边有空格
+- 数字组件没有隐藏
+
