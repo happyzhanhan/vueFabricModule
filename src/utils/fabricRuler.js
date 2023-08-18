@@ -5,14 +5,14 @@
  * @Date: 2023-08-01 14:18:54
  * @Version: v0.1.31
  * @LastEditors: zhouzhenhan
- * @LastEditTime: 2023-08-02 17:19:41
+ * @LastEditTime: 2023-08-18 17:31:43
  */
  // eslint-disable no-unused-vars
  // eslint-disable no-undef
 let initFabricRuler = function () {
   var canvas,
       status = true,
-      objectRect,
+      showobjectRect = true,
       rulerborder = '#696969',
       rulerbgborderWidth = 1,
       rulerbg = '#303030',
@@ -21,6 +21,7 @@ let initFabricRuler = function () {
       textColor = '#a5a5a5',
       lineColor = '#696969',
       dashColor = '#b0b0b0',
+      objectBg = '#007fff',
       vpt,
       zoom;
   // 标尺运动计算
@@ -473,20 +474,263 @@ let initFabricRuler = function () {
       canvas.requestRenderAll()
       canvas.renderAll()
     },
+
+    // 删除活跃元素坐标蓝色区域
+    async removeObjectRect () {
+      await canvas.remove(...this.returnsRuler('sObjectBg')) // 删除已有的背景
+      await canvas.remove(...this.returnsRuler('sObjectLine')) // 删除活跃元素坐标
+      await canvas.remove(...this.returnsRuler('sObjectTextT')) // 删除活跃元素坐标
+      await canvas.remove(...this.returnsRuler('sObjectTextbg')) // 删除活跃元素坐标
+      await canvas.remove(...this.returnsRuler('sObjectText')) // 删除活跃元素坐标
+    },
+    // 绘制刻度
+    async drawtext(isHorizontal, text){
+      vpt = canvas.viewportTransform
+      zoom = canvas.getZoom();
+      let left = -(vpt[4] / vpt[0]) + rulerbgborderWidth * (1 / zoom)
+      let top = -(vpt[5] / vpt[3]) + rulerbgborderWidth * (1 / zoom)
+      let topleftline, topleftText, topleftTextbg, topleftTexGroup
+      topleftline = new fabric.Line( isHorizontal ? [text, top + 7, text, top + 7 + 10 * (1 / zoom)]: [left + 7, text, left + 7 + 10 * (1 / zoom), text], {
+        isType: 'sObjectLine',
+        stroke: objectBg,
+        strokeWidth: 2 * (1 / zoom),
+        strokeDashArray: [0, 0],
+        selectable: false,
+        excludeFromExport: true,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockRotation: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockUniScaling: true,
+        hoverCursor: 'auto',
+        evented: false,
+      })
+      canvas.add(topleftline)
+      topleftText = new fabric.Text( parseInt(text) + '' , {
+        isType: 'sObjectTextT',
+        fill: objectBg,
+        fontSize: fontSize * (1 / zoom),
+        textAlign: 'left',
+      })
+      var shadow = new fabric.Shadow({ 
+        color: rulerbg, 
+        blur: 3 
+     }); 
+      topleftTextbg = new fabric.Rect({
+        isType: 'sObjectTextbg',
+        fill: rulerbg,
+        shadow: shadow,
+        opacity: 0.6,
+        padding: 20,
+        width: topleftText.width + 20,
+        height: topleftText.height,
+      })
+      topleftTexGroup = new fabric.Group([topleftTextbg, topleftText], {
+        isType: 'sObjectText',
+        left: isHorizontal ? text : left + 6 * (1 / zoom),
+        top: isHorizontal ? top + 6 * (1 / zoom) : text,
+        angle: isHorizontal ? 0 : -90,
+
+        selectable: false,
+        excludeFromExport: true,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockRotation: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockUniScaling: true,
+        hoverCursor: 'auto',
+        evented: false,
+      })
+      canvas.add(topleftTexGroup)
+    },
+    // 画出矩形位置
+    async drawObjectRect (x1, w, y1, h) {
+      // console.log(x1, w, y1, h)
+      vpt = canvas.viewportTransform
+      zoom = canvas.getZoom();
+      let sObjectBg = this.returnsRuler('sObjectBg')
+      // console.log(sObjectBg)
+      let left = -(vpt[4] / vpt[0]) + rulerbgborderWidth * (1 / zoom)
+      let top = -(vpt[5] / vpt[3]) + rulerbgborderWidth * (1 / zoom)
+      let topMask, leftMask, topleftTexGroup
+      if(sObjectBg.length>0){
+        topMask = sObjectBg[0]
+        topMask.animate('left', x1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeInOutQuad']
+        });
+        topMask.animate('width', w, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeInOutQuad']
+        });
+        leftMask = sObjectBg[1]
+        leftMask.animate('top', y1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        leftMask.animate('height', h, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        // 坐标刻度线段
+        let sObjectLine = this.returnsRuler('sObjectLine')
+        sObjectLine[0].animate('left', x1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectLine[1].animate('left', x1+w, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectLine[2].animate('top', y1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectLine[3].animate('top', y1+h, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        // 坐标文字
+        let sObjectText = this.returnsRuler('sObjectText')
+        sObjectText[0].item(1).set({
+          text: parseInt(x1)+''
+        })
+        sObjectText[0].animate('left', x1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectText[1].item(1).set({
+          text: parseInt(x1+w)+''
+        })
+        sObjectText[1].animate('left', x1+w, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectText[2].item(1).set({
+          text: parseInt(y1)+''
+        })
+        sObjectText[2].animate('top', y1, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+        sObjectText[3].item(1).set({
+          text: parseInt(y1+w)+''
+        })
+        sObjectText[3].animate('top', y1+h, {
+          duration: 100,
+          onChange: canvas.renderAll.bind(canvas),
+          onComplete: function() {},
+          easing: fabric.util.ease['easeOutQuart']
+        });
+      }else{
+        topMask = new fabric.Rect({
+          type: 'Rect',
+          name: 'sObjectBg',
+          isType: 'sObjectBg',
+          originX: 'left',
+          originY: 'top',
+          selectable: false,
+          excludeFromExport: true,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockRotation: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockUniScaling: true,
+          hoverCursor: 'ns-resize',
+          left: x1,
+          top: top + 15 * (1 / zoom),
+          width: w,
+          height: 4 * (1/zoom),
+          fill: objectBg,
+          opacity: 0.5,
+          stroke: '#eee',
+          strokeWidth: 0,
+          evented: false
+        })
+        canvas.add(topMask)
+        await this.drawtext(true, x1)
+        await this.drawtext(true, x1+w)
+
+        
+        leftMask = new fabric.Rect({
+          type: 'Rect',
+          name: 'sObjectBg',
+          isType: 'sObjectBg',
+          originX: 'left',
+          originY: 'top',
+          selectable: false,
+          excludeFromExport: true,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockRotation: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockUniScaling: true,
+          hoverCursor: 'ns-resize',
+          left: left + 15 * (1 / zoom),
+          top: y1,
+          width: 4 * (1/zoom),
+          height: h,
+          fill: objectBg,
+          opacity: 0.5,
+          stroke: '#eee',
+          strokeWidth: 0,
+          evented: false
+        })
+        canvas.add(leftMask)
+        await this.drawtext(false, y1)
+        await this.drawtext(false, y1+h)
+      }
+      topMask.bringToFront()
+      leftMask.bringToFront()
+      canvas.requestRenderAll()
+      canvas.renderAll()
+    },
   
     // 计算选中矩形坐标
-    calcObjectRect: function () {
+    calcObjectRect: function (canvas) {
+      let that = this
+      showobjectRect = canvas.showobjectRect || false
+
+      if (!showobjectRect) {
+        this.removeObjectRect() // 关闭删除
+        return
+      }
       debounce3(async () => {
         const activeObjects = canvas.getActiveObject();
         // if (activeObjects.length === 0) return;
         if(activeObjects){
-          // console.log(activeObjects.getBoundingRect())
+          // console.log(activeObjects)
+          // console.log(activeObjects.getBoundingRect(true, true))
+          const {left: x1, width: w,  top: y1, height: h} = activeObjects.getBoundingRect(true, true)
+          that.drawObjectRect(x1, w, y1, h)
         }
-        // objectRect = {
-        //   x: mergeLines(allRect, true),
-        //   y: mergeLines(allRect, false),
-        // };
-      },25)
+      },15)
     },
   
     // 清除选中矩形坐标

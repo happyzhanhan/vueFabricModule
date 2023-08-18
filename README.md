@@ -791,3 +791,9 @@ this.$refs.canvas.createElement(name, options)
 - 数字价格组件初始化右边有空格
 - 数字组件没有隐藏
 
+### 2023.08.18
+> v0.1.37
+- 画布新增组件坐标展示
+
+![v0.1.37](/static/images/v0.1.37.jpg "vue-fabric-module")
+

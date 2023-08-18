@@ -74,6 +74,10 @@ export default {
       type: [Boolean, String],
       default: false
     },
+    showobjectRect: {
+      type: [Boolean, String],
+      default: false
+    },
     // 初始化缩放比
     zoom: {
       type: Number,
@@ -303,6 +307,7 @@ export default {
 
     canvas.showRule = this.showRule || false
     canvas.showGuideline = this.showGuideline || false
+    canvas.showobjectRect = this.showobjectRect || false
     setTimeout(() => {
       if (this.showRule) {
         //  初始化标尺(辅助-标尺)
@@ -311,6 +316,10 @@ export default {
       if (this.showGuideline) {
         // 初始化辅助线(辅助-对齐线)
         initAligningGuidelines(canvas)
+      }
+      if (this.showobjectRect) {
+        // 活跃组件坐标(辅助-坐标)
+        initFabricRuler.calcObjectRect(canvas)
       }
     }, 500)
 
@@ -402,7 +411,7 @@ export default {
     let that = this
     this.canvas.on('after:render', function (e) {
       // 标尺显示活跃元素坐标和范围(辅助-活跃元素)
-      // initFabricRuler.calcObjectRect()
+      // initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('mouse:wheel', function (e) {
       if (that.isMoveing) {
@@ -509,6 +518,8 @@ export default {
       })
       that.$emit('selectId', selectid)
       that.$emit('selection:created', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('selection:updated', function (options) {
       // console.log('选择元素selection:updated', options)
@@ -524,6 +535,8 @@ export default {
       }
       that.$emit('selectId', selectid)
       that.$emit('selection:updated', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('selection:cleared', function (options) {
       // console.log('选择元素selection:cleared', options)
@@ -533,6 +546,8 @@ export default {
       //   })
       // }
       that.$emit('selectId', [])
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.removeObjectRect()
       that.$emit('selection:cleared', options)
     })
     this.canvas.on('before:selection:cleared', function (options) {
@@ -550,12 +565,18 @@ export default {
     })
     this.canvas.on('object:modified', function (options) {
       that.$emit('object:modified', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('object:rotating', function (options) {
       that.$emit('object:rotating', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('object:scaling', function (options) {
       that.$emit('object:scaling', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('object:moving', function (options) {
       if (options.target._objects) {
@@ -569,6 +590,8 @@ export default {
         })
       }
       that.$emit('object:moving', options)
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
     })
     this.canvas.on('object:scaled', function (options) {
       that.$emit('object:scaled', options)
@@ -722,6 +745,27 @@ export default {
         }
         if (obj.isType === 'sRuler') {
           // console.log('遮罩置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.isType === 'sObjectBg') {
+          // console.log('活跃元素坐标置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.isType === 'sObjectLine') {
+          // console.log('活跃元素坐标刻度置顶')
+          obj.zIndex = -1
+          obj.bringToFront()
+          this.canvas.renderTop()
+          this.canvas.renderAll()
+        }
+        if (obj.isType === 'sObjectText') {
+          // console.log('活跃元素坐标数字置顶')
           obj.zIndex = -1
           obj.bringToFront()
           this.canvas.renderTop()
@@ -6735,6 +6779,14 @@ export default {
       initFabricRuler.drawfabricRuler(canvas)
     },
 
+    // 活跃坐标
+    toshowobjectRect (bol) {
+      let canvas = this.canvas
+      this.canvas.showobjectRect = bol
+      //  初始化标尺(辅助-标尺)
+      initFabricRuler.calcObjectRect(canvas)
+    },
+
     /**
      * 创建文本矩形组件 createNewText ----------------------------------------------------------------------------------------------------
      * options {}
@@ -6845,12 +6897,27 @@ export default {
         visible: true
 
       })
+      // 计算整数部分的文字高度
+      // const {textdemo, fontFamily, fontSize, fontWeight, fontStyle, underline, linethrough, height, scaleY, strokeWidth} = options
+      // let res = await this.getTextOffset(textdemo, {
+      //   fontFamily: fontFamily || '微软雅黑',
+      //   fontSize: fontSize || 50,
+      //   fontWeight: fontWeight === 1 ? 'bold' : 'normal' || 'normal',
+      //   fontStyle: fontStyle === 2 ? 'italic' : 'normal' || 'normal',
+      //   underline: underline === 1 ? true : false || false,
+      //   linethrough: linethrough === 1 ? true : false || false
+      // })
+      // const texttrueheight = res.fontTrueheight
+      // const texttruewidht = res.fontTruewidth
+      // const topoffset = -res.offset[0] * parseInt(height * scaleY - strokeWidth) / texttrueheight
+      // console.warn(res)
       if (options.isElasticSize === 2) {
+        // console.log(text.height, text.getLineWidth(0))
         text.set({
-          scaleX: parseInt(options.width * options.scaleX - options.strokeWidth) / text.getLineWidth(0), // 文本的实际宽度
-          scaleY: parseInt(options.height * options.scaleY - options.strokeWidth) / text.height,
+          scaleX: parseInt(options.width * options.scaleX - options.strokeWidth) / text.getLineWidth(0), // text.getLineWidth(0) texttruewidht 文本的实际宽度
+          scaleY: parseInt(options.height * options.scaleY - options.strokeWidth) / text.height, // texttrueheight
           left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
-          top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth
+          top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth //  + topoffset
         })
       } else {
         text.set({
@@ -6888,7 +6955,7 @@ export default {
         this.textRectMousedbclick(group)
       })
       group.item(1).on('editing:entered', (e) => {
-        this.textRectentered(group)
+        this.textRectentered(group, 1)
       })
       group.item(1).on('editing:exited', (e) => {
         this.textRectexited(group)
@@ -6979,6 +7046,7 @@ export default {
       })
       this.canvas.remove(group)
       this.canvas.setActiveObject(items[1])
+      this.canvas.renderAll()
 
       items[0].set({
         options: destroyedGroup.options
@@ -7005,8 +7073,9 @@ export default {
       items[1].enterEditing()
     },
     // 文本进入编辑
-    textRectentered (group) {
+    textRectentered (group, no) {
       // console.log('进入编辑', group.item(1).splitByGrapheme, group.item(1).width, group.item(0).width - group.options.strokeWidth)
+      console.log('group', group.id, 'no', no)
       group.item(1).set({
         width: group.item(0).width - group.options.strokeWidth
       })
@@ -7037,8 +7106,11 @@ export default {
       })
     },
     // 文本退出编辑
-    textRectexited (group) {
-      // console.log('退出编辑', group.item(1).textdemo)
+    async textRectexited (group) {
+      console.log('退出编辑', group.item(1).textdemo)
+      group.item(1).on('editing:entered', (e) => {})
+      group.item(1).on('editing:exited', (e) => {})
+
       let canvas = this.canvas
       var objs = this.getObjectsByid(group.id)
       if (!objs.length || objs[0].isType === 'NewText') { return }
@@ -7057,9 +7129,11 @@ export default {
         width: rect.width + group.options.strokeWidth,
         height: rect.height + group.options.strokeWidth,
         options: rect.options,
+        left: group.left,
+        top: group.top,
         visible: true
       })
-      group.item(0).set({
+      group2.item(0).set({
         fill: group.options.backColor,
         stroke: group.options.stroke
       })
@@ -7085,6 +7159,19 @@ export default {
       } else {
         text.text = text.text.trim().replace(/\s*/g, '') // 过滤前后空格和换行符 replace(/[\r\n]/g, '')
         // group.options.textdemo = text.text
+        // 计算整数部分的文字高度
+        // const {textdemo, fontFamily, fontSize, fontWeight, fontStyle, underline, linethrough, strokeWidth} = group.options
+        // let res = await this.getTextOffset(textdemo, {
+        //   fontFamily: fontFamily || '微软雅黑',
+        //   fontSize: fontSize || 50,
+        //   fontWeight: fontWeight === 1 ? 'bold' : 'normal' || 'normal',
+        //   fontStyle: fontStyle === 2 ? 'italic' : 'normal' || 'normal',
+        //   underline: underline === 1 ? true : false || false,
+        //   linethrough: linethrough === 1 ? true : false || false
+        // })
+        // const texttrueheight = res.fontTrueheight
+        // const texttruewidht = res.fontTruewidth
+        // const topoffset = -res.offset[0] * parseInt(rect.height - strokeWidth) / texttrueheight
         text.set({
           width: group2.item(0).width - group2.options.strokeWidth,
           scaleX: 1,
@@ -7093,9 +7180,9 @@ export default {
         group.item(1)._splitText()
         text.set({
           left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
-          top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth,
-          scaleX: parseInt(rect.width - group.options.strokeWidth) / text.getLineWidth(0), // 文本的实际宽度
-          scaleY: parseInt(rect.height - group.options.strokeWidth) / text.height
+          top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth, // + topoffset
+          scaleX: parseInt(rect.width - group.options.strokeWidth) / text.getLineWidth(0), // texttruewidht 文本的实际宽度
+          scaleY: parseInt(rect.height - group.options.strokeWidth) / text.height // text.height texttruewidht
         })
       }
 
@@ -7109,9 +7196,19 @@ export default {
           height: parseInt(group2.height * group2.scaleY - 2 * group2.options.strokeWidth)
         })
       }
-      objs.forEach(obj => {
-        canvas.remove(obj)
+      // 删除原组件
+      // console.log('方法一直调用', this.getObjectsNew())
+      this.getObjectsNew().filter(one => {
+        if (one.id === group.id) {
+          console.log('one', one)
+          // one.item(1).on('editing:entered', (e) => { console.log('eeeeeeeeee', e) })
+          canvas.remove(one)
+        }
       })
+      // objs.forEach(obj => {
+      //   canvas.remove(obj)
+      // })
+      this.canvas.renderAll()
       // 组装后旋转
       group2.set({
         angle: group2.options.angle
@@ -7131,11 +7228,12 @@ export default {
         this.textRectMousedbclick(group2)
       })
       group2.item(1).on('editing:entered', (e) => {
-        this.textRectentered(group2)
+        this.textRectentered(group2, 2)
       })
       group2.item(1).on('editing:exited', () => {
         this.textRectexited(group2)
       })
+      console.log('是否删除', objs, group)
       // 文本宽高大小
       canvas.requestRenderAll()
       canvas.renderAll()

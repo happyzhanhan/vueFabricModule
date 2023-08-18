@@ -48,6 +48,10 @@
       <div class="psh-button" @click="changeGuide(showGuideline)">
         <b  :class="{'hover': showGuideline}">对齐线</b>
       </div>
+
+      <div class="psh-button" @click="changePosition(showobjectRect)">
+        <b  :class="{'hover': showobjectRect}">坐标</b>
+      </div>
     </div>
 
     <div class="ps-head">
@@ -274,7 +278,7 @@
 <!--            </div>-->
 
              <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#666'"  :backgroundColor="background" :width="parseInt(width)" :height="parseInt(height)"
-                              :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" :showRule="showRule" :showGuideline="showGuideline"
+                              :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" :showRule="showRule" :showGuideline="showGuideline" :showobjectRect="showobjectRect"
                              @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
                               @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData"
                               @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved"
@@ -935,6 +939,7 @@ export default {
       open9: false,
       showGuideline: true,
       showRule: true,
+      showobjectRect: true,
       previewUrl: ''
     }
   },
@@ -1262,8 +1267,8 @@ export default {
       switch (name) {
         case 'Rect':
           options = {
-            left: 0,
-            top: 0,
+            left: 210,
+            top: 200,
             width: 200,
             height: 100,
             color: colors[i],
@@ -1527,7 +1532,7 @@ export default {
           break
         case 'NewText':
           options = {
-            left: 500,
+            left: 200,
             top: 80,
             hasRotatingPoint: true,
             width: 300,
@@ -1541,10 +1546,10 @@ export default {
 
             visible: true,
             fontSize: 30,
-            textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
+            textdemo: '我是文本', // messages[i] |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 1, // textAdvanceProperty
+            isElasticSize: 2, // textAdvanceProperty
             angle: 0,
 
             maxLines: 7,
@@ -1939,6 +1944,11 @@ export default {
     changeGuide () {
       this.showGuideline = !this.showGuideline
       this.$refs.canvas.showCloseGuideline(this.showGuideline)
+    },
+    // 开关坐标
+    changePosition () {
+      this.showobjectRect = !this.showobjectRect
+      this.$refs.canvas.toshowobjectRect(this.showobjectRect)
     }
   }
 }
