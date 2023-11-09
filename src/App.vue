@@ -1262,6 +1262,7 @@ export default {
       // this.id = this.id + 1
       let canvaobj, options
       let colors = ['#0ff', '#00f', '#000', '#f00', '#ff0', '#0f0', '#f0f', '#eee', '#ccc', '#efe', '#ef5']
+      // eslint-disable-next-line no-unused-vars
       let messages = ['0我的好时机安居房快捷键萨克副教授看|了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', 'I am Chiniese', '1我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '2我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '3我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '4我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '5我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '6我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '7我的好时机安居房快捷键萨|克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '8我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '9我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '10我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦', '我是中古的文字4']
       let i = (Math.random() + '').charAt(3)
       switch (name) {
@@ -1496,10 +1497,10 @@ export default {
 
             visible: true,
             fontSize: 30,
-            textdemo: messages[i], // |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
+            textdemo: '我是文本', // messages[i] |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
-            isElasticSize: 1,
+            isElasticSize: 2,
 
             maxLines: 7,
             omitStyleText: '...', // 两个汉字 4个字母
@@ -1510,10 +1511,10 @@ export default {
             textAlign: 'left',
             verticalSpace: 0,
 
-            fontWeight: 'bold',
-            linethrough: true,
-            underline: true,
-            fontStyle: 'italic',
+            fontWeight: 'normal',
+            linethrough: false,
+            underline: false,
+            fontStyle: 'normal',
 
             // xLeft: 0,
             // yTop: 0,
@@ -1545,8 +1546,8 @@ export default {
             fontFamily: '宋体',
 
             visible: true,
-            fontSize: 30,
-            textdemo: '我是文本', // messages[i] |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
+            fontSize: 20,
+            textdemo: '123', // messages[i] |我的好时机安居房快捷键萨克副教授看了附近时空大姐夫开始打积分卡仕达及啊看放假撒加分撒酒疯|打开积分看电视剧阿发空间的萨克福建省啦
             originXY: ['right', 'bottom'],
 
             isElasticSize: 2, // textAdvanceProperty
@@ -1562,8 +1563,8 @@ export default {
             verticalSpace: 0,
 
             fontWeight: 'normal', // 'bold'
-            linethrough: true,
-            underline: true,
+            linethrough: false,
+            underline: false,
             fontStyle: 'normal', // 'italic',
 
             border: 2,

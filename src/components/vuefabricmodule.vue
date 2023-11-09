@@ -1,3 +1,4 @@
+<!-- eslint-disable no-new -->
 <!-- eslint-disable no-unused-vars -->
 <!-- eslint-disable no-unused-vars -->
 <!-- eslint-disable no-undef -->
@@ -918,6 +919,95 @@ export default {
       that.canvas.renderAll()
     },
 
+    drawImgbg (params) {
+      let that = this
+      // eslint-disable-next-line no-undef
+      fabric.Image.fromURL('../../../static/images/ESL.png', function (img) {
+        img.set({
+          originX: 'left',
+          originY: 'top',
+          left: params.left,
+          top: params.top,
+
+          scaleX: (params.width + 119 * (params.width / 800)) / img.width,
+          scaleY: (params.height + 102 * (params.height / 800)) / img.height,
+
+          selectable: false,
+          excludeFromExport: true,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockRotation: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockUniScaling: true,
+          hoverCursor: 'auto',
+          name: 'sImg',
+          type: 'sImg',
+          evented: false
+        })
+        that.canvas.remove(...that.canvas.getObjects('sImg'))
+
+        that.canvas.add(img)
+        img.bringToFront()
+        that.canvas.requestRenderAll()
+        that.canvas.renderAll()
+      })
+    },
+
+    // 返回最小缩放比
+    returnSmallScale () {
+      this.canvasZoom = this.canvas.getZoom()
+      let w = this.width > this.boxWidth ? this.width : this.boxWidth
+      let h = this.height > this.boxHeight ? this.height : this.boxHeight
+      if (w * (this.canvasZoom - 0.1) < this.boxWidth || h * (this.canvasZoom - 0.1) < this.boxHeight) {
+
+      }
+    },
+    // 设置背景颜色
+    setbackgroundColor (color) {
+      this.canvas.backgroundColor = color
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
+    // 设置画布背景颜色
+    setbackground (color) {
+      // this.canvas.backgroundColor = color;
+      let objects = this.canvas.getObjects()
+      let _this = this
+      objects.forEach((obj) => {
+        if (obj.type === 'sBg') {
+          if (color === 'transparent') {
+            let _this = this
+            // eslint-disable-next-line no-undef
+            fabric.util.loadImage('./static/images/psbg.png', function (img) {
+              // console.warn(img);
+              obj.set('fill',
+                // eslint-disable-next-line no-undef
+                new fabric.Pattern({
+                  source: img,
+                  repeat: 'repeat'
+                }))
+
+              _this.setTop() // 遮罩置顶，背景置底重置
+              _this.canvas.requestRenderAll()
+              _this.canvas.renderAll()
+            })
+          } else {
+            obj.fill = color
+          }
+
+          setTimeout(() => {
+            _this.ChangeZoom(1)
+            _this.ChangeZoom(0)
+          }, 1)
+        }
+      })
+      this.setTop() // 遮罩置顶，背景置底重置
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
     // 改变宽高背景颜色
     changeWH (options) {
       if (!options) { return }
@@ -991,6 +1081,7 @@ export default {
         this.$emit('changeZoomTo', n)
       }, 100)
     },
+
     // 获取当前的比例
     getZoom () {
       return this.canvas.getZoom()
@@ -1076,6 +1167,10 @@ export default {
         this.canvas.skipTargetFind = false
         this.setCursor(99)
       }
+    },
+    // 切换画布是否允许多选
+    changeSelection (bol) {
+      this.canvas.selection = bol
     },
     // 设置鼠标手
     setCursor (status) {
@@ -1385,6 +1480,11 @@ export default {
         this.$emit('changeLayer', obj) // 层级变动回调
       }, 100)
     },
+    // 图层移动
+    moveTo () {
+      let obj = this.canvas.getActiveObject()
+      this.canvas.sendBackwards(obj, true)
+    },
     // 层级移动
     moveToshow (obj, index) {
       // let obj = this.canvas.getActiveObject();
@@ -1394,6 +1494,14 @@ export default {
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
+    // 模板设置宽高
+    setWidth (width) {
+      this.canvas.setWidth(width)
+    },
+    // 模板设置宽高
+    setHeight (height) {
+      this.canvas.setHeight(height)
+    },
     // 删除当前活跃元素 - 右键菜单调用该方法
     removeEditObj () {
       let obj = this.canvas.getActiveObject()
@@ -1402,6 +1510,17 @@ export default {
       }
       this.$emit('deleteidsdata', [obj.id])
       this.canvas.remove(obj)
+    },
+    // 删除指定id
+    deleteObjs (id) {
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id) {
+          this.canvas.remove(objects[i])
+        }
+      }
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
     },
     // 删除指定元素
     removeObj (obj) {
@@ -1693,10 +1812,15 @@ export default {
       this.clipboard = null
       this.canvas.requestRenderAll()
     },
+
     // 获取所有元素
     getObjects () {
       let obj = this.canvas.getObjects()
       return obj
+    },
+    // 元素不选中即置顶
+    setStackingtrue () {
+      this.canvas.preserveObjectStacking = true
     },
     // 获取当前
     getEditObj () {
@@ -1724,9 +1848,50 @@ export default {
       var obj = this.canvas.getActiveObject()
       return obj
     },
+
+    // 设置多个元素为活跃元素  --- id的集合
+    setActiveObjs (ids) {
+      let objs = []
+      ids.forEach((id) => {
+        let objects = this.canvas.getObjects()
+        objects.forEach((obj) => {
+          if (obj.id === id && obj.isType !== 'TextRect-text') {
+            objs.push(obj)
+          }
+        })
+      })
+      // eslint-disable-next-line no-undef
+      var sel = new fabric.ActiveSelection(objs, {
+        canvas: this.canvas
+      })
+      this.canvas.setActiveObject(sel)
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
     // 设置当前组件为活跃元素
     setActiveObject (obj) {
       this.canvas.setActiveObject(obj)
+      this.canvas.renderAll()
+    },
+    // 设置多个元素为活跃元素  --- objects对象集合
+    setActiveObjects (objs) {
+      // eslint-disable-next-line no-undef
+      var sel = new fabric.ActiveSelection(objs, {
+        canvas: this.canvas
+      })
+      this.canvas.setActiveObject(sel)
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+    // 设置id 为当前活跃元素
+    setActiveid (id) {
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id && objects[i].isType !== 'TextRect-text') {
+          this.canvas.setActiveObject(objects[i])
+        }
+      }
+      this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
     // 渲染
@@ -1740,6 +1905,32 @@ export default {
       this.canvas.renderAll()
       this.canvas.renderAll.bind(this.canvas)
       this.setTop()
+    },
+    // 单个删除 多个删除  ----delete快捷键 删除的
+    removeCurrentObj () {
+      let obj = this.canvas.getActiveObject()
+      let deleteIds = []
+      // console.log('删除了吗？:',obj);
+
+      if (obj._objects) { // 多选
+        this.canvas.discardActiveObject()
+        for (var i in obj._objects) {
+          deleteIds.push(obj._objects[i].id)
+          this.canvas.remove(obj._objects[i])
+        }
+        deleteIds.push(obj.id)
+        this.canvas.remove(obj) // 删除条码起作用
+      } else { // 单选
+        if (obj.isType === 'TextRect-text') { // 如果是组合文本上的文本不可删除
+          return
+        }
+        deleteIds.push(obj.id)
+        this.canvas.remove(obj)
+      }
+
+      this.canvas.renderAll()
+      this.$emit('deleteidsdata', deleteIds)
+      return deleteIds
     },
     // 删除当前活跃元素 (键盘Delete)
     removeActiveObject () {
@@ -1776,6 +1967,27 @@ export default {
     // 取消所有活跃元素
     discardActive () {
       this.canvas.discardActiveObject()
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
+    // 清空画布所有元素
+    ClearAllObjects () {
+      let objects = this.getObjects()
+      let newobj = []
+      for (let i in objects) {
+        if (objects[i].component === 'component') {
+          newobj.push(objects[i])
+          this.canvas.remove(objects[i])
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+      return newobj
+    },
+    // 文本编辑时，自动切割
+    clipText (cur) {
+      this.setActiveObject(cur)
       this.canvas.requestRenderAll()
       this.canvas.renderAll()
     },
@@ -4810,6 +5022,29 @@ export default {
         }
       })
     },
+
+    // 创建矩形
+    createOneRect (options) {
+      return new Promise(function (resolve, reject) {
+        let newOptions = {
+          ...options,
+          isType: 'Rect',
+          name: options.name ? options.name : 'Rect',
+          rx: 0,
+          ry: 0
+        }
+        // eslint-disable-next-line no-undef
+        let canvasObject = new fabric.Rect({...newOptions}) // 创建
+        canvasObject.on('scaled', (e) => {
+          // console.log('scaling',e);
+          e.target.set('width', parseInt(e.target.width * e.target.scaleX))
+          e.target.set('height', parseInt(e.target.height * e.target.scaleY))
+          e.target.set('scaleX', 1)
+          e.target.set('scaleY', 1)
+        })
+        resolve(canvasObject)
+      })
+    },
     // 改变二维码的图片大小和值
     async changeQrcodeImage (options) {
       if (options.isType !== 'Qrcode') {
@@ -5045,6 +5280,32 @@ export default {
 
       return newtext
     },
+
+    // 文本前后缀加背景颜色
+    newstyles (options, newtext) {
+      let prenumber = options.prefix.length
+      let postnumber = options.postfix.length
+      let number = (options.prefix + options.content).length
+      let styles = {0: {}}
+      for (var i = 0; i < prenumber; i++) {
+        styles[0][i] = {textBackgroundColor: '#ff0'}
+      }
+      for (var j = 0; j < postnumber; j++) {
+        styles[0][number + j] = {textBackgroundColor: '#ff0'}
+      }
+
+      if (options.lineBreak !== '' && newtext.length === (options.prefix + options.content + options.postfix).length && newtext.indexOf(options.postfix) > -1) {
+        // 按规则换行省略后的文字和原文字数相同，且包含后缀
+        let linArray = newtext.split(/[\n\t\r]/)
+        let postnumber = options.postfix.length
+        let startno = linArray[linArray.length - 1].length - options.postfix.length
+        styles[linArray.length - 1] = {}
+        for (var s = 0; s < postnumber; s++) {
+          styles[linArray.length - 1][startno + s] = {textBackgroundColor: '#ff0'}
+        }
+      }
+      return styles
+    },
     // 创建表格
     async createTable (table) {
       let canvas = this.canvas
@@ -5077,6 +5338,75 @@ export default {
         }
       })
       return {row: row, col: col}
+    },
+    // 改表头的文字
+    setTableHeadData (groups, nrow, no, text) {
+      groups.tableHead.data[no - 1].name = text
+      groups._objects.forEach((object) => {
+        if (object.isType === 'table-theadtext' && object.nrow === nrow && object.no === no) {
+          object.set('text', text)
+        }
+      })
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
+    },
+
+    // 改表头的样式
+    setTableHeadStyle (groups, tableHeadstyle) {
+      groups.tableHead.style = {...groups.tableHead.style, ...tableHeadstyle}
+      groups._objects.forEach((object) => {
+        if (object.isType === 'table-theadbg') {
+          object.set('fill', tableHeadstyle.bgColor)
+        }
+        if (object.isType === 'table-theadtext') {
+          object.set('fontSize', tableHeadstyle.fontSize)
+          object.set('fill', tableHeadstyle.fontColor)
+          object.set('fontType', tableHeadstyle.fontType)
+          object.set('lineHeight', tableHeadstyle.lineHeight)
+        }
+        this.canvas.requestRenderAll()
+        this.canvas.renderAll()
+      })
+    },
+
+    // 改表体的样式
+    setTableBodyStyle (groups, tabletbodystyle) {
+      groups.tableBody.style = {...groups.tableBody.style, ...tabletbodystyle}
+      groups._objects.forEach((object) => {
+        if (object.isType === 'table-tbodybg') {
+          object.set('fill', tabletbodystyle.bgColor)
+        }
+        if (object.isType === 'table-tbodytext') {
+          object.set('fontSize', tabletbodystyle.fontSize)
+          object.set('fill', tabletbodystyle.fontColor)
+          object.set('fontType', tabletbodystyle.fontType)
+          object.set('lineHeight', tabletbodystyle.lineHeight)
+        }
+        this.canvas.requestRenderAll()
+        this.canvas.renderAll()
+      })
+    },
+
+    // 设置表头的高度
+    setTableHeadHeight (group, height) {
+      if (!height) {
+        return
+      }
+      let canvas = this.canvas
+      let tableStyle2 = group.item(0).tableStyle
+      let tableHead2 = group.item(0).tableHead
+      let tableBody2 = group.item(0).tableBody
+
+      group.tableHead.style.height = height // 修改表格表头数据
+      tableHead2.style.height = height // 表头高度修改
+
+      canvas.remove(group)
+
+      // eslint-disable-next-line no-undef, no-new
+      new fabric.tableView(canvas, tableStyle2, tableHead2, tableBody2)
+
+      canvas.requestRenderAll()
+      canvas.renderAll()
     },
 
     // 按原来的id表格
@@ -5253,6 +5583,16 @@ export default {
       })
       return dataImg
     },
+    // 预览
+    async todata () {
+      this.discardActive()
+      var dataURL = this.canvas.toDataURL({
+        format: 'jpeg',
+        multiplier: 2
+      })
+      let newdata = await this.cutImg(dataURL, -this.xLeft, -this.yTop, -this.xLeft + this.width, -this.yTop + this.height)
+      this.$emit('previewshow', newdata)
+    },
     // 生成预览图片
     async dataUrl () {
       this.discardActive()
@@ -5399,6 +5739,28 @@ export default {
       let bg = this.returnbg()
       return {x: bg.oCoords.tl.x, y: bg.oCoords.tl.y, left: bg.left, top: bg.top}
     },
+    // 设置画布上元素禁止选中
+    setCompunentsNoselect () {
+      let objects = this.getObjects()
+      for (let i in objects) {
+        if (objects[i].component === 'component') {
+          objects[i].set('selectable', false)
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+    },
+    // 取消上面禁止选中
+    setCompunentsCanselect () {
+      let objects = this.getObjects()
+      for (let i in objects) {
+        if (objects[i].component === 'component' && objects[i].visible !== false) {
+          objects[i].set('selectable', true)
+          this.canvas.requestRenderAll()
+          this.canvas.renderAll()
+        }
+      }
+    },
     // 文本切换类型需要重绘
     async changeTextType (target, text) {
       let newtext = target.textdemo.replace(/[\r\n]/g, '')
@@ -5473,6 +5835,18 @@ export default {
       this.setActiveById(id) // 文本选择
       this.renderCanvas() // 渲染一下
     },
+    // 获取画布的相对定位
+    async getoriginx () {
+      let objects = this.getObjects()
+      let poiter
+      objects.forEach((one) => {
+        // console.log(one);
+        if (one.type === 'sBg') {
+          poiter = one.oCoords.tl
+        }
+      })
+      return poiter
+    },
     // 设置锁定
     setSuo (id) {
       //   console.log('setShow',id);
@@ -5527,6 +5901,22 @@ export default {
           objects[i].set('eyeshow', false)
           this.canvas.requestRenderAll()
           this.canvas.renderAll()
+        }
+      }
+    },
+
+    // 禁止拖拽选择和多选
+    setNomove () {
+      this.canvas.selection = false
+      this.canvas.renderAll()
+    },
+    // 组件修改名字
+    rename (id, name) {
+      let objects = this.canvas.getObjects()
+      for (let i in objects) {
+        if (objects[i].id === id) {
+          objects[i].set('name', name)
+          this.canvas.requestRenderAll()
         }
       }
     },
@@ -5649,6 +6039,80 @@ export default {
           resolve(price.width)
         }, 200)
       })
+    },
+    // 计算文本位置
+    countTextposition (group, options) {
+      let canvas = this.canvas
+      const { prefix, integer, decimalSeparator, postfixPlace, horizontalAlign, verticalAlign } = options
+      // console.log('位置定位：', horizontalAlign, verticalAlign)
+      // 小数的宽度
+      let decimalWidth = group.item(1).item(1).width - group.item(1).item(1)._getWidthBeforeCursor(0,
+        prefix.length + integer.length + decimalSeparator.length)
+      // 后缀的宽度
+      let postfixWidth = group.item(1).item(2).width - group.item(1).item(2).__charBounds[0][group.item(1).item(2).text.length - 1].width
+      // 文本域的宽度
+      let textWidth = ({
+        0: () => { return group.item(1).item(1).width + postfixWidth },
+        1: () => { return group.item(1).item(1).width + postfixWidth },
+        2: () => { return group.item(1).item(1).width + postfixWidth },
+        3: () => { return group.item(1).item(1).width + (postfixWidth > decimalWidth ? postfixWidth - decimalWidth : 0) },
+        4: () => { return group.item(1).item(1).width + (postfixWidth > decimalWidth ? postfixWidth - decimalWidth : 0) }
+      })[ postfixPlace || 0 ]()
+      // 字典格式
+      var newleft = ({
+        0: () => { return group.item(1).item(0).left - group.item(1).item(0).width / 2 },
+        1: () => { return -textWidth / 2 },
+        2: () => { return group.item(1).item(0).width / 2 - textWidth }
+      })[ horizontalAlign || 0 ]()
+
+      let newtop = ({
+        0: () => { return group.item(1).item(0).top - group.item(1).item(0).height / 2 },
+        1: () => { return -group.item(1).item(1).height / 2 },
+        2: () => { return group.item(1).item(0).height / 2 - group.item(1).item(1).height }
+      })[ verticalAlign || 0 ]()
+      canvas.requestRenderAll()
+      canvas.renderAll()
+      return {
+        newleft, newtop
+      }
+    },
+    // 设置文本位置和后缀跟随
+    async setPircePosition (group, options) {
+      // console.log('位置定位0：', options.horizontalAlign, options.verticalAlign)
+      const { postfixPlace, prefix, integer, decimalSeparator } = options
+      let pricew = await this.retrunText(group.item(1).item(1))
+      let textGroup = group.item(1)
+      const {newleft, newtop} = await this.countTextposition(group, options) // 9象限定位
+      // console.log(newleft, newtop, -group.item(1).item(0).width / 2, -group.item(1).item(0).height / 2)
+      textGroup.item(1).set({
+        originX: 'left',
+        originY: 'top',
+        visible: true,
+        left: newleft,
+        top: newtop
+      })
+      this.canvas.requestRenderAll()
+      // console.warn('整数的坐标', newleft, newtop)
+
+      // 后缀相对价格组件的位置
+      let postfixLeft = ({
+        0: () => { return textGroup.item(1).left + pricew },
+        1: () => { return textGroup.item(1).left + pricew },
+        2: () => { return textGroup.item(1).left + pricew },
+        3: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left },
+        4: () => { return textGroup.item(1).left + textGroup.item(1).__charBounds[0][prefix.length + integer.length + decimalSeparator.length].left }
+      })[ postfixPlace || 0 ]()
+      // console.log('后缀位置调整', postfixLeft)
+      // 后缀重新定位
+      textGroup.item(2).set({
+        originX: 'left',
+        originY: 'top',
+        visible: true,
+        left: postfixLeft,
+        top: textGroup.item(1).top
+      })
+      this.canvas.requestRenderAll()
+      this.canvas.renderAll()
     },
     // 保留小数 修正
     toFixed (num, digits = 0) {
@@ -6787,6 +7251,67 @@ export default {
       initFabricRuler.calcObjectRect(canvas)
     },
 
+    // 重绘(待完善)
+    resetInitbg (options) {
+
+    },
+
+    // 计算刻度
+    scaleCalc () {},
+
+    // 获取刻度
+    getCalc (array, length, direction) {},
+
+    // 全局点击事件
+    clickbody (evet) {},
+
+    // 判断是否在范围内
+    isInRange (value1, value2) {},
+
+    // 快捷键缩放 比例尺计算缩放
+    ChangeZoom (n) {},
+
+    // 新的缩放
+    SetNewZoom (zoom, left, top) {},
+
+    // 计算画布位置，初始化画布矩形  ********************************
+    initBgRect (options) {},
+
+    // 重新做文本
+    setNewTextRect (groups, data) {},
+
+    // 改变文本的属性 new
+    async changeTextRender (options, text, target) {},
+
+    // 改变画布的变形操作
+    changeCanvas (data) {
+      console.log(this.canvas)
+      if (data === 1 || data === true) {
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.borderColor = '#0062B2'
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.cornerColor = '#0062B2'
+
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.hasControls = false
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.hasRotatingPoint = false
+      } else {
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.borderColor = '#999'
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.cornerColor = '#999'
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.hasControls = true
+        // eslint-disable-next-line no-undef
+        fabric.Object.prototype.hasRotatingPoint = true
+      }
+      let obj = this.canvas.getActiveObject()
+      obj.setCoords()
+      this.canvas.renderTop()
+      this.canvas.renderAll()
+    },
+
     /**
      * 创建文本矩形组件 createNewText ----------------------------------------------------------------------------------------------------
      * options {}
@@ -6898,26 +7423,26 @@ export default {
 
       })
       // 计算整数部分的文字高度
-      // const {textdemo, fontFamily, fontSize, fontWeight, fontStyle, underline, linethrough, height, scaleY, strokeWidth} = options
-      // let res = await this.getTextOffset(textdemo, {
-      //   fontFamily: fontFamily || '微软雅黑',
-      //   fontSize: fontSize || 50,
-      //   fontWeight: fontWeight === 1 ? 'bold' : 'normal' || 'normal',
-      //   fontStyle: fontStyle === 2 ? 'italic' : 'normal' || 'normal',
-      //   underline: underline === 1 ? true : false || false,
-      //   linethrough: linethrough === 1 ? true : false || false
-      // })
-      // const texttrueheight = res.fontTrueheight
-      // const texttruewidht = res.fontTruewidth
-      // const topoffset = -res.offset[0] * parseInt(height * scaleY - strokeWidth) / texttrueheight
-      // console.warn(res)
+      const {textdemo, fontFamily, fontSize, fontWeight, fontStyle, underline, linethrough, height, scaleY, strokeWidth} = options
+      let res = await this.getTextOffset(textdemo, {
+        fontFamily: fontFamily || '微软雅黑',
+        fontSize: fontSize || 50,
+        fontWeight: fontWeight === 1 ? 'bold' : 'normal' || 'normal',
+        fontStyle: fontStyle === 2 ? 'italic' : 'normal' || 'normal',
+        underline: underline === 1 ? true : false || false,
+        linethrough: linethrough === 1 ? true : false || false
+      })
+      const texttrueheight = res.fontTrueheight
+      const texttruewidht = res.fontTruewidth
+      const topoffset = -res.offset[0] * parseInt(height * scaleY - strokeWidth) / texttrueheight
+      console.warn(res, topoffset)
       if (options.isElasticSize === 2) {
         // console.log(text.height, text.getLineWidth(0))
         text.set({
-          scaleX: parseInt(options.width * options.scaleX - options.strokeWidth) / text.getLineWidth(0), // text.getLineWidth(0) texttruewidht 文本的实际宽度
-          scaleY: parseInt(options.height * options.scaleY - options.strokeWidth) / text.height, // texttrueheight
+          scaleX: parseInt(options.width * options.scaleX - 1.5 * options.strokeWidth) / texttruewidht, // text.getLineWidth(0) texttruewidht 文本的实际宽度
+          scaleY: (options.height * options.scaleY - options.strokeWidth) / texttrueheight, // text.height texttrueheight
           left: -(options.width * options.scaleX + options.strokeWidth) / 2 + options.strokeWidth,
-          top: -(options.height * options.scaleY + options.strokeWidth) / 2 + options.strokeWidth //  + topoffset
+          top: -group.height / 2 + options.strokeWidth + topoffset + 2 //  + topoffset
         })
       } else {
         text.set({
@@ -6980,8 +7505,35 @@ export default {
         })
       }
     },
+    // 组建中文本缩放
+    async TextScaled (group) {
+      let groupwidth = (group.width * group.scaleX)
+      let groupheight = (group.height * group.scaleY)
+      // 计算整数部分的文字高度
+      const {textdemo, fontFamily, fontSize, fontWeight, fontStyle, underline, linethrough, strokeWidth} = group.options
+      let res = await this.getTextOffset(textdemo, {
+        fontFamily: fontFamily || '微软雅黑',
+        fontSize: fontSize || 50,
+        fontWeight: fontWeight === 1 ? 'bold' : 'normal' || 'normal',
+        fontStyle: fontStyle === 2 ? 'italic' : 'normal' || 'normal',
+        underline: underline === 1 ? true : false || false,
+        linethrough: linethrough === 1 ? true : false || false
+      })
+      console.warn(res)
+      const texttrueheight = res.fontTrueheight
+      const texttruewidth = res.fontTruewidth
+      const topoffset = -res.offset[0] * parseInt(group.height * group.scaleY - strokeWidth) / texttrueheight
+      group.item(1).set({
+        scaleX: parseInt(groupwidth - 3 * group.options.strokeWidth) / texttruewidth
+      })
+      group.item(1).set({
+        scaleY: parseInt(groupheight - group.options.strokeWidth * 1.5) / texttrueheight,
+        left: -(groupwidth) / 2 + group.options.strokeWidth,
+        top: -(groupheight) / 2 + group.options.strokeWidth + topoffset + 4
+      })
+    },
     // 文本缩放ed
-    textRectScaled (group) {
+    async textRectScaled (group) {
       let groupwidth = (group.width * group.scaleX)
       let groupheight = (group.height * group.scaleY)
       group.set({
@@ -7014,14 +7566,7 @@ export default {
           height: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth)
         })
       } else {
-        group.item(1).set({
-          scaleX: parseInt(groupwidth - 2 * group.options.strokeWidth) / group.item(1).getLineWidth(0),
-          left: -(groupwidth) / 2 + group.options.strokeWidth
-        })
-        group.item(1).set({
-          scaleY: parseInt(group.height * group.scaleY - 2 * group.options.strokeWidth) / (group.item(1).aCoords.bl.y - group.item(1).aCoords.tl.y),
-          top: -(groupheight) / 2 + group.options.strokeWidth
-        })
+        await this.TextScaled(group) // 文本缩放
       }
     },
     // 文本旋转
@@ -7107,9 +7652,10 @@ export default {
     },
     // 文本退出编辑
     async textRectexited (group) {
-      console.log('退出编辑', group.item(1).textdemo)
-      group.item(1).on('editing:entered', (e) => {})
-      group.item(1).on('editing:exited', (e) => {})
+      console.log('退出编辑', group)
+      group.on('mousedblclick', null)
+      group.item(1).on('editing:entered', null)
+      group.item(1).on('editing:exited', null)
 
       let canvas = this.canvas
       var objs = this.getObjectsByid(group.id)
@@ -7172,20 +7718,21 @@ export default {
         // const texttrueheight = res.fontTrueheight
         // const texttruewidht = res.fontTruewidth
         // const topoffset = -res.offset[0] * parseInt(rect.height - strokeWidth) / texttrueheight
-        text.set({
-          width: group2.item(0).width - group2.options.strokeWidth,
-          scaleX: 1,
-          splitByGrapheme: false
-        })
-        group.item(1)._splitText()
-        text.set({
-          left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
-          top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth, // + topoffset
-          scaleX: parseInt(rect.width - group.options.strokeWidth) / text.getLineWidth(0), // texttruewidht 文本的实际宽度
-          scaleY: parseInt(rect.height - group.options.strokeWidth) / text.height // text.height texttruewidht
-        })
+        // text.set({
+        //   width: group2.item(0).width - group2.options.strokeWidth,
+        //   scaleX: 1,
+        //   splitByGrapheme: false
+        // })
+        // group.item(1)._splitText()
+        // text.set({
+        //   left: -(rect.width + group.options.strokeWidth) / 2 + group.options.strokeWidth,
+        //   top: -(rect.height + group.options.strokeWidth) / 2 + group.options.strokeWidth, // + topoffset
+        //   scaleX: parseInt(rect.width - group.options.strokeWidth) / text.getLineWidth(0), // texttruewidht 文本的实际宽度
+        //   scaleY: parseInt(rect.height - group.options.strokeWidth) / text.height // text.height texttruewidht
+        // })
+        await this.TextScaled(group) // 文本缩放
       }
-
+      console.log('退出编辑', 2222222222222)
       group2.add(text)
       // group2.set({
       //   clipPath: rect,
@@ -7208,12 +7755,15 @@ export default {
       // objs.forEach(obj => {
       //   canvas.remove(obj)
       // })
-      this.canvas.renderAll()
+
       // 组装后旋转
       group2.set({
         angle: group2.options.angle
       })
+      canvas.remove(group)
+      canvas.renderAll()
       canvas.add(group2)
+      console.log('是否删除', group2.item(1))
       group2.setCoords()
       group2.on('scaling', async (e) => {
         this.textRectScaling(group2)
@@ -7233,7 +7783,6 @@ export default {
       group2.item(1).on('editing:exited', () => {
         this.textRectexited(group2)
       })
-      console.log('是否删除', objs, group)
       // 文本宽高大小
       canvas.requestRenderAll()
       canvas.renderAll()
