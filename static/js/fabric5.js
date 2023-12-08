@@ -10302,10 +10302,28 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
 
 
 
-           // debugger  happy change writebox
-            /*if (target.type ==='Writebox') {
-                console.log(target);
-            }*/
+           // debugger  happy change 保证最小缩放保持10px的空隙，防止自适应缩放文字翻转
+            if (target.isType==='NewText') {
+                var w = target.width * (localMouse.x / _dim.x);
+                if((w * scaleX) < target.options.strokeWidth * 2 + 10){
+                    forbidScalingX = true; 
+                    lockScalingX = true;
+                    localMouse.x = 0;
+                }else{
+                    forbidScalingX = false; 
+                    lockScalingX = false;
+                }
+                var h = target.height * (localMouse.y / _dim.y);
+                if((h * scaleY) < target.options.strokeWidth * 2 + 10){
+                    forbidScalingY = true; 
+                    lockScalingY = true;
+                    localMouse.y = 0;
+                }else{
+                    forbidScalingY = false; 
+                    lockScalingY = false;
+                }
+            }
+            
 
             if (lockScalingFlip && scaleX <= 0 && scaleX < target.scaleX) {
                 forbidScalingX = true;
@@ -15296,6 +15314,19 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
         aCoords: null,
 
         /**
+         * Describe object's corner position in canvas element coordinates.
+         * includes padding. Used of object detection.
+         * set and refreshed with setCoords.
+         * @memberOf fabric.Object.prototype
+         */
+        lineCoords: null,
+        /**
+         * custom controls interface
+         * controls are added by default_controls.js
+         */
+        controls: { },
+
+        /**
          * storage for object transform matrix
          */
         ownMatrixCache: null,
@@ -15705,6 +15736,51 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
             return coords;
         },
 
+        // 新版本里捞的 happy add
+        calcACoords: function() {
+            var rotateMatrix = this._calcRotateMatrix(),
+                translateMatrix = this._calcTranslateMatrix(),
+                finalMatrix = multiplyMatrices(translateMatrix, rotateMatrix),
+                dim = this._getTransformedDimensions(),
+                w = dim.x / 2, h = dim.y / 2;
+            return {
+              // corners
+              tl: transformPoint({ x: -w, y: -h }, finalMatrix),
+              tr: transformPoint({ x: w, y: -h }, finalMatrix),
+              bl: transformPoint({ x: -w, y: h }, finalMatrix),
+              br: transformPoint({ x: w, y: h }, finalMatrix)
+            };
+          },
+        calcLineCoords: function() {
+            var vpt = this.getViewportTransform(),
+                padding = this.padding, angle = degreesToRadians(this.angle),
+                cos = fabric.util.cos(angle), sin = fabric.util.sin(angle),
+                cosP = cos * padding, sinP = sin * padding, cosPSinP = cosP + sinP,
+                cosPMinusSinP = cosP - sinP, aCoords = this.calcACoords();
+      
+            var lineCoords = {
+              tl: transformPoint(aCoords.tl, vpt),
+              tr: transformPoint(aCoords.tr, vpt),
+              bl: transformPoint(aCoords.bl, vpt),
+              br: transformPoint(aCoords.br, vpt),
+            };
+      
+            if (padding) {
+              lineCoords.tl.x -= cosPMinusSinP;
+              lineCoords.tl.y -= cosPSinP;
+              lineCoords.tr.x += cosPSinP;
+              lineCoords.tr.y -= cosPMinusSinP;
+              lineCoords.bl.x -= cosPSinP;
+              lineCoords.bl.y += cosPMinusSinP;
+              lineCoords.br.x += cosPMinusSinP;
+              lineCoords.br.y += cosPSinP;
+            }
+      
+            return lineCoords;
+          },
+          // 新版本里捞的
+
+        
         /**
          * Sets corner position coordinates based on current angle, width and height.
          * See {@link https://github.com/kangax/fabric.js/wiki/When-to-call-setCoords|When-to-call-setCoords}
@@ -15715,10 +15791,10 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
          */
         setCoords: function(ignoreZoom, skipAbsolute) {
             this.oCoords = this.calcCoords(ignoreZoom);
+            this.lineCoords = this.calcLineCoords(); // happy add  this.lineCoords = this.group ? this.aCoords : this.calcLineCoords();
             if (!skipAbsolute) {
                 this.aCoords = this.calcCoords(true);
             }
-
             // set coordinates of the draggable boxes in the corners used to scale/rotate the image
             ignoreZoom || (this._setCornerCoords && this._setCornerCoords());
 
@@ -31672,6 +31748,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
         return fabric.Object._fromObject('RectWithText', object, callback, 'text');
     };
 })(typeof exports !== 'undefined' ? exports : this);
+
 
 
 /**
