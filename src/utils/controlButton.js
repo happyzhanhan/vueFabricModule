@@ -19,6 +19,25 @@ function initCintrolButton(canvas, position, title, img, fn){
 
   var cloneImg = document.createElement('img');
   cloneImg.src = cloneIcon;
+
+ document.onkeydown = function (e) {
+    console.log('document.onkeydown ------------', e)
+    let keyCode = window.event.keyCode
+    if (keyCode === 37) { // ←
+      deleteBtn.style.display ='none';
+    }
+    if (keyCode === 38) { // ↑
+      deleteBtn.style.display ='none';
+    }
+    if (keyCode === 39) { // →
+      deleteBtn.style.display ='none';
+    }
+    if (keyCode === 40) { // ↓
+      deleteBtn.style.display ='none';
+    }
+  }
+
+
   // 防抖
   const debounce = (() => {
     let timer = null
@@ -74,6 +93,7 @@ function initCintrolButton(canvas, position, title, img, fn){
   });
 
  
+ 
 
 
  function addDeleteBtn(){
@@ -89,6 +109,7 @@ function initCintrolButton(canvas, position, title, img, fn){
       // var absCoords = canvas.getAbsoluteCoords(curobj);
   
       deleteBtn.style.position = "absolute";
+      deleteBtn.className = 'delButton' 
       deleteBtn.style.width = 30 +'px';
       deleteBtn.style.height = 30 + 'px';
       deleteBtn.style.display ='none';
@@ -137,6 +158,10 @@ function initCintrolButton(canvas, position, title, img, fn){
       cloned.top += 10;
       canvas.add(cloned);
     });
+  }
+
+  return {
+    addDeleteBtn: addDeleteBtn
   }
 
 }

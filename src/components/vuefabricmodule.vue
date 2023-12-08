@@ -362,6 +362,13 @@ export default {
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
         that.canvas.renderAll()
+        // 清除边框线
+        that.canvas.clearContext(that.canvas.contextTop)
+        // 活跃组件坐标(辅助-坐标)
+        initFabricRuler.calcObjectRect(canvas)
+        // 删除按钮偏移
+        let one = document.getElementsByClassName('delButton')[0]
+        one.style.left = Number(one.style.left.split('px')[0]) - 1 + 'px'
       }
       if (keyCode === 38) { // ↑
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -380,6 +387,13 @@ export default {
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
         that.canvas.renderAll()
+        // 清除边框线
+        that.canvas.clearContext(that.canvas.contextTop)
+        // 活跃组件坐标(辅助-坐标)
+        initFabricRuler.calcObjectRect(canvas)
+        // 删除按钮偏移
+        let one = document.getElementsByClassName('delButton')[0]
+        one.style.top = Number(one.style.top.split('px')[0]) - 1 + 'px'
       }
       if (keyCode === 39) { // →
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -398,6 +412,13 @@ export default {
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
         that.canvas.renderAll()
+        // 清除边框线
+        that.canvas.clearContext(that.canvas.contextTop)
+        // 活跃组件坐标(辅助-坐标)
+        initFabricRuler.calcObjectRect(canvas)
+        // 删除按钮偏移
+        let one = document.getElementsByClassName('delButton')[0]
+        one.style.left = Number(one.style.left.split('px')[0]) + 1 + 'px'
       }
       if (keyCode === 40) { // ↓
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -416,6 +437,13 @@ export default {
         that.getEditObj().setCoords()
         that.canvas.requestRenderAll()
         that.canvas.renderAll()
+        // 清除边框线
+        that.canvas.clearContext(that.canvas.contextTop)
+        // 活跃组件坐标(辅助-坐标)
+        initFabricRuler.calcObjectRect(canvas)
+        // 删除按钮偏移
+        let one = document.getElementsByClassName('delButton')[0]
+        one.style.top = Number(one.style.top.split('px')[0]) + 1 + 'px'
       }
     }
 
