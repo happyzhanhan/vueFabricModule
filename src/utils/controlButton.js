@@ -20,22 +20,22 @@ function initCintrolButton(canvas, position, title, img, fn){
   var cloneImg = document.createElement('img');
   cloneImg.src = cloneIcon;
 
- document.onkeydown = function (e) {
-    console.log('document.onkeydown ------------', e)
-    let keyCode = window.event.keyCode
-    if (keyCode === 37) { // ←
-      deleteBtn.style.display ='none';
-    }
-    if (keyCode === 38) { // ↑
-      deleteBtn.style.display ='none';
-    }
-    if (keyCode === 39) { // →
-      deleteBtn.style.display ='none';
-    }
-    if (keyCode === 40) { // ↓
-      deleteBtn.style.display ='none';
-    }
-  }
+//  document.onkeydown = function (e) {
+//     console.log('document.onkeydown ------------', e)
+//     let keyCode = window.event.keyCode
+//     if (keyCode === 37) { // ←
+//       deleteBtn.style.display ='none';
+//     }
+//     if (keyCode === 38) { // ↑
+//       deleteBtn.style.display ='none';
+//     }
+//     if (keyCode === 39) { // →
+//       deleteBtn.style.display ='none';
+//     }
+//     if (keyCode === 40) { // ↓
+//       deleteBtn.style.display ='none';
+//     }
+//   }
 
 
   // 防抖
@@ -160,9 +160,6 @@ function initCintrolButton(canvas, position, title, img, fn){
     });
   }
 
-  return {
-    addDeleteBtn: addDeleteBtn
-  }
 
 }
 export default initCintrolButton;
