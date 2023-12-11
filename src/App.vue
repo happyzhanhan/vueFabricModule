@@ -946,6 +946,13 @@ export default {
   created () {
     // this.draw('TextRect')
   },
+  mounted () {
+    window.onresize = () => {
+      this.boxWidth = document.documentElement.clientWidth - 121 // 外框宽
+      this.boxHeight = document.documentElement.clientHeight - 60 // 外框高
+      this.$refs.canvas.discardActive() // 取消所有活跃元素
+    }
+  },
   methods: {
     // 选择边框类型
     setObjectDash (data) {

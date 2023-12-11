@@ -334,6 +334,10 @@ export default {
     // 初始化按钮-复制
     // initCintrolButton(canvas, 'right', 'Copy', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA6ElEQVRYR+2XsQ3CQAxFbRaAYwGguLQwAqNASZiHUMIojEDNNWGBJBNgdEiRgOSQ5YgcSE6V4hx/P33F/xAiPxi5P/yPAJNdzgg4lxIjoJwQ19XGnp6/wSbQVYBv6kWUaTITCZBOXteNM0f+vUjty9BsAiqgNwKjvVsi0QEBp5KmIbezPWB2LkeEiaR5XdPmdraA0EGuoFC9ClACSkAJKIHoBHyi8r/zMk0WHxPRt3ZBaJc0EpEKiE7AZK5CgCF3/7edI4JrubWsRNXwwCOS3eAoTUW+OQ1g9X4BYZuwy+SS2t7uBT9L4A4On/shARGWHAAAAABJRU5ErkJggg==', this.copypaste)
 
+    // window.onresize = () => {
+    //  that.discardActive() // 取消所有活跃元素
+    // }
+
     document.onkeydown = function (e) {
       let keyCode = window.event.keyCode
       if (keyCode === 46) { // Delete
@@ -1139,6 +1143,7 @@ export default {
     changeOrigin () {
       let canvas = this.canvas
       let bg = this.returnbg()
+      if (!bg) return
       const objCenter = bg.getCenterPoint()
       const viewportTransform = canvas.viewportTransform
       viewportTransform[4] = canvas.width / 2 - objCenter.x * viewportTransform[0]
