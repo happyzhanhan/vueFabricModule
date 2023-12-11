@@ -797,3 +797,14 @@ this.$refs.canvas.createElement(name, options)
 
 ![v0.1.37](/static/images/v0.1.37.jpg "vue-fabric-module")
 
+
+### 2023.12.11
+> v0.1.38
+- 画布文本组件重构
+- 画布添加删除按钮
+- 键盘事件和组件坐标、选择框等附属样式联动
+- 浏览器缩放画布大小1:1缩放
+
+### 2023.12.11
+> v0.1.39
+- 新版本提交试试

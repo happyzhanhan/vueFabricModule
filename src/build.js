@@ -1,8 +1,9 @@
 import inputSearch from './components/inputSearch'
 import vuefabricmodule from './components/vuefabricmodule'
+import inputText from './components/inputText'
 
 const components = [
-  inputSearch, vuefabricmodule
+  inputSearch, vuefabricmodule, inputText
 ]
 const install = function (Vue) {
   if (install.installed) return
