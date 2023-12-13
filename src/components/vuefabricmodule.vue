@@ -622,6 +622,8 @@ export default {
       that.$emit('object:scaling', options)
       // 活跃组件坐标(辅助-坐标)
       initFabricRuler.calcObjectRect(canvas)
+      // 活跃组件坐标(辅助-坐标)
+      // initFabricRuler.removeObjectRect()
     })
     this.canvas.on('object:moving', function (options) {
       if (options.target._objects) {
@@ -658,6 +660,8 @@ export default {
       if (options.target.isType === 'tableList') {
         that.objectSetZindex() // 元素顺序
       }
+      // 活跃组件坐标(辅助-坐标)
+      initFabricRuler.calcObjectRect(canvas)
       setTimeout(() => {
         that.setTop() // 遮罩置顶，背景置底重置
       }, 500)

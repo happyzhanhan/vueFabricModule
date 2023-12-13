@@ -5,7 +5,7 @@
  * @Date: 2023-08-01 14:18:54
  * @Version: v0.1.31
  * @LastEditors: zhouzhenhan
- * @LastEditTime: 2023-08-18 17:31:43
+ * @LastEditTime: 2023-12-11 20:24:21
  */
  // eslint-disable no-unused-vars
  // eslint-disable no-undef
@@ -275,7 +275,7 @@ let initFabricRuler = function () {
           : params.gridHeight / 2 - params.fontSize / 2 - 4;
         const textY = isHorizontal
           ? params.gridHeight / 2 - params.fontSize / 2 - 4
-          : position + textLength;
+          : position ;
         if (!isHorizontal) {
           textValue = parseInt(textValue) > 0 ? textValue.split("").join("\n") : `${parseInt(textValue)}`.split("").join("\n")
         }
@@ -324,52 +324,6 @@ let initFabricRuler = function () {
       }
     
     
-      // 文字
-      // let objecttext = []
-      // for (let i = 0; i < (params.width - 10) / params.gap; i++) {
-      //   let data = i * params.gap + ''
-      //   // eslint-disable-next-line no-undef
-      //   let text = new fabric.Text(data, {
-      //     originX: 'left',
-      //     originY: 'top',
-      //     left: params.gap * i + 5,
-      //     top: params.gridHeight * 0.15,
-      //     fill: params.textColor,
-      //     fontSize: params.fontSize,
-      //     visible: false
-      //   })
-      //   objecttext.push(text)
-      // }
-    
-      // let objectline2 = []
-      // if(params.gap < 100){
-      //   // 分隔短线
-      //   for (let i = 0; i < (params.width) / 10; i++) {
-      //     // eslint-disable-next-line no-undef
-      //     let line = new fabric.Line([5 + 10 * i, params.gridHeight * 0.9, 5 + 10 * i, params.gridHeight], {
-      //       stroke: params.lineColor,
-      //       strokeWidth: params.axisWidth,
-      //       strokeDashArray: [0, 0],
-      //       visible: false
-      //     })
-      //     objectline2.push(line)
-      //   }
-      // }
-    
-      // 分隔长线
-      // let objectline3 = []
-      // if(params.gap < 500) {
-      //   for (let i = 0; i < (params.width) / 10; i++) {
-      //     // eslint-disable-next-line no-undef
-      //     let line = new fabric.Line([10 + 10 * i, params.gridHeight * 0.8, 10 + 10 * i, params.gridHeight], {
-      //       stroke: params.lineColor,
-      //       strokeWidth: params.axisWidth,
-      //       strokeDashArray: [0, 0],
-      //       visible: false
-      //     })
-      //     objectline3.push(line)
-      //   }
-      // }
     
       // const vpt = canvas.viewportTransform
       // eslint-disable-next-line no-undef
@@ -386,9 +340,9 @@ let initFabricRuler = function () {
         lockScalingY: true,
         lockUniScaling: true,
         hoverCursor: 'auto',
-        name: 'sRuler',
-        left: startOffset < 0 ? params.left + startOffset : params.left,
-        top: params.top,
+        name: 'sRuler'+isHorizontal,
+        left: !isHorizontal ? params.left : (startOffset < 0 ? params.left + startOffset : params.left),
+        top: isHorizontal ? params.top : (startOffset < 0 ? params.top + startOffset : params.top),
         isType: 'sRuler',
         evented: false
       })
@@ -468,9 +422,10 @@ let initFabricRuler = function () {
     
       that.drawfabricRulerBg(canvas) // 重绘标尺背景
       debounce(async () => {
+        console.log('zoom', zoom)
         that.drawfabricRulerText(canvas) // 重绘标尺刻度
         that.drawfabricRulerMark(canvas) // 重绘标尺上遮罩
-      }, 20)
+      }, 200)
       canvas.requestRenderAll()
       canvas.renderAll()
     },
@@ -638,7 +593,7 @@ let initFabricRuler = function () {
           easing: fabric.util.ease['easeOutQuart']
         });
         sObjectText[3].item(1).set({
-          text: parseInt(y1+w)+''
+          text: parseInt(y1+h)+''
         })
         sObjectText[3].animate('top', y1+h, {
           duration: 100,
