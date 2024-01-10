@@ -224,6 +224,12 @@
                @dblclick="draw('Dottedline')"
             ></i>
 
+            <i class="ps-icon84 ps-icon"
+            title="线段"
+            @dblclick="draw('Polyline')"
+               @click="initDraw()"
+            ></i>
+
             <i class="line-h"></i>
 
             <!--二维码-->
@@ -940,7 +946,9 @@ export default {
       showGuideline: true,
       showRule: true,
       showobjectRect: true,
-      previewUrl: ''
+      previewUrl: '',
+
+      candraw: false
     }
   },
   created () {
@@ -1075,7 +1083,7 @@ export default {
         if (ids.length === 1) {
           this.curobj = this.$refs.canvas.getEditObj()
           let obj = this.$refs.canvas.getEditObj()
-          console.log('当前元素：', obj)
+          console.log('当前元素：', obj, (obj.path + '').replace(/,/g, ' '))
           this.$set(this.object, 'isType', obj.isType)
           this.$set(this.object, 'width', obj.width)
           this.$set(this.object, 'height', obj.height)
@@ -1264,6 +1272,13 @@ export default {
         this.$set(this.object, 'imgText', obj.imgText)
       }
     },
+    // 开始画
+    initDraw () {
+      this.candraw = true
+      this.$refs.canvas.showPenAction(this.candraw)
+      this.$refs.canvas.changePenStyle('#00ff00', 2)
+      this.$refs.canvas.setCursor(6)
+    },
     // 点击画组件
     async draw (name) {
       // this.id = this.id + 1
@@ -1311,6 +1326,18 @@ export default {
             opacity: 1,
             stroke: '#ff0000',
             strokeWidth: 2,
+            visible: true
+          }
+          break
+        case 'Polyline':
+          options = {
+            pathstr: ' M 244.15584415584414 169.8051948051948 L 596.7532467532467 169.8051948051948 Q 726.6233766233765 278.89610389610397 638.9610389610389 336.0389610389611 Q 524.6753246753246 445.77922077922074 365.5844155844156 405.5194805194805 Q 183.76623376623382 412.66233766233773 174.02597402597405 352.92207792207796 L 290.90909090909093 268.50649350649354 L 536.3636363636363 236.68831168831167 Z',
+            left: 210,
+            top: 200,
+            angle: 0,
+            opacity: 1,
+            stroke: '#ff0000',
+            strokeWidth: 1,
             visible: true
           }
           break

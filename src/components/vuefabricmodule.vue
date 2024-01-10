@@ -34,6 +34,7 @@ import initFabricRuler from '../utils/fabricRuler'
 import initAligningGuidelines from '../utils/fabricGuidelines'
 import inputText from './inputText.vue'
 import initCintrolButton from '../utils/controlButton'
+import initPen from '../utils/fabricPen'
 // require('../../static/js/fabric5.js')
 import {
   // eslint-disable-next-line no-unused-vars
@@ -329,6 +330,9 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
       }
     }, 500)
+    canvas.showPen = false
+    canvas.showPenClose = true // 线段不闭合
+    initPen(canvas)
     // 初始化按钮-删除
     initCintrolButton(canvas, 'left', 'Delete', null, this.removeActiveObject)
     // 初始化按钮-复制
@@ -487,6 +491,9 @@ export default {
         canvas.selection = true
       }
       that.$emit('mouse:up', options)
+    })
+    this.canvas.on('mouse:dblclick', function (options) {
+      that.$emit('mouse:dblclick', options)
     })
     this.canvas.on('mouse:move', function (e) {
       // console.log(e.absolutePointer, e.pointer  && e && e.e)
@@ -1239,6 +1246,9 @@ export default {
           break
           // eslint-disable-next-line no-undef
         case 5: fabric.Canvas.prototype.defaultCursor = 'zoom-out' // -
+          break
+        // eslint-disable-next-line no-undef
+        case 6: fabric.Canvas.prototype.defaultCursor = 'crosshair' // - 绘直线
           break
           // eslint-disable-next-line no-undef
         default: fabric.Canvas.prototype.defaultCursor = 'default'
@@ -2556,6 +2566,45 @@ export default {
               e.target.set('scaleX', 1)
               e.target.set('scaleY', 1)
             })
+            break
+          case 'Polyline': // -------线段
+            // let initpoints = [
+            //   { x: 0, y: 0 },
+            //   { x: 30, y: 50 },
+            //   { x: 200, y: 0 },
+            //   { x: 400, y: 60 },
+            //   { x: 500, y: 70 },
+            //   { x: 400, y: 10 }
+            // ]
+            // // Initiating a polyline object
+            // // eslint-disable-next-line no-undef
+            // canvasObject = new fabric.Polyline(initpoints, {
+            //   left: options.left,
+            //   top: options.top,
+            //   fill: 'rgba(0,0,0,0)',
+            //   strokeWidth: 2,
+            //   stroke: 'pink'
+            // })
+            // Initiating a polyline object
+            // eslint-disable-next-line no-undef
+            canvasObject = new fabric.Path(options.pathstr, {
+              isType: 'Polyline',
+              component: 'component',
+              fill: 'rgba(0,0,0,0)',
+              strokeWidth: options.strokeWidth,
+              stroke: options.stroke
+            })
+            // canvasObject.setControlsVisibility({ // 左上、左下、右上、右下 取消
+            //   bl: false,
+            //   br: false,
+            //   mb: false,
+            //   ml: false,
+            //   mr: false,
+            //   mt: false,
+            //   mtr: false,
+            //   tl: false,
+            //   tr: false
+            // })
             break
           case 'Dottedline': // ----------------------------------------------------------------------------------------线段
             newOptions = {
@@ -7309,6 +7358,21 @@ export default {
       this.canvas.showRule = bol
       //  初始化标尺(辅助-标尺)
       initFabricRuler.drawfabricRuler(canvas)
+    },
+
+    // 钢笔描线
+    showPenAction (bol) {
+      // console.log(bol)
+      this.canvas.showPen = bol
+      this.canvas.renderAll()
+      // let canvas = this.canvas
+      // initPen(canvas)
+    },
+    // 改变钢笔颜色粗细
+    changePenStyle (color, width) {
+      this.canvas.strokeColor = color || '#000000'
+      this.canvas.strokeWidth = width || 1
+      this.canvas.renderAll()
     },
 
     // 活跃坐标

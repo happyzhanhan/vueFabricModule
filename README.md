@@ -816,3 +816,10 @@ this.$refs.canvas.createElement(name, options)
 - 业务中需考虑浏览器缩放->画布缩放
 - 业务中考虑新增删除图片，画布中可删除组件；
 
+### 2024.01.10
+> v0.2.1
+- 新增钢笔划线工具；
+  this.$refs.canvas.showPenAction(true)
+  this.$refs.canvas.changePenStyle('#00ff00', 2)
+  this.$refs.canvas.setCursor(6)
+
