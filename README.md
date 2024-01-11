@@ -819,7 +819,14 @@ this.$refs.canvas.createElement(name, options)
 ### 2024.01.10
 > v0.2.1
 - 新增钢笔划线工具；
+```
   this.$refs.canvas.showPenAction(true)
   this.$refs.canvas.changePenStyle('#00ff00', 2)
   this.$refs.canvas.setCursor(6)
+```
+### 2024.01.11
+> v0.2.2
+- 修复数字价格组件宽高多1像素问题
+
+  
 

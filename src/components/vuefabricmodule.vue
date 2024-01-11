@@ -6630,8 +6630,8 @@ export default {
       // 背景颜色矩形
       // eslint-disable-next-line no-undef
       let Rect = new fabric.Rect({
-        width: width - strokeWidth,
-        height: height - strokeWidth,
+        width: width - strokeWidth - 1,
+        height: height - strokeWidth - 1,
         fill: bgcolor,
         scaleX: 1,
         scaleY: 1,
@@ -6992,11 +6992,11 @@ export default {
           })
           setTimeout(() => {
             group.set({
-              width: group.width * group.scaleX,
+              width: (group.width - 1) * group.scaleX,
               scaleX: 1
             })
             group.item(0).set({
-              width: group.width * group.scaleX,
+              width: (group.width - 1) * group.scaleX,
               scaleX: 1
             })
             // 定位位置
@@ -7018,11 +7018,11 @@ export default {
           })
           setTimeout(() => {
             group.set({
-              height: group.height * group.scaleY,
+              height: (group.height - 1) * group.scaleY,
               scaleY: 1
             })
             group.item(0).set({
-              height: group.height * group.scaleY,
+              height: (group.height - 1) * group.scaleY,
               scaleY: 1
             })
             // 定位位置
