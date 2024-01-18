@@ -13755,7 +13755,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     hasControls: this.hasControls,
 
                     url: this.url,
-                    tabledata: this.tabledata,
+                    tabledata: this.isType === 'tableList' ? this.tabledata : null,
                     bgcolor: this.bgcolor,
 
                     fillinColor: this.fillinColor,
@@ -13769,6 +13769,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                   textImg: this.textImg,
                   options: this.options,
                   textStyle: this.textStyle,
+                  editable: this.editable,
 
                 };
 

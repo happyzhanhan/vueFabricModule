@@ -11,6 +11,8 @@
       <img id="qrcode" :src="qrcodeImg" alt="" class="qrcodeImg">
   </div>
   <input type="text" id="code" style="position:fixed; top:-1000000px; z-index:9999;">
+  <svg t="1705569434638" v-if="showRule && !isMoveing" @click="changemoveing(!isMoveing)" class="icon-suo" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1906" width="10" height="10"><path d="M385.150849 385.662338l-128.895105 0 0-150.377622q0-49.102897 19.436563-91.556444t53.706294-74.677323 80.815185-50.637363 101.786214-18.413586q49.102897 0 94.625375 18.413586t80.815185 50.637363 56.263736 74.677323 20.971029 91.556444l0 150.377622-123.78022 0 0-121.734266q0-64.447552-35.804196-99.74026t-97.182817-35.292707q-55.240759 0-88.999001 35.292707t-33.758242 99.74026l0 121.734266zM826.053946 447.040959q27.62038 0 47.568432 19.948052t19.948052 47.568432l0 317.122877q0 27.62038-9.718282 51.66034t-26.597403 41.942058-39.896104 28.131868-50.637363 10.22977l-516.603397 0q-27.62038 0-50.125874-10.22977t-38.361638-27.108891-24.551449-39.384615-8.695305-48.07992l0-324.283716q0-27.62038 19.436563-47.568432t47.056943-19.948052l61.378621 0 128.895105 0 255.744256 0 123.78022 0 61.378621 0z" p-id="1907" fill="#515151"></path></svg>
+  <svg t="1705570063801" v-if="showRule && isMoveing" @click="changemoveing(!isMoveing)" class="icon-suo kai" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2615" width="10" height="10"><path d="M768.25422 0q48.810328 0 94.061569 18.303873t80.333664 50.33565 56.436941 74.740814 21.354518 91.519364l0 150.49851-123.042701 0 0-122.025819q0-64.063555-36.099305-99.654419t-97.112214-35.590864q-54.911619 0-88.468719 35.590864t-33.5571 99.654419l0 124.059583-128.12711 0 0-152.532274q0-48.810328 19.320755-91.519364t53.386296-74.740814 80.333664-50.33565 101.179742-18.303873zM766.220457 693.513406l0 87.451837 0 47.793446q0 27.455809-9.660377 51.860973t-26.438928 41.692155-39.658391 27.455809-50.33565 10.168818l-514.542205 0q-27.455809 0-49.82721-9.660377t-38.641509-26.438928-24.913605-39.14995-8.643496-47.793446l0-323.368421q0-28.472691 19.829196-47.793446t46.268123-19.320755l629.449851 0q28.472691 0 47.793446 19.320755t19.320755 47.793446l0 179.988083z" p-id="2616" fill="#4180F8"></path></svg>
   <canvas id="canvas" ></canvas>
   <vue-context-menu :contextMenuData="contextMenuData"
                     @toTopLayer="toTopLayer" @toLastLayer="toLastLayer" @toNextLayer="toNextLayer" @toBottomLayer="toBottomLayer"
@@ -33,7 +35,7 @@ import initFabricRuler from '../utils/fabricRuler'
 // eslint-disable-next-line no-unused-vars
 import initAligningGuidelines from '../utils/fabricGuidelines'
 import inputText from './inputText.vue'
-import initCintrolButton from '../utils/controlButton'
+// import initCintrolButton from '../utils/controlButton'
 import initPen from '../utils/fabricPen'
 // require('../../static/js/fabric5.js')
 import {
@@ -66,6 +68,11 @@ export default {
       default: '#ff0',
       required: false
     },
+    // 画布背景
+    backgroundImage: {
+      type: String,
+      default: '' // /img/group1/M00/01/30/rBMAA2WnnLmAaeZHAA1Rx0gWfdg718.png
+    },
     // 遮罩颜色
     BgColor: {
       type: String,
@@ -75,6 +82,10 @@ export default {
     showRule: {
       type: [Boolean, String],
       default: false
+    },
+    rulestyle: {
+      type: String,
+      default: 'white' // white/black
     },
     showGuideline: {
       type: [Boolean, String],
@@ -154,7 +165,7 @@ export default {
       },
       isMoveing: false, // 抓手可移动画布 ，箭头不可移动画布
       panning: false,
-      cid: 0, // 底层获取id
+      cid: 1, // 底层获取id
       qrcodeImg: '',
       xLeft: 0,
       yTop: 0,
@@ -179,7 +190,7 @@ export default {
         this.canvas.setWidth(val)
         this.canvas.setHeight(this.boxHeight)
         this.changeBigZoom()
-        this.changeWH({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
+        this.changeWH({backgroundColor: this.backgroundColor, backgroundImage: this.backgroundImage, width: this.width, height: this.height})
       }
     },
     boxHeight (val, oldval) {
@@ -188,11 +199,11 @@ export default {
         this.canvas.setWidth(this.boxWidth)
         this.canvas.setHeight(val)
         this.changeBigZoom()
-        this.changeWH({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
+        this.changeWH({backgroundColor: this.backgroundColor, backgroundImage: this.backgroundImage, width: this.width, height: this.height})
       }
     }
   },
-  mounted () {
+  async mounted () {
     // eslint-disable-next-line no-undef
     this.canvas = new fabric.Canvas('canvas', { preserveObjectStacking: true })
     let canvas = this.canvas
@@ -301,7 +312,7 @@ export default {
     this.canvas.setHeight(this.boxHeight)
 
     // 画布初始化
-    this.initbg({backgroundColor: this.backgroundColor, width: this.width, height: this.height})
+    await this.initbg({backgroundColor: this.backgroundColor, backgroundImage: this.backgroundImage, width: this.width, height: this.height})
     this.getBlack({width: this.width, height: this.height}, this.BgColor) // 遮罩  this.BgColor
 
     this.changeBigZoom()
@@ -318,6 +329,8 @@ export default {
     canvas.showobjectRect = this.showobjectRect || false
     setTimeout(() => {
       if (this.showRule) {
+        //  初始化标尺(辅助-标尺) 主题颜色
+        initFabricRuler.initStyle(this.rulestyle || 'white')
         //  初始化标尺(辅助-标尺)
         initFabricRuler.drawfabricRuler(canvas)
       }
@@ -330,11 +343,12 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
       }
     }, 500)
-    canvas.showPen = false
+    canvas.showPen = false // 默认不开启
     canvas.showPenClose = true // 线段不闭合
-    initPen(canvas)
+    canvas.cid = this.cid
+    initPen(canvas, this.penBack)
     // 初始化按钮-删除
-    initCintrolButton(canvas, 'left', 'Delete', null, this.removeActiveObject)
+    // initCintrolButton(canvas, 'left', 'Delete', null, this.removeActiveObject)
     // 初始化按钮-复制
     // initCintrolButton(canvas, 'right', 'Copy', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA6ElEQVRYR+2XsQ3CQAxFbRaAYwGguLQwAqNASZiHUMIojEDNNWGBJBNgdEiRgOSQ5YgcSE6V4hx/P33F/xAiPxi5P/yPAJNdzgg4lxIjoJwQ19XGnp6/wSbQVYBv6kWUaTITCZBOXteNM0f+vUjty9BsAiqgNwKjvVsi0QEBp5KmIbezPWB2LkeEiaR5XdPmdraA0EGuoFC9ClACSkAJKIHoBHyi8r/zMk0WHxPRt3ZBaJc0EpEKiE7AZK5CgCF3/7edI4JrubWsRNXwwCOS3eAoTUW+OQ1g9X4BYZuwy+SS2t7uBT9L4A4On/shARGWHAAAAABJRU5ErkJggg==', this.copypaste)
 
@@ -376,7 +390,7 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
         // 删除按钮偏移
         let one = document.getElementsByClassName('delButton')[0]
-        one.style.left = Number(one.style.left.split('px')[0]) - 1 + 'px'
+        one.remove()
       }
       if (keyCode === 38) { // ↑
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -401,7 +415,7 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
         // 删除按钮偏移
         let one = document.getElementsByClassName('delButton')[0]
-        one.style.top = Number(one.style.top.split('px')[0]) - 1 + 'px'
+        one.remove()
       }
       if (keyCode === 39) { // →
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -426,7 +440,7 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
         // 删除按钮偏移
         let one = document.getElementsByClassName('delButton')[0]
-        one.style.left = Number(one.style.left.split('px')[0]) + 1 + 'px'
+        one.remove()
       }
       if (keyCode === 40) { // ↓
         if (document.activeElement.tagName === 'INPUT') { return }
@@ -451,7 +465,7 @@ export default {
         initFabricRuler.calcObjectRect(canvas)
         // 删除按钮偏移
         let one = document.getElementsByClassName('delButton')[0]
-        one.style.top = Number(one.style.top.split('px')[0]) + 1 + 'px'
+        one.remove()
       }
     }
 
@@ -707,79 +721,206 @@ export default {
       canvas.renderAll()
     },
     // 初始化背景
-    initbg (options) {
-      let left = 0
-      let top = 0
-      if (this.boxWidth > this.width * this.canvasZoom) {
-        left = this.boxWidth / 2 - this.width / 2
+    async initbg (options) {
+      var rect
+      if (options.backgroundImage) {
+        await this.initBGIMG(options)
       } else {
-        left = 0
-      }
-      if (this.boxHeight > this.height * this.canvasZoom) {
-        top = this.boxHeight / 2 - this.height / 2
-      } else {
-        top = 0
-      }
-      console.log(top, left)
-      options = {
-        width: options.width ? options.width : this.width,
-        height: options.height ? options.height : this.height,
-        backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : ''
-      }
-      // 白色画布相对canvas偏移量
-      this.xLeft = 0 // -left
-      this.yTop = 0 // -top
-      // eslint-disable-next-line no-undef
-      let rect = new fabric.Rect({
-        left: 0,
-        top: 0,
-        width: options.width,
-        height: options.height,
-        fill: JSON.parse(JSON.stringify(options.backgroundColor)),
+        let left = 0
+        let top = 0
+        if (this.boxWidth > this.width * this.canvasZoom) {
+          left = this.boxWidth / 2 - this.width / 2
+        } else {
+          left = 0
+        }
+        if (this.boxHeight > this.height * this.canvasZoom) {
+          top = this.boxHeight / 2 - this.height / 2
+        } else {
+          top = 0
+        }
+        console.log(top, left)
+        options = {
+          width: options.width ? options.width : this.width,
+          height: options.height ? options.height : this.height,
+          backgroundImage: options.backgroundImage || null,
+          backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : ''
+        }
+        // 白色画布相对canvas偏移量
+        this.xLeft = 0 // -left
+        this.yTop = 0 // -top
+        // eslint-disable-next-line no-undef
+        rect = new fabric.Rect({
+          left: 0,
+          top: 0,
+          width: options.width,
+          height: options.height,
+          fill: JSON.parse(JSON.stringify(options.backgroundColor)), // JSON.parse(JSON.stringify(options.backgroundColor))
 
-        component: 'canvasbg',
-        type: 'Rect',
-        originX: 'left',
-        originY: 'top',
-        name: 'background',
-        selectable: false,
-        hasControls: false,
-        evented: false,
-        visible: true,
-        isType: 'sBg',
-        isDiff: 'none',
-        flipX: false,
-        flipY: false,
-        padding: 0,
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-        stopContextMenu: true, // 禁掉鼠标右键默认事件
-        hoverCursor: 'default',
-        strokeWidth: 0,
-        stroke: '#999',
-        excludeFromExport: true,
-        perPixelTargetFind: false
-      })
-      if (options.backgroundColor === '') {
-        rect.set({
-          stroke: '#333',
-          strokeWidth: 1
+          component: 'canvasbg',
+          type: 'Rect',
+          originX: 'left',
+          originY: 'top',
+          name: 'background',
+          selectable: false,
+          hasControls: false,
+          evented: false,
+          visible: true,
+          isType: 'sBg',
+          isDiff: 'none',
+          flipX: false,
+          flipY: false,
+          padding: 0,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+          stopContextMenu: true, // 禁掉鼠标右键默认事件
+          hoverCursor: 'default',
+          strokeWidth: 0,
+          stroke: '#999',
+          excludeFromExport: false,
+          perPixelTargetFind: false
         })
-      }
-      // 超出不显示
-      // rect.clone((cloned) => {
-      //   this.canvas.inverted = false
-      //   this.canvas.absolutePositioned = false
-      //   this.canvas.clipPath = cloned
-      //   this.canvas.requestRenderAll()
-      // })
-      this.canvas.add(rect)
-      this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
+        if (options.backgroundColor === '') {
+          rect.set({
+            stroke: '#333',
+            strokeWidth: 1
+          })
+        }
+        // 超出不显示(标尺会不显示)
+        // rect.clone((cloned) => {
+        //   this.canvas.inverted = false
+        //   this.canvas.absolutePositioned = false
+        //   this.canvas.clipPath = cloned
+        //   this.canvas.requestRenderAll()
+        // })
+        this.canvas.add(rect)
+        this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
 
-      rect.sendToBack()
-      this.canvas.requestRenderAll()
-      this.canvas.renderAll()
+        rect.sendToBack()
+        this.canvas.requestRenderAll()
+        this.canvas.renderAll()
+      }
+    },
+    async initBGIMG (options) {
+      let canvas = this.canvas
+      let _this = this
+      var rect
+      let imagesRes = await this.loadImage(options.backgroundImage)
+      console.warn(imagesRes)
+      if (imagesRes.width > 0) {
+        let img = imagesRes
+        this.$emit('setWH', img.width, img.height)
+        options = {
+          width: img.width,
+          height: img.height,
+          backgroundImage: options.backgroundImage || null,
+          backgroundColor: options.hasOwnProperty('backgroundColor') && Object.prototype.toString.call(options.backgroundColor) === '[object String]' && options.backgroundColor !== '' ? options.backgroundColor : ''
+        }
+        // eslint-disable-next-line no-undef
+        rect = new fabric.Rect({
+          left: 0,
+          top: 0,
+          width: options.width,
+          height: options.height,
+          fill: JSON.parse(JSON.stringify(options.backgroundColor)), // JSON.parse(JSON.stringify(options.backgroundColor))
+
+          component: 'canvasbg',
+          type: 'Rect',
+          originX: 'left',
+          originY: 'top',
+          name: 'background',
+          selectable: false,
+          hasControls: false,
+          evented: false,
+          visible: true,
+          isType: 'sBg',
+          isDiff: 'none',
+          flipX: false,
+          flipY: false,
+          padding: 0,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+          stopContextMenu: true, // 禁掉鼠标右键默认事件
+          hoverCursor: 'default',
+          strokeWidth: 0,
+          stroke: '#999',
+          excludeFromExport: false,
+          perPixelTargetFind: false
+        })
+        // eslint-disable-next-line no-undef
+        fabric.util.loadImage(options.backgroundImage, function (img) {
+          rect.set('fill',
+            // eslint-disable-next-line no-undef
+            new fabric.Pattern({
+              source: img,
+              repeat: 'no-repeat'
+            }))
+        })
+        canvas.add(rect)
+        _this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
+
+        rect.sendToBack()
+        canvas.requestRenderAll()
+        canvas.renderAll()
+      } else {
+        // eslint-disable-next-line no-undef
+        rect = new fabric.Rect({
+          left: 0,
+          top: 0,
+          width: options.width,
+          height: options.height,
+          fill: JSON.parse(JSON.stringify(options.backgroundColor)), // JSON.parse(JSON.stringify(options.backgroundColor))
+
+          component: 'canvasbg',
+          type: 'Rect',
+          originX: 'left',
+          originY: 'top',
+          name: 'background',
+          selectable: false,
+          hasControls: false,
+          evented: false,
+          visible: true,
+          isType: 'sBg',
+          isDiff: 'none',
+          flipX: false,
+          flipY: false,
+          padding: 0,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+          stopContextMenu: true, // 禁掉鼠标右键默认事件
+          hoverCursor: 'default',
+          strokeWidth: 0,
+          stroke: '#999',
+          excludeFromExport: false,
+          perPixelTargetFind: false
+        })
+        // eslint-disable-next-line no-undef
+        fabric.util.loadImage('./static/images/psbg.png', function (img) {
+          // console.warn(img);
+          rect.set('fill',
+            // eslint-disable-next-line no-undef
+            new fabric.Pattern({
+              source: img,
+              repeat: 'repeat'
+            }))
+        })
+        // 超出不显示(标尺会不显示)
+        // rect.clone((cloned) => {
+        //   this.canvas.inverted = false
+        //   this.canvas.absolutePositioned = false
+        //   this.canvas.clipPath = cloned
+        //   this.canvas.requestRenderAll()
+        // })
+        console.log(rect)
+        canvas.add(rect)
+        _this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
+
+        rect.sendToBack()
+        canvas.requestRenderAll()
+        canvas.renderAll()
+      }
     },
     // 遮罩置顶
     setTop () {
@@ -895,6 +1036,7 @@ export default {
      * */
     // 画遮罩区域
     getBlack (options, color) {
+      console.log('getBlack')
       let that = this
       let bg = that.returnbg()
       if (that.returnsMask().length && that.returnsMask().length > 0) {
@@ -1069,7 +1211,8 @@ export default {
       options = {
         width: options.width ? options.width : this.width,
         height: options.height ? options.height : this.height,
-        backgroundColor: options.backgroundColor !== '' ? options.backgroundColor : this.backgroundColor
+        backgroundColor: options.backgroundColor !== '' ? options.backgroundColor : this.backgroundColor,
+        backgroundImage: options.backgroundImage || null
       }
 
       this.canvas.setWidth(this.boxWidth)
@@ -1280,6 +1423,7 @@ export default {
     // 右键事件
     showMenu (e) {
       if (!this.showMouseRight) {
+        event.preventDefault()
         return
       }
       var canvas = this.canvas
@@ -1691,7 +1835,7 @@ export default {
     },
     // paste
     async paste (text) {
-      // console.log(text)
+      // console.log('paste', text)
       if (this.clipboard == null) { // 剪切板清除不掉，所以画布只可粘贴一次限制
         return false
       }
@@ -1781,12 +1925,12 @@ export default {
         this.cid = this.cid + 1
         this.$emit('idAdd', this.cid)
         // console.log('单元素', _clipboard.isType)
-        // console.log('单个元素',_clipboard)
+        // console.log('单个元素', _clipboard)
         if (_clipboard.isType === 'TextRect-text') {
           return
         }
         let canvaobj
-        _clipboard.copyId = JSON.parse(JSON.stringify(_clipboard.id))
+        _clipboard.copyId = _clipboard.id ? JSON.parse(JSON.stringify(_clipboard.id)) : null
         _clipboard.id = that.cid
         _clipboard.zIndex = that.cid
         _clipboard.layer = that.cid
@@ -1876,6 +2020,7 @@ export default {
           // console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height)
           canvaobj = await this.createElement(_clipboard.isType, JSON.parse(JSON.stringify(_clipboard)))
         }
+        // console.log(_clipboard)
         if (canvaobj) {
           this.$emit('copydata', _clipboard, [canvaobj.id], _clipboard)
           this.$emit('copyidsdata', [canvaobj.id]) // 单个元素 复制
@@ -2568,29 +2713,17 @@ export default {
             })
             break
           case 'Polyline': // -------线段
-            // let initpoints = [
-            //   { x: 0, y: 0 },
-            //   { x: 30, y: 50 },
-            //   { x: 200, y: 0 },
-            //   { x: 400, y: 60 },
-            //   { x: 500, y: 70 },
-            //   { x: 400, y: 10 }
-            // ]
-            // // Initiating a polyline object
-            // // eslint-disable-next-line no-undef
-            // canvasObject = new fabric.Polyline(initpoints, {
-            //   left: options.left,
-            //   top: options.top,
-            //   fill: 'rgba(0,0,0,0)',
-            //   strokeWidth: 2,
-            //   stroke: 'pink'
-            // })
-            // Initiating a polyline object
+            options.pathstr = (options.path + '').replace(/,/g, ' ')
+            // console.log('options.pathstr', options.pathstr)
             // eslint-disable-next-line no-undef
             canvasObject = new fabric.Path(options.pathstr, {
               isType: 'Polyline',
               component: 'component',
+              // ...options,
+              id: options.id,
               fill: 'rgba(0,0,0,0)',
+              left: options.left,
+              top: options.top,
               strokeWidth: options.strokeWidth,
               stroke: options.stroke
             })
@@ -3240,14 +3373,14 @@ export default {
                         'bold italic underline ' +
                         'underscore and color.', {...newOptions})
 
-            canvasObject.set({height: newOptions.height,
-              clipTo: function (ctx) {
-                ctx.rect(-canvasObject.width / 2,
-                  -canvasObject.height / 2,
-                  canvasObject.width,
-                  canvasObject.height)
-              }
-            })
+            // canvasObject.set({height: newOptions.height,
+            //   clipTo: function (ctx) {
+            //     ctx.rect(-canvasObject.width / 2,
+            //       -canvasObject.height / 2,
+            //       canvasObject.width,
+            //       canvasObject.height)
+            //   }
+            // })
 
             canvasObject.setControlsVisibility({
               bl: false,
@@ -5091,7 +5224,7 @@ export default {
               copyId: options.copyId,
               layer: options.layer ? options.layer : options.id,
               zIndex: options.zIndex ? options.zIndex : options.id,
-              type: options.type ? options.type : 'Qrcode',
+              type: 'Image',
               color: options.lineColor,
 
               name: options.name ? options.name : 'Qrcode',
@@ -5587,15 +5720,16 @@ export default {
         img.src = url
         setTimeout(() => {
           if (img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
+            // console.log('CCCC', img.width)
             resolve(img)
             return // 直接返回，不用再处理onload事件
           }
           img.onload = async () => {
-            // console.log(img.readyState, img.complete)
+            // console.log('OOOO', img.readyState, img.complete)
             resolve(img)
           }
           img.onerror = async (err) => {
-            // console.log('err', err)
+            // console.log('EEEE', err)
             reject(err.type)
           }
         }, 200)
@@ -7365,8 +7499,18 @@ export default {
       // console.log(bol)
       this.canvas.showPen = bol
       this.canvas.renderAll()
+      // initPen.initId(this.cid)
+      this.canvas.cid = this.cid // 钢笔多边形id
       // let canvas = this.canvas
       // initPen(canvas)
+    },
+    // 形状生成回调
+    penBack (bol, polyline, id) {
+      this.canvas.showPen = bol
+      this.cid = this.cid + 1 // 返回钢笔画图是id自增
+      this.$emit('idAdd', this.cid)
+      this.$emit('candrawStatus', false)
+      this.canvas.renderAll()
     },
     // 改变钢笔颜色粗细
     changePenStyle (color, width) {
@@ -7772,6 +7916,15 @@ export default {
     showInputTextclose () {
       this.showInputText = false
       this.canvas.showInputText = false
+    },
+    // 保存json
+    toDatalessJSON () {
+      let json = this.canvas.toDatalessJSON()
+      return json
+    },
+    // 加载json
+    loadFromJSON (json) {
+      this.canvas.loadFromDatalessJSON(json)
     }
   }
 }
@@ -7782,5 +7935,17 @@ export default {
   position:relative;
   box-shadow: inset 0 0 9px 2px #0000001f;
   overflow: hidden;
+}
+.icon-suo{
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  user-select: none;
+  padding: 5px;
+  cursor: pointer;
+}
+.icon-suo.kai{
+  left: 1px;
 }
 </style>

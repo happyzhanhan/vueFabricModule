@@ -5,7 +5,7 @@
  * @Date: 2023-08-01 14:18:54
  * @Version: v0.1.31
  * @LastEditors: zhouzhenhan
- * @LastEditTime: 2023-12-11 20:24:21
+ * @LastEditTime: 2024-01-17 16:10:34
  */
  // eslint-disable no-unused-vars
  // eslint-disable no-undef
@@ -13,15 +13,15 @@ let initFabricRuler = function () {
   var canvas,
       status = true,
       showobjectRect = true,
-      rulerborder = '#696969',
       rulerbgborderWidth = 1,
-      rulerbg = '#303030',
       rulerSize = 20,
       fontSize = 10,
-      textColor = '#a5a5a5',
-      lineColor = '#696969',
-      dashColor = '#b0b0b0',
-      objectBg = '#007fff',
+      rulerborder = '#E1E6F6',
+      rulerbg = '#ffffff',
+      textColor = '#333333',
+      lineColor = '#E1E6F6',
+      dashColor = '#D7D7D7',
+      objectBg = '#4180F8',
       vpt,
       zoom;
   // 标尺运动计算
@@ -49,6 +49,35 @@ let initFabricRuler = function () {
     }
   })();
   return {
+    // 初始化样式主题
+    initStyle (style) {
+      switch(style){
+        case 'white':
+          rulerborder = '#E1E6F6';
+          rulerbg = '#ffffff';
+          textColor = '#333333';
+          lineColor = '#E1E6F6';
+          dashColor = '#D7D7D7';
+          objectBg = '#4180F8';
+          break;
+        case 'black':
+          rulerborder = '#696969';
+          rulerbg = '#303030';
+          textColor = '#a5a5a5';
+          lineColor = '#696969';
+          dashColor = '#b0b0b0';
+          objectBg = '#007fff';
+          break;
+        default:
+          rulerborder = '#E1E6F6';
+          rulerbg = '#ffffff';
+          textColor = '#333333';
+          lineColor = '#E1E6F6';
+          dashColor = '#D7D7D7';
+          objectBg = '#4180F8';
+          break;    
+      }
+    },
     // 初始化标尺组件
     drawfabricRuler: async function (c) {
       canvas = c
@@ -143,14 +172,14 @@ let initFabricRuler = function () {
       vpt = canvas.viewportTransform
       zoom = canvas.getZoom();
     
-      // 左上角遮罩
+      // 左上角遮罩 方块
       Ruler.drawBg({
         isType: 'sRulerMark',
         left: -(vpt[4] / vpt[0]) + rulerbgborderWidth * (1 / zoom),
         top: -(vpt[5] / vpt[3]) + rulerbgborderWidth * (1 / zoom),
         width: rulerSize * (1 / zoom),
         height: rulerSize * (1 / zoom),
-        fill: '#535353',
+        fill: rulerbg,
         strokeWidth: 0
       })
     },
@@ -445,7 +474,8 @@ let initFabricRuler = function () {
       let left = -(vpt[4] / vpt[0]) + rulerbgborderWidth * (1 / zoom)
       let top = -(vpt[5] / vpt[3]) + rulerbgborderWidth * (1 / zoom)
       let topleftline, topleftText, topleftTextbg, topleftTexGroup
-      topleftline = new fabric.Line( isHorizontal ? [text, top + 7, text, top + 7 + 10 * (1 / zoom)]: [left + 7, text, left + 7 + 10 * (1 / zoom), text], {
+      // isHorizontal ？ 横向 ： 竖向
+      topleftline = new fabric.Line( isHorizontal ? [text, top+ 6 * (1 / zoom), text, top+ 20 * (1 / zoom)]: [left+6 * (1 / zoom), text, left + 20 * (1 / zoom), text], {
         isType: 'sObjectLine',
         stroke: objectBg,
         strokeWidth: 2 * (1 / zoom),
@@ -461,6 +491,11 @@ let initFabricRuler = function () {
         hoverCursor: 'auto',
         evented: false,
       })
+      if(isHorizontal){
+        topleftline.set({scaleX: (1 / zoom)})
+      }else{
+        topleftline.set({scaleY: (1 / zoom)})
+      }
       canvas.add(topleftline)
       topleftText = new fabric.Text( parseInt(text) + '' , {
         isType: 'sObjectTextT',
@@ -684,6 +719,8 @@ let initFabricRuler = function () {
           // console.log(activeObjects.getBoundingRect(true, true))
           const {left: x1, width: w,  top: y1, height: h} = activeObjects.getBoundingRect(true, true)
           that.drawObjectRect(x1, w, y1, h)
+          let rect = that.returnsRuler('sRulerMark')
+          rect[0].bringToFront() // 遮盖小方块置顶
         }
       },15)
     },

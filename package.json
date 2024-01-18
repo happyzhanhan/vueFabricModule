@@ -1,7 +1,7 @@
 {
   "name": "vuefabricmodule",
   "description": "vue fabric module:[vuefabricmodule, inputSearch]",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "zhouzhenhan <1659725767@qq.com>",
   "license": "MIT",
   "private": false,
@@ -15,6 +15,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "element-ui": "^2.15.5",
     "commitizen": "^4.3.0",
     "cz-customizable": "^7.0.0",
     "jr-qrcode": "^1.1.4",

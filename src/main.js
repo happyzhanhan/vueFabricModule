@@ -7,8 +7,11 @@ import VueI18n from 'vue-i18n'
 import GeminiScrollbar from 'vue-gemini-scrollbar'
 import JsBarcode from 'jsbarcode'
 import jrQrcode from 'jr-qrcode'
+import ElementUI from 'element-ui'
+import '../static/theme/index.css'
 
 Vue.config.productionTip = false
+Vue.use(ElementUI)
 Vue.use(VueI18n) // 通过插件的形式挂载
 Vue.use(GeminiScrollbar)
 const i18n = new VueI18n({

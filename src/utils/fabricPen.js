@@ -1,5 +1,5 @@
 
-function initPen(canvas){
+function initPen(canvas, callback){
   var path, str; // path是绘制的对象,str是其路径
     var pointPosition = [] // 点的位置坐标信息
     var pointArray = [] // 点的对象组合
@@ -10,11 +10,13 @@ function initPen(canvas){
     var mousePoint2; // 鼠标拖动的点2
     var mouseLine1; // 鼠标拖动的线1
     var mouseLine2; // 鼠标拖动的线2
+    var mouseLine3; // 鼠标对齐线
     var besair = '' // 贝塞尔曲线的坐标
     var basairDrawing = false; // 贝塞尔曲线
     // x , y 是线段1的镜象线的坐标值,也就是线段2的末尾值  
     var x;
     var y;
+    var id = 1; // 画图当前ID
     var borderColor = '#999999';
     var PointColor = '#1a80ff'; // blue
     var PointFill = '#ffffff'; //white
@@ -36,7 +38,6 @@ function initPen(canvas){
         hasControls: false,
         originX: 'center',
         originY: 'center',
-        id: id
       })
       canvas.add(circle)
       pointPosition.push({
@@ -138,6 +139,7 @@ function initPen(canvas){
 				name: 'Polyline',
 				isType: 'Polyline',
 				component: 'component',
+        id: id,
         fill: null,
 				strokeWidth: canvas.strokeWidth,
         stroke: canvas.strokeColor
@@ -262,6 +264,37 @@ function initPen(canvas){
       });
       canvas.add(mouseLine2)
     }
+    // 跟随鼠标d对齐线
+    function mouseMoveLine3(e, length) {
+      if(!canvas.showPen) return
+      if(!pointPosition.length) return
+      // console.log(pointArray, pointPosition)
+      if (mouseLine3) canvas.remove(mouseLine3)
+      canvas.selection = false
+      // new fabric.Line(x1,y1,x2,y2)  x1,y1是起始点,x2,y2是结束点
+      mouseLine3 = new fabric.Line([pointPosition[pointPosition.length-1].x, pointPosition[pointPosition.length-1].y,
+        e.absolutePointer.x, e.absolutePointer.y
+      ], {
+        strokeWidth: 1,
+        fill: borderColor,
+        stroke: borderColor,
+        strokeDashArray: [5, 3],
+        class: 'line',
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+        hasBorders: false,
+        hasControls: false,
+        evented: false
+      });
+      if(pointPosition[pointPosition.length-1].x===e.absolutePointer.x || pointPosition[pointPosition.length-1].y===e.absolutePointer.y){
+        mouseLine3.set({
+          fill: PointColor,
+          stroke: PointColor,
+        })
+      }
+      canvas.add(mouseLine3)
+    }
 
 
     // 跟随鼠标改动的贝塞尔曲线
@@ -301,6 +334,8 @@ function initPen(canvas){
     });
 
     canvas.on('mouse:down', function (e) {
+      // console.log(id, canvas.cid)
+      id = canvas.cid;
       if(!canvas.showPen) return
 			canvas.selection = false // 禁止画线时选择组件
        // 只有开启绘画,才进行鼠标拖动
@@ -330,14 +365,22 @@ function initPen(canvas){
         if (mouseLine2) canvas.remove(mouseLine2)
         if (mousePoint1) canvas.remove(mousePoint1)
         if (mousePoint2) canvas.remove(mousePoint2)
+        if (mouseLine3) canvas.remove(mouseLine3)
         finishDrawing(e)
         removePoint()
         mousePoint1 = null;
         canvas.showPen = false;
-				
+        canvas.setActiveObject(path)
+        canvas.renderAll()
+        callback(false, path, id)
       }
       
     });
+
+    canvas.on('mouse:move', function(e) {
+     
+      mouseMoveLine3(e, length)
+    })
 
     canvas.on('mouse:up', function (e) {
       basairDrawing = false
@@ -378,6 +421,7 @@ function initPen(canvas){
     });
     canvas.on('mouse:wheel', function (e) {
     })
+
 }
 
 export default initPen;

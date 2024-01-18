@@ -824,9 +824,18 @@ this.$refs.canvas.createElement(name, options)
   this.$refs.canvas.changePenStyle('#00ff00', 2)
   this.$refs.canvas.setCursor(6)
 ```
-### 2024.01.11
+### 2024.01.12
 > v0.2.2
 - 修复数字价格组件宽高多1像素问题
+
+
+### 2024.01.18
+> v0.2.3
+- 标尺新增主题颜色；
+- 标尺的锁定和解锁；
+- 标尺蓝色对象刻度粗细放大时不好看；
+- 钢笔多边形封装，新增对齐线和id;
+- 画布中部分组件优化，允许loadjson;
 
   
 

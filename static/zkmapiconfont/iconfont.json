@@ -1,0 +1,191 @@
+{
+  "id": "4413132",
+  "name": "zkmap",
+  "font_family": "zkmIcon",
+  "css_prefix_text": "zkmp-",
+  "description": "地图编辑",
+  "glyphs": [
+    {
+      "icon_id": "38972969",
+      "name": "撤销",
+      "font_class": "chexiao",
+      "unicode": "e704",
+      "unicode_decimal": 59140
+    },
+    {
+      "icon_id": "38972970",
+      "name": "后退",
+      "font_class": "houtui",
+      "unicode": "e70c",
+      "unicode_decimal": 59148
+    },
+    {
+      "icon_id": "38972952",
+      "name": "堆头",
+      "font_class": "duitou",
+      "unicode": "e709",
+      "unicode_decimal": 59145
+    },
+    {
+      "icon_id": "38972959",
+      "name": "普通基站效果",
+      "font_class": "putongjizhanxiaoguo",
+      "unicode": "e717",
+      "unicode_decimal": 59159
+    },
+    {
+      "icon_id": "38972960",
+      "name": "定位基站",
+      "font_class": "dingweijizhan",
+      "unicode": "e715",
+      "unicode_decimal": 59157
+    },
+    {
+      "icon_id": "38972961",
+      "name": "钢笔",
+      "font_class": "gangbi",
+      "unicode": "e70b",
+      "unicode_decimal": 59147
+    },
+    {
+      "icon_id": "38972962",
+      "name": "边墙货架",
+      "font_class": "bianqianghuojia",
+      "unicode": "e6fc",
+      "unicode_decimal": 59132
+    },
+    {
+      "icon_id": "38972965",
+      "name": "双侧货架",
+      "font_class": "shuangcehuojia",
+      "unicode": "e713",
+      "unicode_decimal": 59155
+    },
+    {
+      "icon_id": "38972966",
+      "name": "展台桌",
+      "font_class": "zhantaizhuo",
+      "unicode": "e712",
+      "unicode_decimal": 59154
+    },
+    {
+      "icon_id": "38972967",
+      "name": "文本标签",
+      "font_class": "wenbenbiaoqian",
+      "unicode": "e70e",
+      "unicode_decimal": 59150
+    },
+    {
+      "icon_id": "38972968",
+      "name": "柜式货架",
+      "font_class": "guishihuojia",
+      "unicode": "e710",
+      "unicode_decimal": 59152
+    },
+    {
+      "icon_id": "38972972",
+      "name": "图片",
+      "font_class": "tupian",
+      "unicode": "e708",
+      "unicode_decimal": 59144
+    },
+    {
+      "icon_id": "38972973",
+      "name": "收银货架",
+      "font_class": "shouyinhuojia",
+      "unicode": "e706",
+      "unicode_decimal": 59142
+    },
+    {
+      "icon_id": "38972974",
+      "name": "单侧货架",
+      "font_class": "dancehuojia",
+      "unicode": "e705",
+      "unicode_decimal": 59141
+    },
+    {
+      "icon_id": "38972975",
+      "name": "冷藏式货架",
+      "font_class": "lengcangshihuojia",
+      "unicode": "e702",
+      "unicode_decimal": 59138
+    },
+    {
+      "icon_id": "38972977",
+      "name": "矩形",
+      "font_class": "juxing",
+      "unicode": "e6fd",
+      "unicode_decimal": 59133
+    },
+    {
+      "icon_id": "38972949",
+      "name": "底部对齐",
+      "font_class": "dibuduiqi",
+      "unicode": "e71d",
+      "unicode_decimal": 59165
+    },
+    {
+      "icon_id": "38972950",
+      "name": "顶部对齐",
+      "font_class": "dingbuduiqi",
+      "unicode": "e714",
+      "unicode_decimal": 59156
+    },
+    {
+      "icon_id": "38972955",
+      "name": "左右居中",
+      "font_class": "zuoyoujuzhong",
+      "unicode": "e71a",
+      "unicode_decimal": 59162
+    },
+    {
+      "icon_id": "38972956",
+      "name": "左对齐",
+      "font_class": "zuoduiqi",
+      "unicode": "e71b",
+      "unicode_decimal": 59163
+    },
+    {
+      "icon_id": "38972963",
+      "name": "上下居中",
+      "font_class": "shangxiajuzhong",
+      "unicode": "e70d",
+      "unicode_decimal": 59149
+    },
+    {
+      "icon_id": "38972979",
+      "name": "右对齐",
+      "font_class": "youduiqi",
+      "unicode": "e6fe",
+      "unicode_decimal": 59134
+    },
+    {
+      "icon_id": "38972946",
+      "name": "保存",
+      "font_class": "baocun",
+      "unicode": "e707",
+      "unicode_decimal": 59143
+    },
+    {
+      "icon_id": "38972953",
+      "name": "返回",
+      "font_class": "fanhui",
+      "unicode": "e71c",
+      "unicode_decimal": 59164
+    },
+    {
+      "icon_id": "38972964",
+      "name": "地址",
+      "font_class": "dizhi",
+      "unicode": "e70f",
+      "unicode_decimal": 59151
+    },
+    {
+      "icon_id": "38972978",
+      "name": "预览",
+      "font_class": "yulan",
+      "unicode": "e701",
+      "unicode_decimal": 59137
+    }
+  ]
+}

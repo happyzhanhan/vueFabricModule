@@ -24,16 +24,16 @@ function initCintrolButton(canvas, position, title, img, fn){
 //     console.log('document.onkeydown ------------', e)
 //     let keyCode = window.event.keyCode
 //     if (keyCode === 37) { // ←
-//       deleteBtn.style.display ='none';
+//       removeDeleteBtn();
 //     }
 //     if (keyCode === 38) { // ↑
-//       deleteBtn.style.display ='none';
+//       removeDeleteBtn();
 //     }
 //     if (keyCode === 39) { // →
-//       deleteBtn.style.display ='none';
+//       removeDeleteBtn();
 //     }
 //     if (keyCode === 40) { // ↓
-//       deleteBtn.style.display ='none';
+//       removeDeleteBtn();
 //     }
 //   }
 
