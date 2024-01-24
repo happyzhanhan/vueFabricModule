@@ -12624,6 +12624,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                 if (clipPath) {
                     _this._enlivenObjects([clipPath], function (enlivenedCanvasClip) {
                         _this.clipPath = enlivenedCanvasClip[0];
+                       
                         _this.__setupCanvas.call(_this, serialized, enlivenedObjects, renderOnAddRemove, callback);
                     });
                 }
@@ -13198,7 +13199,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
          * @type Number
          * @default
          */
-        minScaleLimit:            0.2,  // happy change
+        minScaleLimit:            0.01,  // happy change
 
         /**
          * When set to `false`, an object can not be selected for modification (using either point-click-based or group-based selection).
@@ -13753,6 +13754,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                     barcodeType: this.barcodeType, //条码类型
                     selectable: this.selectable,
                     hasControls: this.hasControls,
+                    hoverCursor: this.hoverCursor,
 
                     url: this.url,
                     tabledata: this.isType === 'tableList' ? this.tabledata : null,
@@ -13770,6 +13772,8 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
                   options: this.options,
                   textStyle: this.textStyle,
                   editable: this.editable,
+                  imgwidth:this.imgwidth,
+                  imgheight:this.imgheight,
 
                 };
 

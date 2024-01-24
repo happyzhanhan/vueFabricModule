@@ -5,7 +5,7 @@
  * @Date: 2023-08-01 14:18:54
  * @Version: v0.1.31
  * @LastEditors: zhouzhenhan
- * @LastEditTime: 2024-01-17 16:10:34
+ * @LastEditTime: 2024-01-24 13:55:14
  */
  // eslint-disable no-unused-vars
  // eslint-disable no-undef
@@ -720,7 +720,7 @@ let initFabricRuler = function () {
           const {left: x1, width: w,  top: y1, height: h} = activeObjects.getBoundingRect(true, true)
           that.drawObjectRect(x1, w, y1, h)
           let rect = that.returnsRuler('sRulerMark')
-          rect[0].bringToFront() // 遮盖小方块置顶
+          rect[0] && rect[0].bringToFront() // 遮盖小方块置顶
         }
       },15)
     },

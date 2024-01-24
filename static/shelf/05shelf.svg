@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 20" class="design-iconfont">
+  <g fill="none" fill-rule="evenodd">
+    <path fill-opacity=".19536713" fill="#E02020" transform="rotate(-90 19 9)" d="M9 -9L27 -9 27 27 9 27z"/>
+    <path d="M27.25,-9.25 L27.25,27.25 L8.75,27.25 L8.75,-9.25 L27.25,-9.25 Z M26.75,-8.75 L9.25,-8.75 L9.25,26.75 L26.75,26.75 L26.75,-8.75 Z" fill="#979797" fill-rule="nonzero" transform="rotate(-90 19 9)"/>
+    <path fill-opacity=".41851508" fill="#D12222" fill-rule="nonzero" d="M36 8.4375L36 9.4375 0 9.4375 0 8.4375z" transform="translate(1 1)"/>
+  </g>
+</svg>

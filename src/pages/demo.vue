@@ -232,6 +232,13 @@
                  @dblclick="draw('Rect')"
               ></i>
 
+              <i class="ps-icon82 ps-icon"
+              title="矩形2"
+                 @click="initRect()"
+              ></i>
+
+              <b>{{rectdraw}}</b>
+
               <i class="ps-icon83 ps-icon"
               title="圆形"
                  @dblclick="draw('Circle')"
@@ -266,6 +273,16 @@
               <i class="ps-icon25 ps-icon"
               title="图片"
                  @dblclick="draw('Image')"
+              ></i>
+
+              <i class="ps-icon25 ps-icon"
+              title="货架图片"
+                 @dblclick="draw('shelfImage')"
+              ></i>
+
+              <i class="ps-icon25 ps-icon"
+              title="基站图片"
+                 @dblclick="draw('apImage')"
               ></i>
 
                <i class="ps-icon26 ps-icon"
@@ -306,7 +323,7 @@
                <vuefabricmodule ref="canvas" :idno="id" :BgColor="'#666'"  :backgroundColor="background" backgroundImage=""
                :width="parseInt(width)" :height="parseInt(height)"
                                 :boxWidth="boxWidth" :boxHeight="boxHeight" :zoom="parseFloat(zoom)" :showRule="showRule" :showGuideline="showGuideline" :showobjectRect="showobjectRect" :showMouseRight="true" rulestyle="white"
-                               @setWH="setWH" @candrawStatus="candrawStatus" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
+                               @setWH="setWH" @candrawStatus="candrawStatus" @rectdrawStatus="rectdrawStatus" @changeZoomTo="changeZoomTo" @deleteidsdata="deleteidsdata"
                                 @idAdd="idAdd" @deleteId="deleteId" @selectId="selectId" @canvasToData="canvasToData"
                                 @object:rotated="objectrotated" @object:scaled="objectscaled" @object:moved="objectmoved"
                                 @object:modified="objectmodified"></vuefabricmodule>
@@ -969,7 +986,8 @@ export default {
       showobjectRect: true,
       previewUrl: '',
 
-      candraw: false
+      candraw: false,
+      rectdraw: false
     }
   },
   created () {
@@ -1304,13 +1322,26 @@ export default {
       this.candraw = true
       console.log(this.$refs.canvas.canvas.showPen)
       this.$refs.canvas.showPenAction(this.candraw)
-      this.$refs.canvas.changePenStyle('#00ff00', 2)
+      this.$refs.canvas.changePenStyle('#00ff00', 1, 'rgba(226, 246, 205, 0.5)')
       this.$refs.canvas.setCursor(6)
     },
     // 钢笔关
     candrawStatus (bol) {
       this.candraw = false
     },
+    // 开始画矩形
+    initRect () {
+      this.rectdraw = true
+      console.log(this.$refs.canvas.canvas.showRect)
+      this.$refs.canvas.changePenStyle('#FF0000', 1, 'rgba(226, 246, 205, 0.5)')
+      this.$refs.canvas.showRectAction(this.rectdraw)
+      this.$refs.canvas.setCursor(6)
+    },
+    // 矩形关
+    rectdrawStatus (bol) {
+      this.rectdraw = false
+    },
+
     // 点击画组件
     async draw (name) {
       // this.id = this.id + 1
@@ -1461,6 +1492,35 @@ export default {
           }
           // let img = await this.loadImage(imgurl)
           // console.log(img)
+          break
+        case 'shelfImage':
+          options = {
+            left: 300,
+            top: 100,
+            width: 50,
+            height: 30,
+            angle: 0,
+            src: '../../static/shelf/shelf01.svg',
+            opacity: 1,
+            stroke: '#ff0000',
+            strokeWidth: 0,
+            visible: true
+          }
+          break
+        case 'apImage':
+          options = {
+            left: 300,
+            top: 300,
+            width: 500,
+            height: 500,
+            angle: 0,
+            src: '../../static/shelf/ap01.svg',
+            opacity: 1,
+            stroke: '#ff0000',
+            fill: 'rgba(226, 246, 205, 0.5)',
+            strokeWidth: 0,
+            visible: true
+          }
           break
         case 'Icon':
           let iconurl = 'http://img.daimg.com/uploads/allimg/201010/3-2010101J545.jpg'
@@ -2084,7 +2144,7 @@ export default {
       sessionStorage.setItem('json', JSON.stringify(json))
     },
     // 加载数据
-    loadjson () {
+    async loadjson () {
       this.showRule = false
       this.$refs.canvas.showCloseRuler(this.showRule)
       this.showGuideline = false
@@ -2094,7 +2154,24 @@ export default {
 
       let data = sessionStorage.getItem('json')
       let json = JSON.parse(data)
-      this.$refs.canvas.loadFromJSON(json)
+      await this.$refs.canvas.loadFromJSON(json)
+      console.log(json.objects[0].scaleX)
+
+      setTimeout(async () => {
+        await this.$refs.canvas.initbg({
+          width: parseInt(this.width),
+          height: parseInt(this.height),
+          backgroundColor: '#fff',
+          backgroundImage: ''
+        })
+        await this.$refs.canvas.getBlack({width: parseInt(this.width), height: parseInt(this.height)}, '#666')
+
+        this.changeRule()
+        this.showGuideline = true
+        this.$refs.canvas.showCloseGuideline(this.showGuideline)
+        this.showobjectRect = true
+        this.$refs.canvas.toshowobjectRect(this.showobjectRect)
+      }, 100)
     }
   }
 }

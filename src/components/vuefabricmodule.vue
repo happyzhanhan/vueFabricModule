@@ -37,6 +37,7 @@ import initAligningGuidelines from '../utils/fabricGuidelines'
 import inputText from './inputText.vue'
 // import initCintrolButton from '../utils/controlButton'
 import initPen from '../utils/fabricPen'
+import initFabricRect from '../utils/fabricRect'
 // require('../../static/js/fabric5.js')
 import {
   // eslint-disable-next-line no-unused-vars
@@ -347,6 +348,8 @@ export default {
     canvas.showPenClose = true // 线段不闭合
     canvas.cid = this.cid
     initPen(canvas, this.penBack)
+    canvas.showRect = false // 默认不开启
+    initFabricRect(canvas, this.rectBack)
     // 初始化按钮-删除
     // initCintrolButton(canvas, 'left', 'Delete', null, this.removeActiveObject)
     // 初始化按钮-复制
@@ -576,6 +579,7 @@ export default {
         options.target.hasRotatingPoint = false
         options.target.hasControls = false
       }
+      // console.log('options-----------选择333333333', options)
       // console.log('选择元素selection:created', options.selected)
       let selectid = []
       options.selected.forEach(one => {
@@ -599,6 +603,12 @@ export default {
           selectid.push(one.id)
         })
       }
+      if (options.target._objects && options.target._objects.length > 1) {
+        options.target.hasRotatingPoint = false
+        options.target.hasControls = false
+      }
+      // console.log('options-----------选择1111111111', options)
+      that.selectoptions(options.target)
       that.$emit('selectId', selectid)
       that.$emit('selection:updated', options)
       // 活跃组件坐标(辅助-坐标)
@@ -627,6 +637,8 @@ export default {
     })
     this.canvas.on('object:selected', function (options) {
       // console.log('选择元素object:selected', options)
+      // console.log('options-----------选择000000000000', options)
+      that.selectoptions(options.target)
       that.$emit('object:selected', options)
     })
     this.canvas.on('object:modified', function (options) {
@@ -680,6 +692,26 @@ export default {
       }
       if (options.target.isType === 'tableList') {
         that.objectSetZindex() // 元素顺序
+      }
+      if (options.target.isType === 'apImage') {
+        options.target.set({
+          width: options.target.width * options.target.scaleX,
+          height: options.target.height * options.target.scaleY,
+          scaleX: 1,
+          scaleY: 1
+        })
+        options.target.item(0).set({
+          rx: options.target.width * options.target.scaleX / 2,
+          ry: options.target.height * options.target.scaleY / 2,
+          scaleX: 1,
+          scaleY: 1
+        })
+        options.target.item(1).set({
+          scaleX: 20 / options.target.item(1).imgwidth,
+          scaleY: 20 / options.target.item(1).imgheight,
+          width: options.target.item(1).imgwidth,
+          height: options.target.item(1).imgheight
+        })
       }
       // 活跃组件坐标(辅助-坐标)
       initFabricRuler.calcObjectRect(canvas)
@@ -777,7 +809,7 @@ export default {
           hoverCursor: 'default',
           strokeWidth: 0,
           stroke: '#999',
-          excludeFromExport: false,
+          excludeFromExport: true,
           perPixelTargetFind: false
         })
         if (options.backgroundColor === '') {
@@ -793,7 +825,9 @@ export default {
         //   this.canvas.clipPath = cloned
         //   this.canvas.requestRenderAll()
         // })
+        console.log('rectbg', rect)
         this.canvas.add(rect)
+        console.log(this.canvas)
         this.setCenterFromObject(rect) // 设置画布中心到指定对象中心点上
 
         rect.sendToBack()
@@ -1999,6 +2033,17 @@ export default {
           _clipboard.scaleX = 1
           _clipboard.scaleY = 1
         }
+        if (_clipboard.isType === 'shelfImage') {
+          _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
+          _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
+          _clipboard.scaleX = 1
+          _clipboard.scaleY = 1
+        }
+        if (_clipboard.isType === 'apImage') {
+          _clipboard.src = _clipboard._objects[1].src
+          _clipboard.fill = _clipboard._objects[0].fill
+          _clipboard.color = _clipboard.fill
+        }
         if (_clipboard.isType === 'TextRect') {
           _clipboard.width = parseInt(_clipboard.width * _clipboard.scaleX)
           _clipboard.height = parseInt(_clipboard.height * _clipboard.scaleY)
@@ -2017,7 +2062,7 @@ export default {
             'fontStyle': _clipboard.textRectData.fontStyle ? _clipboard.textRectData.fontStyle : 'normal'
           })
         } else {
-          // console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height)
+          // console.log('单个元素复制出来', _clipboard.id, _clipboard.isType, _clipboard.width, _clipboard.height, _clipboard, _clipboard.src)
           canvaobj = await this.createElement(_clipboard.isType, JSON.parse(JSON.stringify(_clipboard)))
         }
         // console.log(_clipboard)
@@ -2721,7 +2766,7 @@ export default {
               component: 'component',
               // ...options,
               id: options.id,
-              fill: 'rgba(0,0,0,0)',
+              fill: options.fill || 'rgba(0,0,0,0)',
               left: options.left,
               top: options.top,
               strokeWidth: options.strokeWidth,
@@ -2923,6 +2968,34 @@ export default {
             break
           case 'duanImage':
             canvasObject = await that.createDuan(options)
+            break
+          case 'shelfImage':
+            canvasObject = await that.createShelf(options)
+            canvasObject.setControlsVisibility({ // 左上、左下、右上、右下 取消
+              bl: false,
+              br: false,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: true,
+              tl: false,
+              tr: false
+            })
+            break
+          case 'apImage':
+            canvasObject = await that.createAP(options)
+            canvasObject.setControlsVisibility({ // 左上、左下、右上、右下 取消
+              bl: false,
+              br: false,
+              mb: false,
+              ml: false,
+              mr: false,
+              mt: false,
+              mtr: false,
+              tl: false,
+              tr: false
+            })
             break
           case 'equalImage':
             // console.warn('equalImage',options);
@@ -7511,12 +7584,31 @@ export default {
       this.$emit('idAdd', this.cid)
       this.$emit('candrawStatus', false)
       this.canvas.renderAll()
+      this.setCursor(99)
     },
     // 改变钢笔颜色粗细
-    changePenStyle (color, width) {
+    changePenStyle (color, width, fill) {
       this.canvas.strokeColor = color || '#000000'
       this.canvas.strokeWidth = width || 1
+      this.canvas.fillColor = fill || 'rgba(0,0,0,0)'
       this.canvas.renderAll()
+    },
+    // 矩形开始
+    showRectAction (bol) {
+      this.canvas.showRect = bol
+      this.canvas.renderAll()
+      this.canvas.cid = this.cid // 钢笔多边形id
+      // let canvas = this.canvas
+      // initPen(canvas)
+    },
+    // 矩形生成回调
+    rectBack (bol, rect, id) {
+      this.canvas.showRect = bol
+      this.cid = this.cid + 1 // 返回钢笔画图是id自增
+      this.$emit('idAdd', this.cid)
+      this.$emit('rectdrawStatus', false)
+      this.canvas.renderAll()
+      this.setCursor(99)
     },
 
     // 活跃坐标
@@ -7925,6 +8017,310 @@ export default {
     // 加载json
     loadFromJSON (json) {
       this.canvas.loadFromDatalessJSON(json)
+    },
+    // 创建定位图片
+    async createShelf (options) {
+      let imagesRes = await this.loadImage(options.src)
+      return new Promise(function (resolve, reject) {
+        if (imagesRes.width > 0) {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+            console.log('onloading', img)
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId || null,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              isType: 'shelfImage',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: false,
+              lockMovementY: false,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle || 0,
+              name: options.name || 'shelfImage',
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+              width: img.width,
+              height: img.height,
+
+              selectable: true, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible, // 元素是否可见
+              hasRotatingPoint: true, // 元素是否旋转
+              hasControls: true
+
+            })
+
+            resolve(img)
+          })
+        } else {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL('./static/images/img.svg', function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+            console.log('onloading', img)
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId || null,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              isType: 'shelfImage',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'left',
+              originY: 'top',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: false,
+              lockMovementY: false,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle || 0,
+              name: options.name || 'shelfImage',
+
+              scaleX: options.width / img.width,
+              scaleY: options.height / img.height,
+              width: img.width,
+              height: img.height,
+
+              selectable: true, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: options.visible, // 元素是否可见
+              hasRotatingPoint: true, // 元素是否旋转
+              hasControls: false
+
+            })
+
+            resolve(img)
+          })
+        }
+      })
+    },
+    // 创建基站图片
+    async createAPimage (options) {
+      let imagesRes = await this.loadImage(options.src)
+      return new Promise(function (resolve, reject) {
+        if (imagesRes.width > 0) {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL(options.src, function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+            console.log('onloading', img, imagesRes.width, img.width)
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId || null,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              isType: 'apImage',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'center',
+              originY: 'center',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: false,
+              lockMovementY: false,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle || 0,
+              name: options.name || 'apImage',
+
+              scaleX: 20 / img.width,
+              scaleY: 20 / img.height,
+              width: img.width,
+              height: img.height,
+              imgwidth: img.width,
+              imgheight: img.height,
+
+              selectable: true, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: true // 元素是否可见
+            })
+
+            resolve(img)
+          })
+        } else {
+          // eslint-disable-next-line no-undef
+          fabric.Image.fromURL('./static/images/img.svg', function (img) {
+            img.crossOrigin = 'Anonymous'
+            options.crossOrigin = 'Anonymous'
+            console.log('onloading', img)
+
+            img.set({ // 图片不设置宽度高度，来定义图片放大缩小
+              id: options.id ? options.id : 'image',
+              copyId: options.copyId || null,
+              zIndex: options.zIndex ? options.zIndex : options.id,
+              isType: 'apImage',
+              component: 'component',
+              isDiff: 'static',
+              padding: 0,
+              flipX: false,
+              flipY: false,
+              originX: 'center',
+              originY: 'center',
+              stopContextMenu: true, //  禁掉鼠标右键默认事件
+              minScaleLimit: 0.0001, //  最小限制
+              lockSkewingX: true, //  禁掉按住shift时的变形
+              lockSkewingY: true,
+              lockMovementX: false,
+              lockMovementY: false,
+
+              left: options.left,
+              top: options.top,
+              angle: options.angle || 0,
+              name: options.name || 'apImage',
+
+              scaleX: 20 / img.width,
+              scaleY: 20 / img.height,
+              width: img.width,
+              height: img.height,
+              imgwidth: img.width,
+              imgheight: img.height,
+
+              selectable: true, // 元素是否可选中  如段码屏中可见不可移动false
+              visible: true // 元素是否可见
+
+            })
+
+            resolve(img)
+          })
+        }
+      })
+    },
+    // 创建基站图片
+    async createAP (options) {
+      let img = await this.createAPimage(options)
+      // eslint-disable-next-line no-undef
+      let circle = new fabric.Ellipse({...options,
+        type: 'ellipse',
+        rx: options.width / 2,
+        ry: options.height / 2,
+        originX: 'center',
+        originY: 'center',
+        left: options.left,
+        top: options.top,
+        fill: options.fill
+      }) // 创建
+      // eslint-disable-next-line no-undef
+      let group = new fabric.Group([circle, img], {
+        isType: 'apImage',
+        component: 'component',
+        originX: 'center',
+        originY: 'center',
+        angle: options.angle,
+        id: options.id,
+
+        stroke: options.stroke || 'rgba(0,0,0,0)', // 边框颜色
+        strokeWidth: 0, // 边框宽度
+        strokeDashArray: [0, 0],
+
+        fill: options.fill,
+        src: options.src,
+
+        layer: options.layer,
+        zIndex: options.layer,
+        width: options.width + options.strokeWidth,
+        height: options.height + options.strokeWidth,
+        left: options.left,
+        top: options.top,
+        screenIndex: options.screenIndex,
+        lockScalingFlip: true, // 禁止负值反转
+        minWidth: options.width + options.strokeWidth + options.fontSize,
+        visible: true
+
+      })
+      group.on('scaled', (e) => {
+        console.log(group.item(1))
+        group.set({
+          width: group.width * group.scaleX,
+          height: group.height * group.scaleY,
+          scaleX: 1,
+          scaleY: 1
+        })
+        group.item(0).set({
+          rx: group.width * group.scaleX / 2,
+          ry: group.height * group.scaleY / 2,
+          scaleX: 1,
+          scaleY: 1
+        })
+        group.item(1).set({
+          scaleX: 20 / group.item(1).imgwidth,
+          scaleY: 20 / group.item(1).imgheight,
+          width: group.item(1).imgwidth,
+          height: group.item(1).imgheight
+        })
+      })
+      // console.log(circle, img, group)
+      return group
+    },
+    // 不同组件显示
+    selectoptions (target) {
+      if (!target.isType) return
+      switch (target.isType) {
+        case 'apImage':
+          target.setControlsVisibility({ // 左上、左下、右上、右下 取消
+            bl: false,
+            br: false,
+            mb: false,
+            ml: false,
+            mr: false,
+            mt: false,
+            mtr: false,
+            tl: false,
+            tr: false
+          })
+          break
+        case 'shelfImage':
+          target.setControlsVisibility({ // 左上、左下、右上、右下 取消
+            bl: false,
+            br: false,
+            mb: false,
+            ml: false,
+            mr: false,
+            mt: false,
+            mtr: true,
+            tl: false,
+            tr: false
+          })
+          break
+        default:
+          target.setControlsVisibility({ // 左上、左下、右上、右下 取消
+            bl: true,
+            br: true,
+            mb: true,
+            ml: true,
+            mr: true,
+            mt: true,
+            mtr: true,
+            tl: true,
+            tr: true
+          })
+          break
+      }
     }
   }
 }

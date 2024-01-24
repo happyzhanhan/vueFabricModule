@@ -140,7 +140,7 @@ function initPen(canvas, callback){
 				isType: 'Polyline',
 				component: 'component',
         id: id,
-        fill: null,
+        fill: canvas.fillColor,
 				strokeWidth: canvas.strokeWidth,
         stroke: canvas.strokeColor
       })
@@ -213,7 +213,7 @@ function initPen(canvas, callback){
     // 跟随鼠标走动的线1
     function mouseMoveLine1(e, length) {
       if (mouseLine1) canvas.remove(mouseLine1)
-      canvas.selection = false
+      // canvas.selection = false
       // new fabric.Line(x1,y1,x2,y2)  x1,y1是起始点,x2,y2是结束点
       mouseLine1 = new fabric.Line([pointPosition[length].x, pointPosition[length].y,
         e.absolutePointer.x, e.absolutePointer.y
@@ -270,7 +270,7 @@ function initPen(canvas, callback){
       if(!pointPosition.length) return
       // console.log(pointArray, pointPosition)
       if (mouseLine3) canvas.remove(mouseLine3)
-      canvas.selection = false
+      // canvas.selection = false
       // new fabric.Line(x1,y1,x2,y2)  x1,y1是起始点,x2,y2是结束点
       mouseLine3 = new fabric.Line([pointPosition[pointPosition.length-1].x, pointPosition[pointPosition.length-1].y,
         e.absolutePointer.x, e.absolutePointer.y
@@ -337,7 +337,7 @@ function initPen(canvas, callback){
       // console.log(id, canvas.cid)
       id = canvas.cid;
       if(!canvas.showPen) return
-			canvas.selection = false // 禁止画线时选择组件
+			// canvas.selection = false // 禁止画线时选择组件
        // 只有开启绘画,才进行鼠标拖动
       canvas.on('mouse:move', startDrawing);
       // 如果str包含z,也就是说路径里面有z,说明图形已经绘画完毕了,将之前的所有点和点的位置信息全部清空
@@ -345,7 +345,7 @@ function initPen(canvas, callback){
 				removePoint()
 				// addPoint(e)
 			} else if (e.target && pointArray[0] && e.target.id == pointArray[0].id) { // 目标点和第一个点id相等时,说明绘画动作已经完成,此时开始最后一步绘画
-				finishDrawing(e)
+				// finishDrawing(e)
 			} else if (canvas.showPen) {
 				if (canvas.getActiveObject()) return
 				addPoint(e)
